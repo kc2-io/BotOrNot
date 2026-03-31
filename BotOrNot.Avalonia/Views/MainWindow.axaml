@@ -37,6 +37,8 @@
                        FontSize="12"
                        VerticalAlignment="Center" />
             <Button x:Name="ColumnsButton" Content="Columns" />
+            <Button x:Name="ExportCsvButton" Content="Export to CSV" Click="ExportCsv_Click"
+                    IsVisible="{Binding HasData}" />
             <Button Content="{Binding ThemeIcon}"
                     Command="{Binding CycleThemeCommand}"
                     ToolTip.Tip="{Binding ThemeToggleTooltip}"

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Reactive.Linq;
+using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -11,6 +13,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
 using ReactiveUI;
 
 namespace BotOrNot.Avalonia.Views;
@@ -24,6 +27,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<DataGridColumn, int> _columnSortMode = new();
     private DataGrid? _playersGrid;
     private Button? _columnsButton;
+    private IStorageFolder? _lastReplayFolder;
 
     public MainWindow()
     {
@@ -252,6 +256,7 @@ public partial class MainWindow : Window
             {
                 Title = "Select Fortnite Replay File",
                 AllowMultiple = false,
+                SuggestedStartLocation = _lastReplayFolder,
                 FileTypeFilter = new[]
                 {
                     new FilePickerFileType("Fortnite Replays")
@@ -268,6 +273,7 @@ public partial class MainWindow : Window
             if (files.Count > 0)
             {
                 var file = files[0];
+                _lastReplayFolder = await file.GetParentAsync();
                 var path = file.TryGetLocalPath();
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -293,6 +299,100 @@ public partial class MainWindow : Window
                 UseShellExecute = true
             });
         }
+    }
+
+    private async void ExportCsv_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_playersGrid == null) return;
+
+        var folder = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select folder for CSV export",
+            AllowMultiple = false
+        });
+
+        if (folder.Count == 0) return;
+
+        var dirPath = folder[0].TryGetLocalPath();
+        if (string.IsNullOrEmpty(dirPath)) return;
+
+        var columns = GetVisibleCsvColumns();
+        if (columns.Count == 0) return;
+
+        var baseName = _viewModel.WindowTitle.Contains(" - ")
+            ? _viewModel.WindowTitle.Split(" - ", 2)[1]
+            : "replay_export";
+
+        var ownerCsv = CsvExportService.GenerateCsv(_viewModel.OwnerEliminations, columns);
+        var playersCsv = CsvExportService.GenerateCsv(_viewModel.Players, columns);
+
+        var elimPath = Path.Combine(dirPath, $"{baseName}_eliminations.csv");
+        var playersPath = Path.Combine(dirPath, $"{baseName}_players.csv");
+
+        var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+        await File.WriteAllTextAsync(elimPath, ownerCsv, utf8Bom);
+        await File.WriteAllTextAsync(playersPath, playersCsv, utf8Bom);
+    }
+
+    private List<CsvColumnDefinition> GetVisibleCsvColumns()
+    {
+        if (_playersGrid == null) return new();
+
+        return _playersGrid.Columns
+            .Where(c => c.IsVisible)
+            .Select(c => MapColumnToCsv(c.Header?.ToString()))
+            .Where(c => c != null)
+            .ToList()!;
+    }
+
+    private static CsvColumnDefinition? MapColumnToCsv(string? header)
+    {
+        return header switch
+        {
+            "Id"          => new(header, p => p.Id),
+            "Name"        => new(header, p => p.Name ?? ""),
+            "Level"       => new(header, p => UnknownToDash(p.Level)),
+            "Bot"         => new(header, p => BotToText(p.Bot)),
+            "Platform"    => new(header, p => PlatformToText(p.Platform)),
+            "Kills"       => new(header, p => UnknownToDash(p.Kills)),
+            "Squad"       => new(header, p => SquadToText(p.TeamIndex)),
+            "Place"       => new(header, p => UnknownToDash(p.Placement)),
+            "Death Cause" => new(header, p => p.DeathCause ?? ""),
+            "Elim Time"   => new(header, p => p.ElimTime ?? ""),
+            "Pickaxe"     => new(header, p => p.Pickaxe ?? ""),
+            "Glider"      => new(header, p => p.Glider ?? ""),
+            _ => null
+        };
+    }
+
+    private static string UnknownToDash(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Equals("unknown", StringComparison.OrdinalIgnoreCase))
+            return "-";
+        return value;
+    }
+
+    private static string BotToText(string? bot)
+    {
+        return bot?.ToLowerInvariant() switch
+        {
+            "true" => "Yes",
+            "false" => "No",
+            _ => "Unknown"
+        };
+    }
+
+    private static string PlatformToText(string? platform)
+    {
+        var friendly = PlatformHelper.GetFriendlyName(platform);
+        return friendly == "Unknown" ? "-" : friendly;
+    }
+
+    private static string SquadToText(string? teamIndex)
+    {
+        if (!string.IsNullOrWhiteSpace(teamIndex) && !teamIndex.Equals("unknown", StringComparison.OrdinalIgnoreCase))
+            return $"Squad # {teamIndex}";
+        return "-";
     }
 
     private void BuildColumnsFlyout()
