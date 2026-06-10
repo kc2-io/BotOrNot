@@ -148,11 +148,8 @@ var result = reader.ReadReplay(replayPath);
 Console.WriteLine("KEY MODE INDICATORS:");
 Console.WriteLine("--------------------");
 
-// Header.GameSpecificData
-Console.WriteLine($"GameSpecificData: {string.Join(", ", result.Header?.GameSpecificData ?? Array.Empty<string>())}");
-
-// Match duration
-Console.WriteLine($"Match Duration: {result.Info?.LengthInMs / 1000.0 / 60.0:F1} minutes ({result.Info?.LengthInMs}ms)");
+// Match duration (result.Info removed in v3.x; MatchEndTime is in seconds)
+Console.WriteLine($"Match Duration: {(result.GameData?.MatchEndTime ?? 0f) / 60.0:F1} minutes ({result.GameData?.MatchEndTime}s)");
 
 // Player counts
 var playerCount = result.PlayerData?.Count() ?? 0;
@@ -192,10 +189,7 @@ else
     Console.WriteLine("  (null)");
 }
 
-// Header info
-Console.WriteLine($"\nHEADER:");
-Console.WriteLine($"  Branch: {result.Header?.Branch}");
-Console.WriteLine($"  LevelNamesAndTimes: {string.Join(", ", result.Header?.LevelNamesAndTimes?.Select(x => x.ToString()) ?? Array.Empty<string>())}");
+// Header info (result.Header removed in v3.x)
 
 // Look for unique team indices in player data
 Console.WriteLine($"\nPLAYER TEAM ANALYSIS:");

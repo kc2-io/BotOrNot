@@ -328,6 +328,14 @@ public class MainWindowViewModel : ReactiveObject
         {
             ErrorMessage = $"Could not read replay file: {ex.Message} (The file may still be locked by Fortnite.)";
         }
+        catch (IndexOutOfRangeException)
+        {
+            ErrorMessage = "This replay is from a newer version of Fortnite that isn't supported yet. Please check for an app update.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load replay: {ex.Message}";
+        }
         finally
         {
             IsLoading = false;

@@ -6,7 +6,7 @@ BotOrNot is a cross-platform desktop application that analyzes Fortnite replay f
 
 ## Tech Stack
 
-- **Language**: C# / .NET 9.0 (nullable enabled, implicit usings)
+- **Language**: C# / .NET 10.0 (nullable enabled, implicit usings)
 - **UI Framework**: Avalonia UI 11.2.2 (cross-platform desktop)
 - **MVVM**: ReactiveUI
 - **Replay Parsing**: FortniteReplayReader 2.4.0 (NuGet)
