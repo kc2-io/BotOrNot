@@ -298,11 +298,11 @@ public sealed class ReplayService : IReplayService
         }
 
         // === Build metadata ===
-        var header = result.Header;
         var playlist = result.GameData?.CurrentPlaylist ?? "";
         var gameMode = PlaylistHelper.GetDisplayNameWithFallback(playlist);
         var maxPlayers = result.GameData?.MaxPlayers;
-        var matchDuration = (result.Info?.LengthInMs ?? 0) / 1000.0 / 60.0;
+        // result.Info was removed in FortniteReplayReader v3.x; MatchEndTime (seconds) is the closest equivalent
+        var matchDuration = (double)(result.GameData?.MatchEndTime ?? 0f) / 60.0;
 
         var nonNpcCount = 0;
         foreach (var p in playersById.Values)
@@ -311,8 +311,8 @@ public sealed class ReplayService : IReplayService
         var metadata = new ReplayMetadata
         {
             FileName = Path.GetFileName(path),
-            Version = $"{header?.Major}.{header?.Minor}",
-            GameNetProtocol = header?.GameNetworkProtocolVersion.ToString() ?? "",
+            Version = "",
+            GameNetProtocol = "",
             PlayerCount = nonNpcCount,
             EliminationCount = eliminationCount,
             GameMode = gameMode,
