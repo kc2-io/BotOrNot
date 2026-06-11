@@ -77,6 +77,10 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Format check
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+        continue-on-error: true  # remove after running `dotnet format` baseline commit
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
