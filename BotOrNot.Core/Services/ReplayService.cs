@@ -322,7 +322,8 @@ public sealed class ReplayService : IReplayService
                         Placement = victim.Placement,
                         ElimTime = eventTimeStr,
                         Pickaxe = victim.Pickaxe,
-                        Glider = victim.Glider
+                        Glider = victim.Glider,
+                        SquadSize = victim.SquadSize
                     });
                 }
 
