@@ -150,6 +150,21 @@ public sealed class ReplayService : IReplayService
                 ownerKills = kills;
         }
 
+        // === Compute squad sizes from TeamIndex grouping ===
+        var squadSizeByTeamIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in playersById.Values)
+        {
+            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && row.TeamIndex != "unknown")
+            {
+                squadSizeByTeamIndex[row.TeamIndex] = squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndex) + 1;
+            }
+        }
+        foreach (var row in playersById.Values)
+        {
+            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && squadSizeByTeamIndex.TryGetValue(row.TeamIndex, out var sz))
+                row.SquadSize = sz;
+        }
+
         // === PASS 2: Team data (unchanged — small collection) ===
         var teamKillsByIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var teamPlacementByIndex = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

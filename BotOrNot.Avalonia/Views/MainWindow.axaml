@@ -200,6 +200,7 @@
                 <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="130" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills, Converter={StaticResource UnknownToDashConverter}}" Width="91" />
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
+                <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
@@ -274,6 +275,7 @@
                 <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="130" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills, Converter={StaticResource UnknownToDashConverter}}" Width="91" />
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
+                <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
