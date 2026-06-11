@@ -207,6 +207,22 @@ public class ReplayServiceTests
     /// <summary>
     /// Validate the total elim count we will display matches the known elim values provided for each file.
     /// </summary>
+    [Test]
+    public async Task Fortnite4100_Replay_ShouldLoadWithoutError()
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "TestData",
+            "UnsavedReplay-2026.06.10-06.22.43.replay");
+
+        var result = await service.LoadReplayAsync(replayPath);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Players, Is.Not.Empty,
+            "Fortnite 41.00 replay should parse players — regression test for infinite loop and ShortComponents rotation fix");
+    }
+
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
