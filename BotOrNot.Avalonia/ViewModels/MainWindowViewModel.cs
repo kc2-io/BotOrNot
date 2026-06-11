@@ -332,6 +332,10 @@ public class MainWindowViewModel : ReactiveObject
         {
             ErrorMessage = "This replay is from a newer version of Fortnite that isn't supported yet. Please check for an app update.";
         }
+        catch (TimeoutException)
+        {
+            ErrorMessage = "Replay parsing timed out. This replay may be from a version of Fortnite not yet supported. Please check for an app update.";
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to load replay: {ex.Message}";
