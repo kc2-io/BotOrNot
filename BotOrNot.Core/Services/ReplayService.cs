@@ -27,7 +27,26 @@ public sealed class ReplayService : IReplayService
     {
         var reader = new ReplayReader(ReaderLogger, ParseMode.Normal);
 
-        var result = await Task.Run(() => reader.ReadReplay(path), cancellationToken).ConfigureAwait(false);
+        // Run the synchronous parser on a thread-pool thread. Use Task.WhenAny with a 90-second
+        // deadline so a hung parser (e.g. the infinite-loop bug in FortniteReplayReader for
+        // Fortnite 41.00 packets) surfaces as a TimeoutException instead of a frozen spinner.
+        // The background thread cannot be cancelled mid-flight; it leaks until the library
+        // returns on its own or the process exits. This is acceptable for a desktop app — the
+        // user has already seen the error and moved on.
+        var replayTask = Task.Run(() => reader.ReadReplay(path));
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(90));
+        var timeoutTask = Task.Delay(Timeout.Infinite, timeoutCts.Token);
+
+        if (await Task.WhenAny(replayTask, timeoutTask).ConfigureAwait(false) != replayTask)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new TimeoutException(
+                "Replay parsing timed out after 90 seconds. " +
+                "This replay may be from a version of Fortnite not yet supported by the parser.");
+        }
+
+        var result = await replayTask.ConfigureAwait(false);
 
         // Pre-size dictionaries for typical Fortnite lobby (~100 players)
         var playersById = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
