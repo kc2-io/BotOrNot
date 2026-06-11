@@ -191,18 +191,18 @@ public partial class MainWindow : Window
     {
         return column.Header?.ToString() switch
         {
-            "Id"         => new(p => p.Id, false, false, false),
-            "Name"       => new(p => p.Name, false, false, false),
-            "Level"      => new(p => p.Level, true, false, false),
-            "Bot"        => new(p => p.Bot, false, true, false),
-            "Platform"   => new(p => p.Platform, false, false, true),
-            "Kills"      => new(p => p.Kills, true, false, false),
-            "Squad"      => new(p => p.TeamIndex, true, false, false),
-            "Place"      => new(p => p.Placement, true, false, false),
+            "Id" => new(p => p.Id, false, false, false),
+            "Name" => new(p => p.Name, false, false, false),
+            "Level" => new(p => p.Level, true, false, false),
+            "Bot" => new(p => p.Bot, false, true, false),
+            "Platform" => new(p => p.Platform, false, false, true),
+            "Kills" => new(p => p.Kills, true, false, false),
+            "Squad" => new(p => p.TeamIndex, true, false, false),
+            "Place" => new(p => p.Placement, true, false, false),
             "Death Cause" => new(p => p.DeathCause, false, false, true),
-            "Elim Time"  => new(p => p.ElimTime, true, false, false),
-            "Pickaxe"    => new(p => p.Pickaxe, false, false, false),
-            "Glider"     => new(p => p.Glider, false, false, false),
+            "Elim Time" => new(p => p.ElimTime, true, false, false),
+            "Pickaxe" => new(p => p.Pickaxe, false, false, false),
+            "Glider" => new(p => p.Glider, false, false, false),
             _ => default
         };
     }
@@ -349,18 +349,18 @@ public partial class MainWindow : Window
     {
         return header switch
         {
-            "Id"          => new(header, p => p.Id),
-            "Name"        => new(header, p => p.Name ?? ""),
-            "Level"       => new(header, p => UnknownToDash(p.Level)),
-            "Bot"         => new(header, p => BotToText(p.Bot)),
-            "Platform"    => new(header, p => PlatformToText(p.Platform)),
-            "Kills"       => new(header, p => UnknownToDash(p.Kills)),
-            "Squad"       => new(header, p => SquadToText(p.TeamIndex)),
-            "Place"       => new(header, p => UnknownToDash(p.Placement)),
+            "Id" => new(header, p => p.Id),
+            "Name" => new(header, p => p.Name ?? ""),
+            "Level" => new(header, p => UnknownToDash(p.Level)),
+            "Bot" => new(header, p => BotToText(p.Bot)),
+            "Platform" => new(header, p => PlatformToText(p.Platform)),
+            "Kills" => new(header, p => UnknownToDash(p.Kills)),
+            "Squad" => new(header, p => SquadToText(p.TeamIndex)),
+            "Place" => new(header, p => UnknownToDash(p.Placement)),
             "Death Cause" => new(header, p => p.DeathCause ?? ""),
-            "Elim Time"   => new(header, p => p.ElimTime ?? ""),
-            "Pickaxe"     => new(header, p => p.Pickaxe ?? ""),
-            "Glider"      => new(header, p => p.Glider ?? ""),
+            "Elim Time" => new(header, p => p.ElimTime ?? ""),
+            "Pickaxe" => new(header, p => p.Pickaxe ?? ""),
+            "Glider" => new(header, p => p.Glider ?? ""),
             _ => null
         };
     }
