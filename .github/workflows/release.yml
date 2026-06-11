@@ -21,6 +21,58 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Build patched FortniteReplayReader
+        shell: pwsh
+        run: |
+          $VER = "3.0.2-botornot"
+          $FRD = Join-Path $env:RUNNER_TEMP "FRD"
+          $OUT = Join-Path "${{ github.workspace }}" "local-packages"
+          New-Item -ItemType Directory -Force -Path $OUT | Out-Null
+
+          # Clone at the exact commit patches were written against
+          git clone https://github.com/Shiqan/FortniteReplayDecompressor.git $FRD
+          Push-Location $FRD
+          git checkout 2fc699e
+
+          # Apply upstream bug fixes (infinite loop issue #75 + Fortnite 41.00 PR #77)
+          python "${{ github.workspace }}\patches\apply-patches.py" $FRD
+
+          # Register the output dir as a NuGet source so subsequent packs can restore patched deps
+          $nugetCfg = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              <add key="local" value="$OUT" />
+            </packageSources>
+          </configuration>
+          "@
+          $nugetCfg.TrimStart() | Set-Content NuGet.config
+
+          # 1. OozSharp — no project dependencies
+          dotnet pack src/OozSharp/OozSharp.csproj -c Release -o $OUT -p:PackageVersion=$VER
+
+          # 2. Unreal.Encryption — swap OozSharp ProjectReference to PackageReference
+          $enc = "src\Unreal.Encryption\Unreal.Encryption.csproj"
+          $text = Get-Content $enc -Raw
+          $text = $text -replace [regex]::Escape('<ProjectReference Include="..\OozSharp\OozSharp.csproj" />'), "<PackageReference Include=`"OozSharp`" Version=`"$VER`" />"
+          Set-Content $enc $text -NoNewline
+          dotnet pack $enc -c Release -o $OUT -p:PackageVersion=$VER
+
+          # 3. Unreal.Core — no project dependencies
+          dotnet pack src/Unreal.Core/Unreal.Core.csproj -c Release -o $OUT -p:PackageVersion=$VER
+
+          # 4. FortniteReplayReader — swap both ProjectReferences to PackageReferences
+          $frr = "src\FortniteReplayReader\FortniteReplayReader.csproj"
+          $text = Get-Content $frr -Raw
+          $text = $text -replace [regex]::Escape('<ProjectReference Include="..\Unreal.Core\Unreal.Core.csproj" />'), "<PackageReference Include=`"Unreal.Core`" Version=`"$VER`" />"
+          $text = $text -replace [regex]::Escape('<ProjectReference Include="..\Unreal.Encryption\Unreal.Encryption.csproj" />'), "<PackageReference Include=`"Unreal.Encryption`" Version=`"$VER`" />"
+          Set-Content $frr $text -NoNewline
+          dotnet pack $frr -c Release -o $OUT -p:PackageVersion=$VER
+
+          Pop-Location
+          Write-Host "Packed patched FortniteReplayReader $VER to $OUT"
+
       - name: Restore dependencies
         run: dotnet restore
 
