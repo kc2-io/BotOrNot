@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <!-- Pin transitive Tmds.DBus.Protocol to fix NU1903 (GHSA-xrw6-gwf8-vvr9, high severity, affects < 0.21.0) -->
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
+  </ItemGroup>
+</Project>
