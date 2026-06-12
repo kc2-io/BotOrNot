@@ -12,6 +12,7 @@ namespace BotOrNot.Avalonia.ViewModels;
 public class MainWindowViewModel : ReactiveObject
 {
     private readonly IReplayService _replayService;
+    private readonly Action? _onBack;
     private ThemePreference _currentTheme;
 
     private static readonly string AppVersion = (Assembly.GetExecutingAssembly()
@@ -47,8 +48,9 @@ public class MainWindowViewModel : ReactiveObject
 
     private string? _eliminatorName;
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(Action? onBack = null)
     {
+        _onBack = onBack;
         _replayService = new ReplayService();
 
         // Load saved theme preference and apply before window renders
@@ -65,6 +67,7 @@ public class MainWindowViewModel : ReactiveObject
 
         CycleThemeCommand = ReactiveCommand.Create(CycleTheme);
         FilterByPlayerCommand = ReactiveCommand.Create<string>(FilterByPlayer);
+        BackCommand = ReactiveCommand.Create(() => _onBack?.Invoke());
 
         // Filter logic - react to filter text changes
         this.WhenAnyValue(x => x.FilterText)
@@ -158,6 +161,9 @@ public class MainWindowViewModel : ReactiveObject
         get => _filterText;
         set => this.RaiseAndSetIfChanged(ref _filterText, value);
     }
+
+    public ReactiveCommand<Unit, Unit> BackCommand { get; }
+    public bool HasBack => _onBack != null;
 
     public ReactiveCommand<string, Unit> LoadReplayCommand { get; }
 

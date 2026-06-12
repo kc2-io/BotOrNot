@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia.Controls;
 using Avalonia.Headless.NUnit;
-using BotOrNot.Avalonia.Views;
 using BotOrNot.Core.Models;
 using BotOrNot.UITests.Helpers;
 
@@ -18,7 +18,7 @@ public class DataGridSortingTests
         new PlayerRow { Name = "Eve",     Kills = null, Level = "25",      Placement = "10", Bot = "true"  },
     });
 
-    private MainWindow CreateWindowWithTestData()
+    private Window CreateWindowWithTestData()
     {
         var data = CreateTestData();
         return DataGridTestHelper.CreateMainWindowWithData(data, data);
