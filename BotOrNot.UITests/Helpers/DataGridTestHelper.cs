@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using global::Avalonia.Collections;
 using global::Avalonia.Controls;
+using global::Avalonia.VisualTree;
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Views;
 using BotOrNot.Core.Models;
@@ -11,14 +12,11 @@ namespace BotOrNot.UITests.Helpers;
 
 public static class DataGridTestHelper
 {
-    public static MainWindow CreateMainWindowWithData(
+    public static Window CreateMainWindowWithData(
         ObservableCollection<PlayerRow> players,
         ObservableCollection<PlayerRow> ownerEliminations)
     {
-        var window = new MainWindow();
-        window.Show();
-
-        var vm = (MainWindowViewModel)window.DataContext!;
+        var vm = new MainWindowViewModel();
 
         var allPlayersField = typeof(MainWindowViewModel)
             .GetField("_allPlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -38,12 +36,18 @@ public static class DataGridTestHelper
         vm.FilterText = " ";
         vm.FilterText = "";
 
+        var matchView = new MatchView { DataContext = vm };
+        var window = new Window { Content = matchView };
+        window.Show();
+
         return window;
     }
 
-    public static DataGrid GetDataGrid(MainWindow window, string name)
+    public static DataGrid GetDataGrid(Window window, string name)
     {
-        return window.FindControl<DataGrid>(name)
+        return window.GetVisualDescendants()
+            .OfType<DataGrid>()
+            .FirstOrDefault(g => g.Name == name)
             ?? throw new InvalidOperationException($"DataGrid '{name}' not found");
     }
 

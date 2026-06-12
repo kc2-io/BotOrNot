@@ -16,6 +16,7 @@ public enum ThemePreference
 public class AppSettings
 {
     public ThemePreference Theme { get; set; } = ThemePreference.System;
+    public string? ReplayDirectory { get; set; }
 }
 
 public static class SettingsService

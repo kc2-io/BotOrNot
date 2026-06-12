@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:BotOrNot.Avalonia.ViewModels"
+             x:Class="BotOrNot.Avalonia.Views.LibraryView"
+             x:DataType="vm:LibraryViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- Toolbar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8" Spacing="8">
+            <Image Source="avares://BotOrNot/Assets/logo.png"
+                   Width="32" Height="32" VerticalAlignment="Center" />
+            <Button Content="Select Replay Folder" Click="PickDirectory_Click" />
+            <TextBlock Text="{Binding DirectoryPath}"
+                       Foreground="{DynamicResource SubtleTextBrush}"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       MaxWidth="400"
+                       TextTrimming="CharacterEllipsis"
+                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="No folder selected"
+                       Foreground="{DynamicResource HintTextBrush}"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+            <Button Content="Scan"
+                    Command="{Binding ScanCommand}"
+                    IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <ProgressBar Value="{Binding ScanProgress}"
+                         Minimum="0" Maximum="100"
+                         IsVisible="{Binding IsScanning}"
+                         Width="120" Height="16" />
+        </StackPanel>
+
+        <!-- Error Banner -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource ErrorBannerBackground}"
+                BorderBrush="{DynamicResource ErrorBannerBorder}"
+                BorderThickness="1"
+                Padding="8" Margin="8,0,8,4" CornerRadius="4"
+                IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBannerForeground}" />
+        </Border>
+
+        <!-- Stats Strip -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource SummaryBarBackground}"
+                BorderBrush="{DynamicResource SummaryBarBorder}"
+                BorderThickness="0,0,0,1"
+                Padding="8,6"
+                IsVisible="{Binding HasReplays}">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Matches:" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtleTextBrush}" />
+                        <TextBlock Text="{Binding TotalMatches}" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Wins:" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtleTextBrush}" />
+                        <TextBlock Text="{Binding TotalWins}" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Win Rate:" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtleTextBrush}" />
+                        <TextBlock Text="{Binding WinRate, StringFormat={}{0:F1}%}" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Avg Kills:" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtleTextBrush}" />
+                        <TextBlock Text="{Binding AvgKills, StringFormat={}{0:F1}}" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="Avg Bot%:" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SubtleTextBrush}" />
+                        <TextBlock Text="{Binding AvgBotPercent, StringFormat={}{0:F1}%}" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+        </Border>
+
+        <!-- Replay List -->
+        <DataGrid Grid.Row="3"
+                  x:Name="ReplayGrid"
+                  ItemsSource="{Binding Replays}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  Margin="8,4,8,4"
+                  DoubleTapped="ReplayGrid_DoubleTapped">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date"
+                                    Binding="{Binding FileDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                    Width="140" />
+                <DataGridTextColumn Header="Mode" Binding="{Binding GameMode}" Width="140" />
+                <DataGridTextColumn Header="Playlist" Binding="{Binding Playlist}" Width="120" />
+                <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="60" />
+                <DataGridTextColumn Header="Duration" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
+                <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="60" />
+                <DataGridTextColumn Header="Player Kills" Binding="{Binding PlayerKills}" Width="90" />
+                <DataGridTextColumn Header="Bot Kills" Binding="{Binding BotKills}" Width="80" />
+                <DataGridTextColumn Header="Players" Binding="{Binding PlayerCount}" Width="70" />
+                <DataGridTextColumn Header="Bots" Binding="{Binding BotCount}" Width="60" />
+                <DataGridTextColumn Header="Bot%" Binding="{Binding BotPercent, StringFormat={}{0:F1}%}" Width="70" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Frequent Opponents -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource SummaryBarBackground}"
+                BorderBrush="{DynamicResource SummaryBarBorder}"
+                BorderThickness="0,1,0,0"
+                Padding="8,6"
+                MaxHeight="160">
+            <Grid RowDefinitions="Auto,*">
+                <TextBlock Grid.Row="0"
+                           Text="Frequent Opponents (top 10)"
+                           FontWeight="SemiBold"
+                           FontSize="12"
+                           Margin="0,0,0,4"
+                           Foreground="{DynamicResource SubtleTextBrush}" />
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding FrequentOpponents}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FrequentOpponent">
+                            <Border Background="{DynamicResource PillBackground}"
+                                    CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Appearances, StringFormat=×{0}}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource SubtleTextBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+
+        <!-- Empty state when no replays loaded -->
+        <Border Grid.Row="3"
+                Margin="8">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="!IsScanning" />
+                    <Binding Path="!HasReplays" />
+                </MultiBinding>
+            </Border.IsVisible>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <TextBlock Text="&#x1F4C2;"
+                           FontSize="48"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource EmptyStateIconBrush}" />
+                <TextBlock Text="Select your Fortnite replays folder"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource EmptyStatePrimaryBrush}" />
+                <TextBlock Text="Double-click a replay to view match details"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource EmptyStateSecondaryBrush}" />
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>
