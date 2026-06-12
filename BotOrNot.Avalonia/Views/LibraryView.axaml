@@ -26,6 +26,12 @@
             <Button Content="Scan"
                     Command="{Binding ScanCommand}"
                     IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <ComboBox ItemsSource="{Binding AvailableGameModes}"
+                      SelectedItem="{Binding GameModeFilter}"
+                      MinWidth="140"
+                      VerticalAlignment="Center"
+                      ToolTip.Tip="Filter by game mode"
+                      IsVisible="{Binding HasReplays}" />
             <ProgressBar Value="{Binding ScanProgress}"
                          Minimum="0" Maximum="100"
                          IsVisible="{Binding IsScanning}"

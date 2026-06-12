@@ -16,8 +16,11 @@ public sealed class FrequentOpponent
 
 public class LibraryViewModel : ReactiveObject
 {
+    private const string AllModes = "(All modes)";
+
     private readonly IReplayCacheService _cacheService;
     private readonly Action<ReplaySummary> _onOpenReplay;
+    private readonly List<ReplaySummary> _allReplays = new();
 
     private string? _directoryPath;
     private bool _isScanning;
@@ -29,6 +32,8 @@ public class LibraryViewModel : ReactiveObject
     private double _avgKills;
     private double _avgBotPercent;
     private bool _hasReplays;
+    private string _gameModeFilter = AllModes;
+    private IReadOnlyList<string> _availableGameModes = Array.Empty<string>();
 
     public LibraryViewModel(Action<ReplaySummary> onOpenReplay, IReplayCacheService? cacheService = null)
     {
@@ -62,6 +67,22 @@ public class LibraryViewModel : ReactiveObject
 
     public ObservableCollection<ReplaySummary> Replays { get; }
     public IReadOnlyList<FrequentOpponent> FrequentOpponents { get; private set; }
+
+    public string GameModeFilter
+    {
+        get => _gameModeFilter;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _gameModeFilter, value);
+            ApplyFilter();
+        }
+    }
+
+    public IReadOnlyList<string> AvailableGameModes
+    {
+        get => _availableGameModes;
+        private set => this.RaiseAndSetIfChanged(ref _availableGameModes, value);
+    }
 
     public string? DirectoryPath
     {
@@ -143,10 +164,21 @@ public class LibraryViewModel : ReactiveObject
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Replays.Clear();
-                foreach (var s in ordered)
-                    Replays.Add(s);
-                UpdateStats();
+                _allReplays.Clear();
+                _allReplays.AddRange(ordered);
+
+                var modes = _allReplays
+                    .Select(r => r.GameMode)
+                    .Where(m => !string.IsNullOrEmpty(m))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(m => m)
+                    .ToList();
+                AvailableGameModes = new[] { AllModes }.Concat(modes).ToArray();
+
+                if (_gameModeFilter != AllModes && !modes.Contains(_gameModeFilter, StringComparer.OrdinalIgnoreCase))
+                    _gameModeFilter = AllModes;
+
+                ApplyFilter();
             });
         }
         catch (OperationCanceledException) { }
@@ -158,6 +190,19 @@ public class LibraryViewModel : ReactiveObject
         {
             IsScanning = false;
         }
+    }
+
+    private void ApplyFilter()
+    {
+        var filtered = _gameModeFilter == AllModes
+            ? _allReplays
+            : _allReplays.Where(r => string.Equals(r.GameMode, _gameModeFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        Replays.Clear();
+        foreach (var s in filtered)
+            Replays.Add(s);
+
+        UpdateStats();
     }
 
     private void UpdateStats()
