@@ -14,7 +14,7 @@
         <conv:UnknownToDashConverter x:Key="UnknownToDashConverter" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,3*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,6,Auto,3*"
           DragDrop.AllowDrop="True"
           Background="Transparent">
 
@@ -206,8 +206,13 @@
             </DataGrid.Columns>
         </DataGrid>
 
+        <!-- Resizable splitter between the two grids -->
+        <GridSplitter Grid.Row="5"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows" />
+
         <!-- Players Seen Header -->
-        <TextBlock Grid.Row="5"
+        <TextBlock Grid.Row="6"
                    Text="{Binding PlayersSeenHeader}"
                    FontWeight="Bold"
                    FontSize="14"
@@ -215,7 +220,7 @@
                    IsVisible="{Binding HasData}" />
 
         <!-- All Players Grid -->
-        <DataGrid Grid.Row="6"
+        <DataGrid Grid.Row="7"
                   x:Name="PlayersGrid"
                   ItemsSource="{Binding Players}"
                   AutoGenerateColumns="False"
@@ -282,7 +287,7 @@
         </DataGrid>
 
         <!-- Empty-state drop zone (visible when no data loaded) -->
-        <Border Grid.Row="2" Grid.RowSpan="5"
+        <Border Grid.Row="2" Grid.RowSpan="6"
                 IsVisible="{Binding !HasData}"
                 Background="Transparent"
                 Margin="8">
@@ -306,7 +311,7 @@
         </Border>
 
         <!-- Drag-over overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="7"
+        <Border Grid.Row="0" Grid.RowSpan="8"
                 IsVisible="{Binding IsDropTargetActive}"
                 Background="{DynamicResource DragOverlayBackground}"
                 BorderBrush="{DynamicResource DragOverlayBorder}"
