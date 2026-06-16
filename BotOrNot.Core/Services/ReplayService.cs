@@ -48,6 +48,23 @@ public sealed class ReplayService : IReplayService
 
         var result = await replayTask.ConfigureAwait(false);
 
+        // Build SafeZone timing lookup — sorted list of (startSeconds, finishSeconds) per shrink phase.
+        // Used in PASS 4 to assign a circle number to each elimination based on when it occurred.
+        // Shiqan's library filters out entries with non-positive shrink times, so only active shrinks appear.
+        var sortedSafeZones = new List<(float startSeconds, float finishSeconds)>();
+        var safeZonesObj = ReflectionUtils.GetObject(result.MapData, "SafeZones");
+        if (safeZonesObj is System.Collections.IEnumerable safeZonesEnum)
+        {
+            foreach (var zone in safeZonesEnum)
+            {
+                var start = ReflectionUtils.GetFloat(zone, "StartShrinkTime");
+                var finish = ReflectionUtils.GetFloat(zone, "FinishShrinkTime");
+                if (start is > 0)
+                    sortedSafeZones.Add((start.Value, finish ?? 0f));
+            }
+            sortedSafeZones.Sort((a, b) => a.startSeconds.CompareTo(b.startSeconds));
+        }
+
         // Pre-size dictionaries for typical Fortnite lobby (~100 players)
         var playersById = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
         var playersByNumericId = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
@@ -274,9 +291,16 @@ public sealed class ReplayService : IReplayService
                 // Finish event — count it and record time on the eliminated player
                 eliminationCount++;
 
-                // Set elimination time on the player row
-                if (playersById.TryGetValue(eliminatedId, out var elimRow) && eventTimeStr != null)
-                    elimRow.ElimTime = eventTimeStr;
+                var circleNumber = GetCircleNumber(eventTime, sortedSafeZones);
+
+                // Set elimination time (and circle) on the player row
+                if (playersById.TryGetValue(eliminatedId, out var elimRow))
+                {
+                    if (eventTimeStr != null)
+                        elimRow.ElimTime = eventTimeStr;
+                    if (circleNumber.HasValue)
+                        elimRow.CircleNumber = circleNumber;
+                }
 
                 // Track who eliminated the replay owner
                 if (!string.IsNullOrEmpty(ownerId) &&
@@ -323,7 +347,8 @@ public sealed class ReplayService : IReplayService
                         ElimTime = eventTimeStr,
                         Pickaxe = victim.Pickaxe,
                         Glider = victim.Glider,
-                        SquadSize = victim.SquadSize
+                        SquadSize = victim.SquadSize,
+                        CircleNumber = circleNumber,
                     });
                 }
 
@@ -368,6 +393,21 @@ public sealed class ReplayService : IReplayService
             OwnerEliminatedBy = ownerEliminatedBy,
             Metadata = metadata
         };
+    }
+
+    static int? GetCircleNumber(TimeSpan? eventTime, List<(float startSeconds, float finishSeconds)> zones)
+    {
+        if (!eventTime.HasValue || zones.Count == 0) return null;
+        var elapsed = (float)eventTime.Value.TotalSeconds;
+        int circle = 0;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            if (elapsed >= zones[i].startSeconds)
+                circle = i + 1;
+            else
+                break;
+        }
+        return circle > 0 ? circle : null;
     }
 
     static string? FormatElimTime(TimeSpan? ts, object? rawTimeObj)

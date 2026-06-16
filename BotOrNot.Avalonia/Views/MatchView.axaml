@@ -201,6 +201,7 @@
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTextColumn Header="Circle" Binding="{Binding CircleNumber}" Width="70" />
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>
@@ -276,6 +277,7 @@
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTextColumn Header="Circle" Binding="{Binding CircleNumber}" Width="70" />
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>

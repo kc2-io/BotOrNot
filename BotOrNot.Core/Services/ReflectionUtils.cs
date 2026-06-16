@@ -38,6 +38,21 @@ public static class ReflectionUtils
         return null;
     }
 
+    public static float? GetFloat(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var v = pi.GetValue(obj);
+        if (v is float f) return f;
+        if (v is double d) return (float)d;
+        if (float.TryParse(v?.ToString(),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
     public static bool GetBool(object? obj, string name)
     {
         if (obj is null) return false;
