@@ -208,6 +208,53 @@ public class ReplayServiceTests
     /// Validate the total elim count we will display matches the known elim values provided for each file.
     /// </summary>
     [Test]
+    public async Task CircleNumber_ShouldBePopulatedOnEliminations()
+    {
+        // Arrange
+        var service = new ReplayService();
+
+        // Act
+        var result = await service.LoadReplayAsync(TestReplayPath);
+
+        // Assert — at least some eliminated players should have a circle number assigned.
+        // Replays with SafeZone data produce non-null CircleNumber on eliminated players.
+        var eliminatedPlayers = result.Players.Where(p => p.ElimTime != null).ToList();
+
+        Assert.That(eliminatedPlayers, Is.Not.Empty,
+            "Should have players with elimination times");
+
+        var withCircle = eliminatedPlayers.Where(p => p.CircleNumber.HasValue).ToList();
+
+        Assert.That(withCircle, Is.Not.Empty,
+            "At least some eliminated players should have a CircleNumber assigned. " +
+            "If all are null, MapData.SafeZones is not being read correctly.");
+
+        // All circle numbers should be positive
+        Assert.That(withCircle.All(p => p.CircleNumber!.Value > 0), Is.True,
+            "All assigned circle numbers should be >= 1");
+    }
+
+    [Test]
+    public async Task OwnerEliminations_CircleNumber_ShouldBePopulated()
+    {
+        // Arrange
+        var service = new ReplayService();
+
+        // Act
+        var result = await service.LoadReplayAsync(TestReplayPath);
+
+        // Assert — owner elimination rows should also carry circle numbers
+        Assert.That(result.OwnerEliminations, Is.Not.Empty,
+            "Should have owner eliminations");
+
+        var withCircle = result.OwnerEliminations.Where(p => p.CircleNumber.HasValue).ToList();
+
+        Assert.That(withCircle, Is.Not.Empty,
+            "At least some owner eliminations should have a CircleNumber. " +
+            "Check that CircleNumber is copied when building ownerEliminations rows.");
+    }
+
+    [Test]
     public async Task Fortnite4100_Replay_ShouldLoadWithoutError()
     {
         var service = new ReplayService();

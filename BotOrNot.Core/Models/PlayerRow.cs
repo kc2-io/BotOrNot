@@ -17,6 +17,8 @@ public sealed class PlayerRow
     public string? Glider { get; set; }
     public int SquadSize { get; set; }
 
+    public int? CircleNumber { get; set; }
+
     public bool IsBot => !string.IsNullOrEmpty(Bot) && Bot.Equals("true", StringComparison.OrdinalIgnoreCase);
     public bool IsWinner => Placement == "1";
 
