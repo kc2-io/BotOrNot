@@ -44,6 +44,29 @@ BotOrNot.sln
 └── DebugReplay/             # Debug console tool for inspecting replay data
 ```
 
+## Linux / Agent Dev Setup
+
+The CI builds on Windows (PowerShell). On Linux (e.g. inside a Docker container), do
+this once after cloning to build the patched NuGet packages locally:
+
+```bash
+# 1. Install .NET 10 SDK (no root required)
+curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+bash /tmp/dotnet-install.sh --channel 10.0
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"
+export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1   # needed — libicu not available in container
+
+# 2. Build the patched FortniteReplayReader packages into local-packages/
+bash scripts/build-local-packages.sh
+
+# 3. Run tests
+dotnet test BotOrNot.Tests/BotOrNot.Tests.csproj
+```
+
+Add the three `export` lines to `~/.bashrc` for persistence. The `build-local-packages.sh`
+script only needs to run once (or when `patches/apply-patches.py` changes).
+
 ## Build & Run
 
 ```bash
