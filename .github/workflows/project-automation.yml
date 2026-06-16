@@ -1,0 +1,60 @@
+name: Project Automation
+
+on:
+  issues:
+    types: [opened, closed]
+  pull_request:
+    types: [opened, closed]
+
+env:
+  PROJECT_ID: PVT_kwHOAAFWh84Baxn-
+  PROJECT_URL: https://github.com/users/ipl31/projects/1
+
+jobs:
+  add-to-project:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: ${{ env.PROJECT_URL }}
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+
+  archive-from-project:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Archive closed item in project
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          NODE_ID="${{ github.event.issue.node_id || github.event.pull_request.node_id }}"
+          PROJECT_ID="${{ env.PROJECT_ID }}"
+
+          ITEM_ID=$(gh api graphql \
+            -f query='query($id: ID!) {
+              node(id: $id) {
+                ... on Issue {
+                  projectItems(first: 20) { nodes { id project { id } } }
+                }
+                ... on PullRequest {
+                  projectItems(first: 20) { nodes { id project { id } } }
+                }
+              }
+            }' \
+            -f id="$NODE_ID" \
+            --jq ".data.node.projectItems.nodes[] | select(.project.id == \"$PROJECT_ID\") | .id" 2>/dev/null || true)
+
+          if [ -n "$ITEM_ID" ]; then
+            gh api graphql \
+              -f query='mutation($projectId: ID!, $itemId: ID!) {
+                archiveProjectV2Item(input: {projectId: $projectId, itemId: $itemId}) {
+                  item { id }
+                }
+              }' \
+              -f projectId="$PROJECT_ID" \
+              -f itemId="$ITEM_ID"
+            echo "Archived $ITEM_ID"
+          else
+            echo "Item not found in project — skipping"
+          fi
