@@ -150,6 +150,31 @@ public sealed class ReplayService : IReplayService
                 ownerKills = kills;
         }
 
+        // Fallback: find owner via IsSelfElimination on elimination events.
+        // Handles Reload mode replays where Fortnite's 6/25 update emptied GameData
+        // (RecorderId='', CurrentPlaylist=''), causing IsReplayOwner=False for all players.
+        // The recording player self-kills appear in elim events with IsSelfElimination=True;
+        // the eliminated player ID resolves back to the owner's PlayerRow.
+        if (string.IsNullOrEmpty(ownerId))
+        {
+            foreach (var elim in result.Eliminations ?? Enumerable.Empty<object>())
+            {
+                if (!ReflectionUtils.GetBool(elim, "Knocked")
+                    && ReflectionUtils.GetBool(elim, "IsSelfElimination"))
+                {
+                    var elimInfo = ReflectionUtils.GetObject(elim, "EliminatedInfo");
+                    var candidateId = ReflectionUtils.FirstString(elimInfo, "Id");
+                    if (!string.IsNullOrEmpty(candidateId) && playersById.TryGetValue(candidateId, out var ownerRow))
+                    {
+                        ownerId = ownerRow.Id;
+                        ownerName = ownerRow.Name;
+                        if (int.TryParse(ownerRow.Kills, out var k)) ownerKills = k;
+                        break;
+                    }
+                }
+            }
+        }
+
         // === Compute squad sizes from TeamIndex grouping ===
         var squadSizeByTeamIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var row in playersById.Values)
@@ -307,7 +332,9 @@ public sealed class ReplayService : IReplayService
                     creditOwner = true;
                 }
 
-                if (creditOwner && playersById.TryGetValue(eliminatedId, out var victim))
+                if (creditOwner
+                    && !eliminatedId.Equals(ownerId, StringComparison.OrdinalIgnoreCase)
+                    && playersById.TryGetValue(eliminatedId, out var victim))
                 {
                     ownerEliminations.Add(new PlayerRow
                     {
