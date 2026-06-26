@@ -183,9 +183,32 @@ public class ReplayServiceTests
     /// <summary>
     /// Validate the total elim count we will display matches the known elim values provided for each file.
     /// </summary>
+    /// <summary>
+    /// After the Fortnite 6/25 update, Reload mode replays have empty GameData
+    /// (RecorderId='', CurrentPlaylist='') and IsReplayOwner=False for all players.
+    /// The owner must be detected via the IsSelfElimination fallback.
+    /// </summary>
+    [Test]
+    public async Task Reload_PostJune2025Update_ShouldDetectOwner()
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "TestData",
+            "Reload_BrokenGameData_June2025_Owner_Elim_1.replay");
+
+        var result = await service.LoadReplayAsync(replayPath);
+
+        Assert.That(result.OwnerName, Is.Not.Null.And.Not.Empty,
+            "Owner should be detected via IsSelfElimination fallback when IsReplayOwner is missing");
+        Assert.That(result.OwnerName, Is.EqualTo("ModPackDad"),
+            "Owner should be ModPackDad");
+    }
+
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("Reload_BrokenGameData_June2025_Owner_Elim_1.replay", 1)]
     public async Task OwnerElim_ShouldShowCorrectElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange
@@ -226,6 +249,7 @@ public class ReplayServiceTests
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("Reload_BrokenGameData_June2025_Owner_Elim_1.replay", 1)]
     public async Task OwnerElimListLengthMatchesElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange
