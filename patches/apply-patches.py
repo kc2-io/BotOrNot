@@ -6,6 +6,7 @@ Fixes applied:
   1. Propagate NetworkReplayVersion to _cmdReader so NetFieldParser can detect build 41.00
   2. Break on bitReader.IsError in ReceivedPacket to prevent infinite loop (upstream issue #75)
   3. Use ShortComponents rotation quantization for build 41.00+ (upstream PR #77)
+  4. Add Playspace_GameState_C path alias so Reload mode GameState data is parsed post-6/25/2026
 """
 import sys
 import os
@@ -45,6 +46,7 @@ def main():
     repo = sys.argv[1]
     replay_reader = os.path.join(repo, 'src', 'Unreal.Core', 'ReplayReader.cs')
     net_field_parser = os.path.join(repo, 'src', 'Unreal.Core', 'NetFieldParser.cs')
+    game_state = os.path.join(repo, 'src', 'FortniteReplayReader', 'Models', 'NetFieldExports', 'GameState.cs')
 
     print('Applying FortniteReplayDecompressor patches...')
 
@@ -102,6 +104,35 @@ def main():
         '                            || (netBitReader.NetworkReplayVersion.Branch?.Contains("+Release-41.") ?? false)))\n'
         '                        ? RotatorQuantization.ShortComponents : RotatorQuantization.ByteComponents),',
         'RepMovement rotation ShortComponents detection for Fortnite 41.00 (upstream PR #77)'
+    )
+
+    # Fix 4 — add Playspace_GameState_C path alias for Fortnite Reload mode post-6/25/2026
+    # Fortnite's 6/25/2026 update renamed the Reload mode GameState UE class path from
+    # Athena_GameState_C to Playspace_GameState_C. The library's path-keyed dispatch silently
+    # skips all GameState data (RecorderPlayerState, WinningTeam, etc.) for any unregistered path.
+    # Adding subclasses with the new paths lets the existing OnExportRead switch (case GameState)
+    # and UpdateGameState continue to work unchanged — C# type pattern matching catches subclasses.
+    patch_file(
+        game_state,
+        '    [NetFieldExport("RealMatchStartTime", RepLayoutCmdType.PropertyDouble)]\n'
+        '    public double RealMatchStartTime { get; set; }\n'
+        '\n'
+        '}',
+        '    [NetFieldExport("RealMatchStartTime", RepLayoutCmdType.PropertyDouble)]\n'
+        '    public double RealMatchStartTime { get; set; }\n'
+        '\n'
+        '}\n'
+        '\n'
+        '[NetFieldExportClassNetCache("Playspace_GameState_C_ClassNetCache", minimalParseMode: ParseMode.Minimal)]\n'
+        'public class PlayspaceGameStateCache : GameStateCache\n'
+        '{\n'
+        '}\n'
+        '\n'
+        '[NetFieldExportGroup("/Game/Athena/Playspace_GameState.Playspace_GameState_C", minimalParseMode: ParseMode.Minimal)]\n'
+        'public class PlayspaceGameState : GameState\n'
+        '{\n'
+        '}',
+        'Playspace_GameState_C alias for Reload mode GameState (Fortnite post-6/25/2026 update)'
     )
 
     print('All patches applied successfully.')

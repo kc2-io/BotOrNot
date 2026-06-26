@@ -43,6 +43,21 @@ if (args.Length > 1 && args[0] == "--dump-unknown-deaths")
     return;
 }
 
+if (args.Length > 1 && args[0] == "--dump-debug")
+{
+    // Run with full debug logging to capture unmatched NetFieldExportGroup paths.
+    // Logs go to stderr; stdout gets the GameData summary.
+    using var lf = LoggerFactory.Create(b => b.SetMinimumLevel(LogLevel.Debug));
+    var rdr = new ReplayReader(lf.CreateLogger<ReplayReader>(), ParseMode.Full);
+    var res = rdr.ReadReplay(args[1]);
+    Console.WriteLine($"Players={res.PlayerData?.Count() ?? 0}");
+    Console.WriteLine($"Eliminations={res.Eliminations?.Count ?? 0}");
+    Console.WriteLine($"GameData.RecorderId='{res.GameData?.RecorderId}'");
+    Console.WriteLine($"GameData.CurrentPlaylist='{res.GameData?.CurrentPlaylist}'");
+    Console.WriteLine($"GameData.MaxPlayers={res.GameData?.MaxPlayers}");
+    return;
+}
+
 if (args.Length > 2 && args[0] == "--dump-playerdata")
 {
     var searchName = args[2];
