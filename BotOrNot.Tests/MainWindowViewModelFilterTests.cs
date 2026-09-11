@@ -1,6 +1,8 @@
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
+using System.Reactive.Linq;
 
 namespace BotOrNot.Tests;
 
@@ -163,6 +165,47 @@ public class MainWindowViewModelFilterTests
         Assert.That(MatchesFilter(player3, searchTerm), Is.True);
     }
 
+    [Test]
+    public async Task IncompleteOwnerEvents_ShowObservedCoverageWithoutInventingHumanKills()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 1 };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Bot", Bot = "true" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("first").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.EliminationCoverageNotice,
+                Is.EqualTo("Replay records 1 eliminations; 2 credited events observed."));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("1 Players observed, 1 Bots observed"));
+        });
+        viewModel.FilterText = "no-match";
+        Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("2 credited events observed"));
+        await viewModel.LoadReplayCommand.Execute("reset-after-failure").FirstAsync();
+        Assert.That(viewModel.EliminationCoverageNotice, Is.Null);
+    }
+
+    [Test]
+    public async Task MissingCreditedEvents_ShowCoverageNotice()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 3 };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "One", Bot = "false" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Two", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("first").FirstAsync();
+
+        Assert.That(viewModel.EliminationCoverageNotice,
+            Is.EqualTo("Replay records 3 eliminations; 2 credited events observed."));
+        Assert.That(viewModel.OwnerKillsHeader, Does.Contain("2 Players observed, 0 Bots observed"));
+    }
+
     private static bool MatchesFilter(PlayerRow player, string searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -175,5 +218,13 @@ public class MainWindowViewModelFilterTests
                (player.TeamIndex?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.Placement?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.DeathCause?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
+
+    private sealed class SequenceReplayService(params ReplayData[] replays) : IReplayService
+    {
+        private readonly Queue<ReplayData> _replays = new(replays);
+
+        public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+            => Task.FromResult(_replays.Dequeue());
     }
+}
 }

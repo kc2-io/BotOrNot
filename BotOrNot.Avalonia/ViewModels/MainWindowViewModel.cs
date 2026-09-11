@@ -48,6 +48,7 @@ public class MainWindowViewModel : ReactiveObject
     private ObservableCollection<PlayerRow> _filteredOwnerEliminations = new();
 
     private string? _eliminatorName;
+    private string? _eliminationCoverageNotice;
     private string? _squadStatusText;
     private bool _hasSquadSection;
     private bool _hasSquadMembers;
@@ -223,6 +224,19 @@ public class MainWindowViewModel : ReactiveObject
         UpdateThemeDisplay();
     }
 
+    public string? EliminationCoverageNotice
+    {
+        get => _eliminationCoverageNotice;
+        private set
+        {
+            if (_eliminationCoverageNotice == value) return;
+            this.RaiseAndSetIfChanged(ref _eliminationCoverageNotice, value);
+            this.RaisePropertyChanged(nameof(HasEliminationCoverageNotice));
+        }
+    }
+
+    public bool HasEliminationCoverageNotice => !string.IsNullOrEmpty(EliminationCoverageNotice);
+
     private void UpdateThemeDisplay()
     {
         (ThemeIcon, ThemeToggleTooltip) = _themeService.CurrentTheme switch
@@ -298,11 +312,20 @@ public class MainWindowViewModel : ReactiveObject
             // Event joins can be incomplete, so a missing authoritative owner count must remain unknown.
             var nonNpcEliminations = data.OwnerEliminations.Where(p => !p.IsNpc).ToList();
             var botKills = nonNpcEliminations.Count(p => p.IsBot);
+            var observedHumanKills = nonNpcEliminations.Count - botKills;
             if (data.OwnerKills.HasValue)
             {
                 var totalKills = data.OwnerKills.Value;
-                var playerKills = totalKills - botKills;
-                OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
+                if (nonNpcEliminations.Count == totalKills)
+                {
+                    OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players, {botKills} Bots";
+                    EliminationCoverageNotice = null;
+                }
+                else
+                {
+                    OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players observed, {botKills} Bots observed";
+                    EliminationCoverageNotice = $"Replay records {totalKills} eliminations; {nonNpcEliminations.Count} credited events observed.";
+                }
                 ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
             }
             else
@@ -311,6 +334,7 @@ public class MainWindowViewModel : ReactiveObject
                     ? "Owner analysis incomplete"
                     : $"{ownerDisplay}'s elimination count is unknown";
                 ElimsSummary = "Eliminations unknown";
+                EliminationCoverageNotice = null;
             }
 
             // Build Players Seen header with breakdown (excluding NPCs)
@@ -431,6 +455,7 @@ public class MainWindowViewModel : ReactiveObject
         DurationText = null;
         ElimsSummary = null;
         EliminatorName = null;
+        EliminationCoverageNotice = null;
         SquadStatusText = null;
         HasSquadSection = false;
         HasSquadMembers = false;
