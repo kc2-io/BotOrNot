@@ -202,6 +202,38 @@ public class ReplayServiceTests
         Assert.That(elimCount, Is.EqualTo(expectedElimCount),
             $"Expected owner elim to contain {expectedElimCount} for {replayFileName}, " +
             $"but got {elimCount} (OwnerKills={result.OwnerKills})");
+        Assert.That(result.OwnerEliminations, Has.Count.EqualTo(expectedElimCount),
+            "Event-derived owner rows should agree with the known authoritative owner count.");
+        Assert.That(result.OwnerEliminations.Select(row => row.ElimTime), Is.All.Not.Null,
+            "Each credited event should retain its own event time, including repeated Reload lives.");
+    }
+
+    [Test]
+    public async Task Issue57SecondAttachment_ExplicitDbnoRecoveryInvalidatesStaleOwnerKnock()
+    {
+        var replayPath = Environment.GetEnvironmentVariable("BOTORNOT_F1_REPLAY");
+        replayPath ??= Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..",
+            "issue-review-evidence",
+            "UnsavedReplay-2026.06.25-08.43.29.replay"));
+        if (!File.Exists(replayPath))
+            Assert.Ignore("Set BOTORNOT_F1_REPLAY to run the private issue #57 attachment regression.");
+
+        var result = await new ReplayService().LoadReplayAsync(replayPath);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.OwnerKills, Is.EqualTo(2));
+            Assert.That(result.OwnerEliminations, Has.Count.EqualTo(2),
+                "The recovery between the owner's knock and another player's finish must clear stale credit.");
+            Assert.That(result.OwnerEliminations.Select(row => row.ElimTime),
+                Is.EqualTo(new[] { "10:33", "10:57" }));
+            Assert.That(result.OwnerEliminations.Select(row => row.DeathCauseInfo?.RawEventCode),
+                Is.EqualTo(new int?[] { 5, 5 }),
+                "Each row must use its own elimination event rather than the victim's final aggregate cause.");
+            Assert.That(result.OwnerEliminations.Any(row => row.ElimTime == "18:44"), Is.False);
+        });
     }
 
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 4, 8)]

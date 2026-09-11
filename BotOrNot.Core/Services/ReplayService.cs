@@ -13,6 +13,8 @@ public interface IReplayService
 
 public sealed class ReplayService : IReplayService
 {
+    private sealed record ReplayEliminationRecord(EliminationEventEvidence Evidence, object? RawTime);
+
     private readonly ILogger<ReplayService> _logger;
     private static readonly TimeSpan ParseTimeout = TimeSpan.FromSeconds(90);
 
@@ -165,9 +167,13 @@ public sealed class ReplayService : IReplayService
             {
                 row.TeamIndex ??= "unknown";
             }
-            row.DeathCause = DeathCauseHelper.GetDisplayName(death, deathTagStrings) is var resolved && resolved != "Unknown"
-                ? resolved
-                : (row.DeathCause ?? "Unknown");
+            var legacyDeathCause = DeathCauseHelper.ResolveLegacy(death, deathTagStrings);
+            if (legacyDeathCause.ResolutionStatus == DeathCauseResolutionStatus.Resolved ||
+                row.DeathCauseInfo == null)
+            {
+                row.DeathCauseInfo = legacyDeathCause;
+                row.DeathCause = legacyDeathCause.DisplayName;
+            }
             row.Placement = string.IsNullOrWhiteSpace(placement) ? null : placement;
             row.Pickaxe = pickaxe;
             row.Glider = glider;
@@ -264,7 +270,7 @@ public sealed class ReplayService : IReplayService
         var winTeamStr = winningTeam?.ToString();
 
         // === PASS 3: Apply team data + mark winners (merged from 3 passes into 1) ===
-        var eliminationCount = 0; // Count finishes instead of building unused display strings
+        var eliminationCount = 0;
         foreach (var row in playersById.Values)
         {
             if (!string.IsNullOrWhiteSpace(row.TeamIndex))
@@ -280,121 +286,177 @@ public sealed class ReplayService : IReplayService
             }
 
             // Winners never died — show "N/A Won Match" instead of "Unknown" (was Pass 7)
-            if (row.IsWinner && row.DeathCause == "Unknown")
-                row.DeathCause = "N/A Won Match";
+            if (row.IsWinner && row.DeathCauseInfo?.ResolutionStatus != DeathCauseResolutionStatus.Resolved)
+            {
+                row.DeathCauseInfo = DeathCauseInfo.WonMatch;
+                row.DeathCause = DeathCauseInfo.WonMatch.DisplayName;
+            }
         }
 
-        // === PASS 4: Process eliminations ===
+        // === PASS 4: Correlate event-chunk eliminations with player-state evidence ===
         var ownerEliminations = new List<PlayerRow>();
-        var pendingKnocks = new Dictionary<string, TimeSpan?>(StringComparer.OrdinalIgnoreCase);
-        var ownerKnockTimes = new Dictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
         string? ownerEliminatedBy = null;
 
-        foreach (var elim in result.Eliminations ?? Enumerable.Empty<object>())
+        var eliminationRecords = (result.Eliminations ?? Enumerable.Empty<object>())
+            .Select((elimination, sequence) =>
+            {
+                var victimId = ReflectionUtils.FirstString(
+                    ReflectionUtils.GetObject(elimination, "EliminatedInfo"), "Id")
+                    ?? ReflectionUtils.FirstString(elimination, "Eliminated")
+                    ?? "unknown";
+                var actorId = ReflectionUtils.FirstString(
+                    ReflectionUtils.GetObject(elimination, "EliminatorInfo"), "Id")
+                    ?? ReflectionUtils.FirstString(elimination, "Eliminator")
+                    ?? "unknown";
+                return new ReplayEliminationRecord(
+                    new EliminationEventEvidence(
+                        sequence,
+                        GetEventReplayTimeSeconds(elimination),
+                        victimId,
+                        actorId,
+                        ReflectionUtils.GetBool(elimination, "Knocked"),
+                        ReflectionUtils.GetInt(elimination, "GunType")),
+                    ReflectionUtils.GetObject(elimination, "Time"));
+            })
+            .ToArray();
+
+        string? ResolveNumericPlayerId(object? numericId)
         {
-            var isKnock = ReflectionUtils.GetBool(elim, "Knocked");
-            var eliminatedId = ReflectionUtils.FirstString(
-                ReflectionUtils.GetObject(elim, "EliminatedInfo"), "Id")
-                ?? ReflectionUtils.FirstString(elim, "Eliminated")
-                ?? "unknown";
-            var eliminatorId = ReflectionUtils.FirstString(
-                ReflectionUtils.GetObject(elim, "EliminatorInfo"), "Id")
-                ?? ReflectionUtils.FirstString(elim, "Eliminator")
-                ?? "unknown";
+            var numericText = numericId?.ToString();
+            return !string.IsNullOrWhiteSpace(numericText) &&
+                   playersByNumericId.TryGetValue(numericText, out var player)
+                ? player.StableId
+                : null;
+        }
 
-            var isOwnerAction = !string.IsNullOrEmpty(ownerId) &&
-                                eliminatorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase);
-
-            var timeObj = ReflectionUtils.GetObject(elim, "Time");
-            var eventTime = ParseElimTime(timeObj);
-            var eventTimeStr = FormatElimTime(eventTime, timeObj);
-
-            if (isKnock)
+        var playerStateEvidence = new List<PlayerStateEventEvidence>();
+        var killFeed = ReflectionUtils.GetObject(result, "KillFeed") as System.Collections.IEnumerable;
+        if (killFeed != null)
+        {
+            var sequence = 0;
+            foreach (var entry in killFeed)
             {
-                pendingKnocks[eliminatedId] = eventTime;
-                if (isOwnerAction && eventTime.HasValue)
-                    ownerKnockTimes[eliminatedId] = eventTime.Value;
-                else if (!isOwnerAction)
-                    ownerKnockTimes.Remove(eliminatedId);
+                var victimId = ResolveNumericPlayerId(ReflectionUtils.GetObject(entry, "PlayerId"));
+                if (!string.IsNullOrWhiteSpace(victimId))
+                {
+                    playerStateEvidence.Add(new PlayerStateEventEvidence(
+                        sequence,
+                        ReflectionUtils.GetDouble(entry, "ReplayTimeSeconds"),
+                        victimId,
+                        ResolveNumericPlayerId(ReflectionUtils.GetObject(entry, "FinisherOrDowner")),
+                        ReflectionUtils.GetNullableBool(entry, "IsDbno"),
+                        ReflectionUtils.GetInt(entry, "RebootCounter"),
+                        ReflectionUtils.GetInt(entry, "DeathCause"),
+                        GetStringValues(entry, "DeathTags")));
+                }
+                sequence++;
             }
-            else
+        }
+
+        var correlation = ReplayEventMatcher.Correlate(
+            eliminationRecords.Select(record => record.Evidence),
+            playerStateEvidence);
+        var lifecycle = new List<CombatLifecycleEvent>(eliminationRecords.Length + playerStateEvidence.Count);
+        var causeBySequence = new Dictionary<int, DeathCauseInfo>();
+
+        foreach (var record in eliminationRecords)
+        {
+            correlation.Matches.TryGetValue(record.Evidence.Sequence, out var matchedState);
+            var cause = DeathCauseHelper.ResolveEvent(
+                record.Evidence.RawCode,
+                matchedState?.RawDeathCause,
+                matchedState?.DeathTags);
+            causeBySequence[record.Evidence.Sequence] = cause;
+            lifecycle.Add(new CombatLifecycleEvent(
+                record.Evidence.Sequence,
+                record.Evidence.ReplayTimeSeconds,
+                record.Evidence.IsKnock ? CombatLifecycleEventKind.Knock : CombatLifecycleEventKind.Finish,
+                record.Evidence.VictimId,
+                record.Evidence.ActorId,
+                DbnoTrueObserved: matchedState?.IsDbno == true,
+                DeathCause: cause));
+        }
+
+        foreach (var state in playerStateEvidence)
+        {
+            // A DBNO field related to any elimination candidate is part of that event, not a
+            // recovery. Ambiguous correlations remain unused. Reboot counters are still retained
+            // so only a later observed increase can reset a life.
+            var dbno = correlation.RelatedObservationSequences.Contains(state.Sequence)
+                ? null
+                : state.IsDbno;
+            if (!dbno.HasValue && !state.RebootCounter.HasValue)
+                continue;
+
+            lifecycle.Add(new CombatLifecycleEvent(
+                1_000_000 + state.Sequence,
+                state.ReplayTimeSeconds,
+                CombatLifecycleEventKind.PlayerState,
+                state.VictimId,
+                state.ActorId,
+                dbno,
+                state.RebootCounter));
+        }
+
+        eliminationCount = eliminationRecords.Count(record => !record.Evidence.IsKnock);
+        foreach (var record in eliminationRecords.Where(record => !record.Evidence.IsKnock))
+        {
+            var evidence = record.Evidence;
+            var eventTime = evidence.ReplayTimeSeconds.HasValue
+                ? TimeSpan.FromSeconds(evidence.ReplayTimeSeconds.Value)
+                : ParseElimTime(record.RawTime);
+            var eventTimeStr = FormatElimTime(eventTime, record.RawTime);
+            var circle = stormCircleResolver.Resolve(evidence.ReplayTimeSeconds);
+            var cause = causeBySequence[evidence.Sequence];
+
+            if (playersById.TryGetValue(evidence.VictimId, out var eliminatedPlayer))
             {
-                // Finish event — count it and record time on the eliminated player
-                eliminationCount++;
-
-                var circle = stormCircleResolver.Resolve(GetEventReplayTimeSeconds(elim));
-
-                // Set elimination time (and circle) on the player row
-                if (playersById.TryGetValue(eliminatedId, out var elimRow))
-                {
-                    if (eventTimeStr != null)
-                        elimRow.ElimTime = eventTimeStr;
-                    // A repeated finish is a fresh observation. Clear a stale circle when
-                    // this event has no trustworthy phase instead of retaining an older death.
-                    elimRow.SetStormCircle(circle);
-                }
-
-                // Track who eliminated the replay owner
-                if (!string.IsNullOrEmpty(ownerId) &&
-                    eliminatedId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) &&
-                    !eliminatorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase))
-                {
-                    ownerEliminatedBy = playersById.TryGetValue(eliminatorId, out var eliminatorRow)
-                        ? eliminatorRow.Name ?? eliminatorRow.Id
-                        : eliminatorId;
-                }
-
-                // Credit owner for this elimination?
-                var creditOwner = false;
-
-                // A pending knock is stale if >60s have passed (player was revived)
-                var hasActiveKnock = pendingKnocks.TryGetValue(eliminatedId, out var knockedAt)
-                    && (!knockedAt.HasValue || !eventTime.HasValue
-                        || (eventTime.Value - knockedAt.Value).TotalSeconds <= 60);
-
-                if (!hasActiveKnock && isOwnerAction)
-                {
-                    creditOwner = true;
-                }
-                else if (ownerKnockTimes.TryGetValue(eliminatedId, out var knockTime)
-                         && eventTime.HasValue
-                         && (eventTime.Value - knockTime).TotalSeconds <= 60)
-                {
-                    creditOwner = true;
-                }
-
-                // A self-elimination is useful for preventing false kill credit, but it is
-                // not evidence of recorder identity: any player can eliminate themselves.
-                if (creditOwner
-                    && !eliminatedId.Equals(ownerId, StringComparison.OrdinalIgnoreCase)
-                    && playersById.TryGetValue(eliminatedId, out var victim))
-                {
-                    ownerEliminations.Add(new PlayerRow
-                    {
-                        StableId = victim.StableId,
-                        Id = victim.Id,
-                        Name = victim.Name,
-                        Level = victim.Level,
-                        Bot = victim.Bot,
-                        Platform = victim.Platform,
-                        Kills = victim.Kills,
-                        TeamIndex = victim.TeamIndex,
-                        TeamIndexValue = victim.TeamIndexValue,
-                        HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
-                        DeathCause = victim.DeathCause,
-                        Placement = victim.Placement,
-                        ElimTime = eventTimeStr,
-                        Pickaxe = victim.Pickaxe,
-                        Glider = victim.Glider,
-                        SquadSize = victim.SquadSize,
-                        CircleNumber = circle.CircleNumber,
-                        CircleStatus = circle.Status,
-                    });
-                }
-
-                pendingKnocks.Remove(eliminatedId);
-                ownerKnockTimes.Remove(eliminatedId);
+                if (eventTimeStr != null) eliminatedPlayer.ElimTime = eventTimeStr;
+                eliminatedPlayer.DeathCauseInfo = cause;
+                eliminatedPlayer.DeathCause = cause.DisplayName;
+                eliminatedPlayer.SetStormCircle(circle);
             }
+
+            if (!string.IsNullOrEmpty(ownerId) &&
+                evidence.VictimId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) &&
+                !evidence.ActorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase))
+                ownerEliminatedBy = playersById.TryGetValue(evidence.ActorId, out var eliminatorRow)
+                    ? eliminatorRow.Name ?? eliminatorRow.Id
+                    : evidence.ActorId;
+        }
+
+        var decisions = OwnerEliminationResolver.Resolve(ownerId, lifecycle);
+        foreach (var decision in decisions.Where(item => item.Status == OwnerCreditStatus.Credited))
+        {
+            var record = eliminationRecords.Single(item => item.Evidence.Sequence == decision.EventSequence);
+            if (!playersById.TryGetValue(decision.VictimId, out var victim)) continue;
+            var eventTime = record.Evidence.ReplayTimeSeconds.HasValue
+                ? TimeSpan.FromSeconds(record.Evidence.ReplayTimeSeconds.Value)
+                : ParseElimTime(record.RawTime);
+            var circle = stormCircleResolver.Resolve(record.Evidence.ReplayTimeSeconds);
+
+            ownerEliminations.Add(new PlayerRow
+            {
+                StableId = victim.StableId,
+                Id = victim.Id,
+                Name = victim.Name,
+                Level = victim.Level,
+                Bot = victim.Bot,
+                Platform = victim.Platform,
+                Kills = victim.Kills,
+                TeamIndex = victim.TeamIndex,
+                TeamIndexValue = victim.TeamIndexValue,
+                HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
+                DeathCauseInfo = decision.DeathCause,
+                DeathCause = decision.DeathCause.DisplayName,
+                Placement = victim.Placement,
+                ElimTime = FormatElimTime(eventTime, record.RawTime),
+                Pickaxe = victim.Pickaxe,
+                Glider = victim.Glider,
+                SquadSize = victim.SquadSize,
+                CircleNumber = circle.CircleNumber,
+                CircleStatus = circle.Status,
+            });
         }
 
         // === Build metadata ===
@@ -444,6 +506,20 @@ public sealed class ReplayService : IReplayService
         var info = ReflectionUtils.GetObject(elimination, "Info");
         var startTimeMilliseconds = ReflectionUtils.GetDouble(info, "StartTime");
         return startTimeMilliseconds.HasValue ? startTimeMilliseconds.Value / 1000d : null;
+    }
+
+    private static IReadOnlyList<string> GetStringValues(object? source, string propertyName)
+    {
+        var value = ReflectionUtils.GetObject(source, propertyName);
+        if (value is not System.Collections.IEnumerable enumerable) return Array.Empty<string>();
+
+        var values = new List<string>();
+        foreach (var item in enumerable)
+        {
+            var text = item?.ToString();
+            if (!string.IsNullOrWhiteSpace(text)) values.Add(text);
+        }
+        return values;
     }
 
     static string? FormatElimTime(TimeSpan? ts, object? rawTimeObj)

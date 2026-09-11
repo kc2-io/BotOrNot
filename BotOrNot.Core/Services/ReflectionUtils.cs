@@ -61,6 +61,8 @@ public static class ReflectionUtils
         if (pi == null) return null;
         var value = pi.GetValue(obj);
         if (value is int intValue) return intValue;
+        if (value is byte byteValue) return byteValue;
+        if (value is short shortValue) return shortValue;
         if (value is uint uintValue && uintValue <= int.MaxValue) return (int)uintValue;
         if (int.TryParse(value?.ToString(),
                 System.Globalization.NumberStyles.Integer,
@@ -93,5 +95,16 @@ public static class ReflectionUtils
         if (v is bool b) return b;
         if (v is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
         return false;
+    }
+
+    public static bool? GetNullableBool(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var value = pi.GetValue(obj);
+        if (value is bool boolValue) return boolValue;
+        if (bool.TryParse(value?.ToString(), out var parsed)) return parsed;
+        return null;
     }
 }
