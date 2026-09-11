@@ -206,6 +206,45 @@ public class MainWindowViewModelFilterTests
         Assert.That(viewModel.OwnerKillsHeader, Does.Contain("2 Players observed, 0 Bots observed"));
     }
 
+    [Test]
+    public async Task UncertainAttribution_WithMatchingCountStillMarksObservedBreakdown()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 2, HasUncertainEliminationAttribution = true };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Bot", Bot = "true" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("uncertain").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("2 credited events observed").And.Contain("attribution is uncertain"));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("Players observed").And.Contain("Bots observed"));
+            Assert.That(viewModel.ElimsSummary, Is.EqualTo("2 Elims (1 Bot observed)"));
+        });
+    }
+
+    [Test]
+    public async Task UncertainAttribution_WithoutAuthoritativeTotalKeepsSummaryUnknown()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", HasUncertainEliminationAttribution = true };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("uncertain-no-total").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.ElimsSummary, Is.EqualTo("Eliminations unknown"));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("elimination count is unknown"));
+            Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("attribution is uncertain").And.Contain("1 credited events observed"));
+        });
+    }
+
     private static bool MatchesFilter(PlayerRow player, string searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -218,6 +257,7 @@ public class MainWindowViewModelFilterTests
                (player.TeamIndex?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.Placement?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.DeathCause?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
 
     private sealed class SequenceReplayService(params ReplayData[] replays) : IReplayService
     {
