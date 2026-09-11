@@ -204,6 +204,47 @@ public class ReplayServiceTests
             $"but got {elimCount} (OwnerKills={result.OwnerKills})");
     }
 
+    [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 4, 8)]
+    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 2, 12)]
+    public async Task OwnerIdentityAndTeam_AreProjectedFromAuthoritativeOwnerFlag(
+        string replayFileName,
+        int expectedOwnerTeamMembers,
+        int expectedOpponentCount)
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", replayFileName);
+
+        var result = await service.LoadReplayAsync(replayPath);
+        var owner = result.Players.Single(player => player.IsReplayOwner);
+        var projection = OpponentProjection.FromReplay(result);
+        var opponentIds = projection.Opponents
+            .Select(opponent => opponent.StableId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(owner.StableId, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.OwnerId, Is.EqualTo(owner.StableId));
+            Assert.That(result.OwnerTeamIndex, Is.EqualTo(owner.TeamIndexValue));
+            Assert.That(result.OwnerTeamIndex, Is.GreaterThan(0));
+            Assert.That(
+                result.Players.Count(player => player.TeamIndexValue == result.OwnerTeamIndex),
+                Is.EqualTo(expectedOwnerTeamMembers));
+            Assert.That(projection.IsComplete, Is.True);
+            Assert.That(projection.Opponents, Has.Count.EqualTo(expectedOpponentCount));
+            Assert.That(opponentIds, Has.Count.EqualTo(projection.Opponents.Count));
+            Assert.That(
+                result.Players.Any(player => player.StableId != null &&
+                                             opponentIds.Contains(player.StableId) &&
+                                             (player.IsReplayOwner ||
+                                              player.TeamIndexValue == result.OwnerTeamIndex ||
+                                              player.IsBot ||
+                                              player.IsNpc)),
+                Is.False,
+                "The real-fixture opponent projection must not contain the owner, team members, bots, or NPCs.");
+        });
+    }
+
     /// <summary>
     /// Validate the total elim count we will display matches the known elim values provided for each file.
     /// </summary>

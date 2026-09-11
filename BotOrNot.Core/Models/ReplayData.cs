@@ -6,6 +6,10 @@ public sealed class ReplayData
     [Obsolete("Use Metadata.EliminationCount instead. This list is no longer populated.")]
     public List<string> Eliminations { get; set; } = new();
     public List<PlayerRow> OwnerEliminations { get; set; } = new();
+    /// <summary>The recorder's parser-provided stable account ID, when available.</summary>
+    public string? OwnerId { get; set; }
+    /// <summary>The recorder's validated positive team index, when available.</summary>
+    public int? OwnerTeamIndex { get; set; }
     public string? OwnerName { get; set; }
     /// <summary>
     /// Authoritative kill count from the owner's PlayerData.Kills property.

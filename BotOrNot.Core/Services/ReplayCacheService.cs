@@ -17,7 +17,7 @@ public sealed class ReplayCacheService : IReplayCacheService
     /// Bump when a parser or summary interpretation changes. It is deliberately part of the
     /// key so prior cache entries cannot masquerade as current analysis.
     /// </summary>
-    public const string AnalysisRevision = "2026-09-10.1";
+    public const string AnalysisRevision = "2026-09-11.2";
 
     private static readonly string DefaultCacheDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BotOrNot");
@@ -87,40 +87,7 @@ public sealed class ReplayCacheService : IReplayCacheService
         try
         {
             var data = await _replayService.LoadReplayAsync(file.FullName, cancellationToken);
-            var nonNpc = data.Players.Where(p => !p.IsNpc).ToList();
-            var botCount = nonNpc.Count(p => p.IsBot);
-            var ownerElims = data.OwnerEliminations.Where(p => !p.IsNpc).ToList();
-            var botKills = ownerElims.Count(p => p.IsBot);
-            var ownerPlayer = data.Players.FirstOrDefault(p =>
-                !string.IsNullOrEmpty(data.OwnerName) &&
-                p.Name?.Equals(data.OwnerName, StringComparison.OrdinalIgnoreCase) == true);
-
-            var analysisStatus = string.IsNullOrWhiteSpace(data.OwnerName)
-                ? ReplayAnalysisStatus.OwnerIdentityUnavailable
-                : data.OwnerKills.HasValue
-                    ? ReplayAnalysisStatus.Complete
-                    : ReplayAnalysisStatus.OwnerKillsUnavailable;
-
-            return new ReplaySummary
-            {
-                FileName = file.Name,
-                FilePath = file.FullName,
-                FileDate = file.LastWriteTimeUtc,
-                GameMode = data.Metadata.GameMode,
-                Playlist = data.Metadata.Playlist,
-                Placement = ownerPlayer?.Placement ?? "",
-                Kills = analysisStatus == ReplayAnalysisStatus.Complete ? data.OwnerKills : null,
-                BotKills = analysisStatus == ReplayAnalysisStatus.Complete ? botKills : null,
-                PlayerCount = nonNpc.Count,
-                BotCount = botCount,
-                DurationMinutes = data.Metadata.RecordingDurationMinutes,
-                OwnerName = data.OwnerName ?? "",
-                AnalysisStatus = analysisStatus,
-                PlayerNames = nonNpc.Where(p => !p.IsBot)
-                    .Select(p => p.Name ?? "")
-                    .Where(n => !string.IsNullOrWhiteSpace(n))
-                    .ToList()
-            };
+            return ReplaySummaryFactory.Create(data, file);
         }
         catch (Exception ex)
         {

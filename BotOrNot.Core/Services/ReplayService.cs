@@ -52,10 +52,7 @@ public sealed class ReplayService : IReplayService
         var playersById = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
         var playersByNumericId = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
 
-        // Owner detection — collected during the single PlayerData pass
-        string? ownerId = null;
-        string? ownerName = null;
-        int? ownerKills = null;
+        // Owner detection — the parser's IsReplayOwner flag is the only authority.
 
         // === PASS 1: Single iteration over PlayerData ===
         // Extracts player attributes, builds numericId lookup, and detects replay owner
@@ -68,6 +65,8 @@ public sealed class ReplayService : IReplayService
             var platform = ReflectionUtils.FirstString(pd, "Platform");
             var kills = ReflectionUtils.FirstString(pd, "Kills");
             var teamIndex = ReflectionUtils.FirstString(pd, "TeamIndex");
+            var stableId = string.IsNullOrWhiteSpace(id) ? null : id.Trim();
+            var teamIndexValue = ParticipantClassifier.NormalizeTeamIndex(teamIndex);
             var death = ReflectionUtils.FirstString(pd, "DeathCause");
             var deathTagsObj = ReflectionUtils.GetObject(pd, "DeathTags");
             var deathTagStrings = (deathTagsObj as System.Collections.IEnumerable)?
@@ -91,12 +90,36 @@ public sealed class ReplayService : IReplayService
                 playersById[key] = row;
             }
 
+            row.StableId ??= stableId;
             row.Name = string.IsNullOrWhiteSpace(name) ? (row.Name ?? "unknown") : name;
             row.Level = string.IsNullOrWhiteSpace(level) ? (row.Level ?? "unknown") : level;
             row.Bot = string.IsNullOrWhiteSpace(bot) ? (row.Bot ?? "unknown") : bot;
             row.Platform = platform ?? row.Platform;
             row.Kills = string.IsNullOrWhiteSpace(kills) ? (row.Kills ?? "unknown") : kills;
-            row.TeamIndex = string.IsNullOrWhiteSpace(teamIndex) ? (row.TeamIndex ?? "unknown") : teamIndex;
+            if (!string.IsNullOrWhiteSpace(teamIndex))
+            {
+                if (teamIndexValue.HasValue &&
+                    row.TeamIndexValue.HasValue &&
+                    row.TeamIndexValue != teamIndexValue)
+                {
+                    row.TeamIndex = "unknown";
+                    row.TeamIndexValue = null;
+                    row.HasConflictingTeamIndex = true;
+                }
+                else if (teamIndexValue.HasValue && !row.HasConflictingTeamIndex)
+                {
+                    row.TeamIndex = teamIndex;
+                    row.TeamIndexValue = teamIndexValue;
+                }
+                else if (!row.TeamIndexValue.HasValue && !row.HasConflictingTeamIndex)
+                {
+                    row.TeamIndex = teamIndex;
+                }
+            }
+            else
+            {
+                row.TeamIndex ??= "unknown";
+            }
             row.DeathCause = DeathCauseHelper.GetDisplayName(death, deathTagStrings) is var resolved && resolved != "Unknown"
                 ? resolved
                 : (row.DeathCause ?? "Unknown");
@@ -111,30 +134,37 @@ public sealed class ReplayService : IReplayService
                 playersByNumericId[numericId] = row;
             }
 
-            // Detect replay owner (was Pass 8)
-            if (ownerId == null && ReflectionUtils.GetBool(pd, "IsReplayOwner"))
+            // Detect replay owner (was Pass 8). Keep the flag on the row so later projections do
+            // not need to infer ownership from a mutable display name.
+            if (ReflectionUtils.GetBool(pd, "IsReplayOwner"))
             {
-                ownerId = ReflectionUtils.FirstString(pd, "PlayerId", "EpicId", "Id");
-                ownerName = ReflectionUtils.FirstString(pd, "PlayerName", "DisplayName", "Name");
-                var killsStr = ReflectionUtils.FirstString(pd, "Kills");
-                if (int.TryParse(killsStr, out var k))
-                    ownerKills = k;
+                row.IsReplayOwner = true;
             }
 
         }
+
+        var replayOwners = playersById.Values.Where(player => player.IsReplayOwner).Take(2).ToList();
+        var replayOwner = replayOwners.Count == 1 ? replayOwners[0] : null;
+        var ownerId = replayOwner?.StableId;
+        var ownerName = replayOwner?.Name is { } recordedOwnerName && recordedOwnerName != "unknown"
+            ? recordedOwnerName
+            : null;
+        int? ownerKills = int.TryParse(replayOwner?.Kills, out var parsedOwnerKills)
+            ? parsedOwnerKills
+            : null;
+        var ownerTeamIndex = replayOwner?.TeamIndexValue;
 
         // === Compute squad sizes from TeamIndex grouping ===
-        var squadSizeByTeamIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var squadSizeByTeamIndex = new Dictionary<int, int>();
         foreach (var row in playersById.Values)
         {
-            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && row.TeamIndex != "unknown")
-            {
-                squadSizeByTeamIndex[row.TeamIndex] = squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndex) + 1;
-            }
+            if (row.TeamIndexValue.HasValue)
+                squadSizeByTeamIndex[row.TeamIndexValue.Value] =
+                    squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndexValue.Value) + 1;
         }
         foreach (var row in playersById.Values)
         {
-            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && squadSizeByTeamIndex.TryGetValue(row.TeamIndex, out var sz))
+            if (row.TeamIndexValue.HasValue && squadSizeByTeamIndex.TryGetValue(row.TeamIndexValue.Value, out var sz))
                 row.SquadSize = sz;
         }
 
@@ -288,6 +318,7 @@ public sealed class ReplayService : IReplayService
                 {
                     ownerEliminations.Add(new PlayerRow
                     {
+                        StableId = victim.StableId,
                         Id = victim.Id,
                         Name = victim.Name,
                         Level = victim.Level,
@@ -295,6 +326,8 @@ public sealed class ReplayService : IReplayService
                         Platform = victim.Platform,
                         Kills = victim.Kills,
                         TeamIndex = victim.TeamIndex,
+                        TeamIndexValue = victim.TeamIndexValue,
+                        HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
                         DeathCause = victim.DeathCause,
                         Placement = victim.Placement,
                         ElimTime = eventTimeStr,
@@ -342,6 +375,8 @@ public sealed class ReplayService : IReplayService
         {
             Players = playersById.Values.OrderBy(v => v.Name ?? v.Id).ToList(),
             OwnerEliminations = ownerEliminations,
+            OwnerId = ownerId,
+            OwnerTeamIndex = ownerTeamIndex,
             OwnerName = ownerName,
             OwnerKills = ownerKills,
             OwnerEliminatedBy = ownerEliminatedBy,
