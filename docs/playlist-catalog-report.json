@@ -166,7 +166,7 @@
     },
     {
       "playlist_name": "Playlist_BR_Lite",
-      "reason": "new-source-entry-requires-review"
+      "reason": "unsupported-or-insufficient-evidence"
     },
     {
       "playlist_name": "Playlist_Build_Cinco",
@@ -194,7 +194,7 @@
     },
     {
       "playlist_name": "Playlist_DefaultPIE",
-      "reason": "new-source-entry-requires-review"
+      "reason": "unsupported-or-insufficient-evidence"
     },
     {
       "playlist_name": "Playlist_DefaultQuint",
@@ -874,7 +874,7 @@
     },
     {
       "playlist_name": "Playlist_EmptyPerf",
-      "reason": "new-source-entry-requires-review"
+      "reason": "unsupported-or-insufficient-evidence"
     },
     {
       "playlist_name": "Playlist_EventSandbox",
@@ -1406,7 +1406,7 @@
     },
     {
       "playlist_name": "Playlist_LightBunny_Solo",
-      "reason": "new-source-entry-requires-review"
+      "reason": "unsupported-or-insufficient-evidence"
     },
     {
       "playlist_name": "Playlist_LocomotionInitiative",
@@ -1526,7 +1526,7 @@
     },
     {
       "playlist_name": "Playlist_PerfTest_Empty",
-      "reason": "new-source-entry-requires-review"
+      "reason": "unsupported-or-insufficient-evidence"
     },
     {
       "playlist_name": "Playlist_PilgrimQuickplay",
@@ -3244,47 +3244,56 @@
   "conflicts": [
     {
       "playlist_name": "Playlist_BlastBerryDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Venture Build - Duos"
     },
     {
       "playlist_name": "Playlist_BlastBerrySolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Venture Build - Solo"
     },
     {
       "playlist_name": "Playlist_BlastBerrySquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Venture Build - Squads"
     },
     {
       "playlist_name": "Playlist_DashBerryDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Slurp Rush Build - Duos"
     },
     {
       "playlist_name": "Playlist_DashBerrySolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Slurp Rush Build - Solo"
     },
     {
       "playlist_name": "Playlist_DashBerrySquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Slurp Rush Build - Squads"
     },
     {
       "playlist_name": "Playlist_DefaultDuo",
-      "upstream_name": "Duos",
+      "community_name": "Duos",
+      "official_display_name": "Duos",
       "preserved_display_name": "BR Build - Duos"
     },
     {
       "playlist_name": "Playlist_DefaultSolo",
-      "upstream_name": "Solo",
+      "community_name": "Solo",
+      "official_display_name": "Solo",
       "preserved_display_name": "BR Build - Solo"
     },
     {
       "playlist_name": "Playlist_DefaultSquad",
-      "upstream_name": "Squads",
+      "community_name": "Squads",
+      "official_display_name": "Squads",
       "preserved_display_name": "BR Build - Squads"
     },
     {
@@ -3301,6 +3310,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Starfall Island - Duos"
     },
     {
@@ -3317,6 +3327,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Starfall Island - Solo"
     },
     {
@@ -3333,6 +3344,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Starfall Island - Squads"
     },
     {
@@ -3349,6 +3361,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Asteria Awakened - Duos"
     },
     {
@@ -3365,6 +3378,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Asteria Awakened - Solo"
     },
     {
@@ -3381,6 +3395,7 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Asteria Awakened - Squads"
     },
     {
@@ -3397,36 +3412,43 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Blitz Zero Build - Solo"
     },
     {
       "playlist_name": "Playlist_Habanero_JumpBear_Duos",
-      "upstream_name": "Ranked Reload - Duo",
+      "community_name": "Ranked Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Ranked Reload Build - Duos"
     },
     {
       "playlist_name": "Playlist_HabaneroDuo",
-      "upstream_name": "Duos",
+      "community_name": "Duos",
+      "official_display_name": null,
       "preserved_display_name": "Ranked BR Build - Duos"
     },
     {
       "playlist_name": "Playlist_MatchMistDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Duos"
     },
     {
       "playlist_name": "Playlist_MatchMistSolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Solo"
     },
     {
       "playlist_name": "Playlist_MatchMistSquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Squads"
     },
     {
       "playlist_name": "Playlist_NoBuildBR_Duo",
-      "upstream_name": "Zero Build - Duos",
+      "community_name": "Zero Build - Duos",
+      "official_display_name": "Zero Build - Duos",
       "preserved_display_name": "BR Zero Build - Duos"
     },
     {
@@ -3443,81 +3465,97 @@
         "observedDate": "2026-09-11",
         "confidence": "source-derived"
       },
+      "official_display_name": null,
       "preserved_display_name": "Ranked Zero Build - Solo"
     },
     {
       "playlist_name": "Playlist_NoBuildBR_Solo",
-      "upstream_name": "Zero Build - Solo",
+      "community_name": "Zero Build - Solo",
+      "official_display_name": "Zero Build - Solo",
       "preserved_display_name": "BR Zero Build - Solo"
     },
     {
       "playlist_name": "Playlist_NoBuildBR_Squad",
-      "upstream_name": "Zero Build - Squads",
+      "community_name": "Zero Build - Squads",
+      "official_display_name": "Zero Build - Squads",
       "preserved_display_name": "BR Zero Build - Squads"
     },
     {
       "playlist_name": "Playlist_NoBuildBR_Trio",
-      "upstream_name": "Zero Build - Trios",
+      "community_name": "Zero Build - Trios",
+      "official_display_name": "Zero Build - Trios",
       "preserved_display_name": "BR Zero Build - Trios"
     },
     {
       "playlist_name": "Playlist_PiperBootDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build Surf City - Duo"
     },
     {
       "playlist_name": "Playlist_PiperBootSolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build Surf City - Solo"
     },
     {
       "playlist_name": "Playlist_PiperBootSquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build Surf City - Squad"
     },
     {
       "playlist_name": "Playlist_PunchBerryDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Oasis Build - Duos"
     },
     {
       "playlist_name": "Playlist_PunchBerrySolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Oasis Build - Solo"
     },
     {
       "playlist_name": "Playlist_PunchBerrySquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Oasis Build - Squads"
     },
     {
       "playlist_name": "Playlist_RopeSmileDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Duos"
     },
     {
       "playlist_name": "Playlist_RopeSmileSolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Solo"
     },
     {
       "playlist_name": "Playlist_SunflowerDuo",
-      "upstream_name": "Reload - Duo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Duos"
     },
     {
       "playlist_name": "Playlist_SunflowerSolo",
-      "upstream_name": "Reload - Solo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Solo"
     },
     {
       "playlist_name": "Playlist_SunflowerSquad",
-      "upstream_name": "Reload - Squads",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
       "preserved_display_name": "Reload Build - Squads"
     },
     {
       "playlist_name": "Playlist_Trios",
-      "upstream_name": "Trios",
+      "community_name": "Trios",
+      "official_display_name": "Trios",
       "preserved_display_name": "BR Build - Trios"
     }
   ]

@@ -1,28 +1,57 @@
 name: Refresh playlist catalog
 
 on:
+  pull_request:
+    paths:
+      - 'scripts/generate_playlist_mappings.py'
+      - 'scripts/test_playlist_generator.py'
+      - 'scripts/playlist-overrides.json'
+      - 'BotOrNot.Core/Data/PlaylistMappings.json'
+      - '.github/workflows/refresh-playlist-catalog.yml'
   workflow_dispatch:
   schedule:
     - cron: '23 7 * * 1'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+concurrency:
+  group: playlist-catalog-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  refresh:
+  verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Test deterministic generator
-        run: python scripts/test_playlist_generator.py
-      - name: Refresh catalog from sources
+      - name: Test generator and catalog validation
         run: |
-          python scripts/generate_playlist_mappings.py --download --include-new --write \
-            --observation-date "$(date -u +%F)"
+          python scripts/test_playlist_generator.py
+          python -c "import json; d=json.load(open('BotOrNot.Core/Data/PlaylistMappings.json')); assert d['playlists']"
+
+  refresh:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refresh and validate generated artifacts
+        run: |
+          python scripts/generate_playlist_mappings.py --download --include-new --write --observation-date "$(date -u +%F)"
+          python -m json.tool BotOrNot.Core/Data/PlaylistMappings.json > /dev/null
+          python -m json.tool docs/playlist-catalog-report.json > /dev/null
+          git diff --check
       - name: Open or update catalog pull request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -31,6 +60,6 @@ jobs:
           title: 'chore: refresh playlist catalog'
           commit-message: 'chore: refresh playlist catalog'
           body: |
-            Automated playlist catalog refresh. Review \`docs/playlist-catalog-report.json\`,
-            retained historical IDs, and any source conflicts before merging.
+            Automated playlist catalog refresh. Review docs/playlist-catalog-report.json,
+            retained historical IDs, and source conflicts before merging.
           labels: data
