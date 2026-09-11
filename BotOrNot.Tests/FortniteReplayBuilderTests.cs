@@ -102,6 +102,87 @@ public sealed class FortniteReplayBuilderTests
         Assert.That(player.SeasonLevelUIDisplay, Is.Zero);
     }
 
+    [Test]
+    public void SafeZonePartialExports_PreservePhaseAndExposeFieldPresence()
+    {
+        var builder = new FortniteReplayBuilder();
+        builder.UpdateSafeZones(7, new SafeZoneIndicator
+        {
+            SafeZoneStartShrinkTime = 300,
+            SafeZoneFinishShrinkTime = 480,
+            CurrentPhase = 1,
+            PhaseCount = 13
+        }, 100);
+        builder.UpdateSafeZones(7, new SafeZoneIndicator
+        {
+            SafeZoneStartShrinkTime = 570,
+            SafeZoneFinishShrinkTime = 670,
+            CurrentPhase = 2
+        }, 200);
+
+        var observations = builder.Build(new FortniteReplay()).MapData.SafeZones.ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(observations, Has.Count.EqualTo(2));
+            Assert.That(observations[1].CurrentPhase, Is.EqualTo(2));
+            Assert.That(observations[1].PhaseCount, Is.EqualTo(13));
+            Assert.That(observations[1].CurrentPhaseWasExported, Is.True);
+            Assert.That(observations[1].PhaseCountWasExported, Is.False);
+            Assert.That(observations[1].ReplayTimeSeconds, Is.EqualTo(200));
+            Assert.That(observations[1].ChannelIndex, Is.EqualTo(7));
+        });
+    }
+
+    [Test]
+    public void SafeZoneChannelReuse_DoesNotCarryPreviousActorPhase()
+    {
+        var builder = new FortniteReplayBuilder();
+        builder.AddActorChannel(7, 101);
+        builder.UpdateSafeZones(7, new SafeZoneIndicator { CurrentPhase = 6, PhaseCount = 13 }, 100);
+        builder.AddActorChannel(7, 202);
+        builder.UpdateSafeZones(7, new SafeZoneIndicator
+        {
+            SafeZoneStartShrinkTime = 700,
+            SafeZoneFinishShrinkTime = 800
+        }, 200);
+
+        var latest = builder.Build(new FortniteReplay()).MapData.SafeZones.Last();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(latest.CurrentPhase, Is.Null);
+            Assert.That(latest.PhaseCount, Is.Null);
+            Assert.That(latest.StartShrinkTime, Is.EqualTo(700));
+        });
+    }
+
+    [Test]
+    public void RecordedTeamSize_OnlyUsesExplicitGameStateTeamSize()
+    {
+        var builder = new FortniteReplayBuilder();
+        builder.UpdateGameState(new GameState
+        {
+            ActiveTeamNums =
+            [
+                new NetworkGUID { Value = 1 },
+                new NetworkGUID { Value = 2 },
+                new NetworkGUID { Value = 3 }
+            ]
+        });
+
+        var fallbackOnly = builder.Build(new FortniteReplay()).GameData;
+        Assert.Multiple(() =>
+        {
+            Assert.That(fallbackOnly.TeamSize, Is.EqualTo(3));
+            Assert.That(fallbackOnly.RecordedTeamSize, Is.Null);
+        });
+
+        var explicitBuilder = new FortniteReplayBuilder();
+        explicitBuilder.UpdateGameState(new GameState { TeamSize = 4 });
+        Assert.That(explicitBuilder.Build(new FortniteReplay()).GameData.RecordedTeamSize, Is.EqualTo(4));
+    }
+
     private static GameState GameStateWithRecorder(uint actorId) => new()
     {
         RecorderPlayerState = new ActorGuid { Value = actorId }

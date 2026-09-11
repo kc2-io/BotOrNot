@@ -24,7 +24,7 @@ jobs:
       - name: Build patched FortniteReplayReader
         shell: pwsh
         run: |
-          $VER = "3.0.3-botornot"
+          $VER = "3.0.4-botornot"
           $FRD = Join-Path $env:RUNNER_TEMP "FRD"
           $OUT = Join-Path "${{ github.workspace }}" "local-packages"
           New-Item -ItemType Directory -Force -Path $OUT | Out-Null
@@ -34,7 +34,7 @@ jobs:
           Push-Location $FRD
           git checkout 2fc699e
 
-          # Apply the pinned decoder, GameState alias, recorder-order, and incremental-player fixes
+          # Apply the reviewed BotOrNot parser patch to the pinned upstream revision
           python "${{ github.workspace }}\patches\apply-patches.py" $FRD
 
           # Register the output dir as a NuGet source so subsequent packs can restore patched deps
