@@ -316,7 +316,9 @@ public class MainWindowViewModel : ReactiveObject
             if (data.OwnerKills.HasValue)
             {
                 var totalKills = data.OwnerKills.Value;
-                if (nonNpcEliminations.Count == totalKills)
+                var incompleteCoverage = data.HasUncertainEliminationAttribution ||
+                                         nonNpcEliminations.Count != totalKills;
+                if (!incompleteCoverage)
                 {
                     OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players, {botKills} Bots";
                     EliminationCoverageNotice = null;
@@ -324,9 +326,12 @@ public class MainWindowViewModel : ReactiveObject
                 else
                 {
                     OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players observed, {botKills} Bots observed";
-                    EliminationCoverageNotice = $"Replay records {totalKills} eliminations; {nonNpcEliminations.Count} credited events observed.";
+                    EliminationCoverageNotice = $"Replay records {totalKills} eliminations; {nonNpcEliminations.Count} credited events observed." +
+                                                (data.HasUncertainEliminationAttribution ? " Some attribution is uncertain." : "");
                 }
-                ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
+                ElimsSummary = incompleteCoverage
+                    ? $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")} observed)"
+                    : $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
             }
             else
             {
@@ -334,7 +339,9 @@ public class MainWindowViewModel : ReactiveObject
                     ? "Owner analysis incomplete"
                     : $"{ownerDisplay}'s elimination count is unknown";
                 ElimsSummary = "Eliminations unknown";
-                EliminationCoverageNotice = null;
+                EliminationCoverageNotice = data.HasUncertainEliminationAttribution
+                    ? $"Elimination attribution is uncertain; {nonNpcEliminations.Count} credited events observed."
+                    : null;
             }
 
             // Build Players Seen header with breakdown (excluding NPCs)
