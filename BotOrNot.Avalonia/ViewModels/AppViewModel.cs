@@ -7,7 +7,7 @@ using ReactiveUI;
 
 namespace BotOrNot.Avalonia.ViewModels;
 
-public class AppViewModel : ReactiveObject
+public class AppViewModel : ReactiveObject, IDisposable
 {
     private static readonly string AppVersion = (Assembly.GetExecutingAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0")
@@ -19,6 +19,7 @@ public class AppViewModel : ReactiveObject
     private string _windowTitle = BaseTitle;
 
     private readonly IThemeService _themeService;
+    private readonly IDisposable _windowTitleSubscription;
 
     public AppViewModel(
         ISettingsService? settingsService = null,
@@ -33,7 +34,7 @@ public class AppViewModel : ReactiveObject
         _currentPage = LibraryPage;
 
         // Keep window title in sync with the active page
-        this.WhenAnyValue(x => x.CurrentPage)
+        _windowTitleSubscription = this.WhenAnyValue(x => x.CurrentPage)
             .Select(page => page is MainWindowViewModel vm
                 ? vm.WhenAnyValue(v => v.WindowTitle)
                 : Observable.Return(BaseTitle))
@@ -60,5 +61,11 @@ public class AppViewModel : ReactiveObject
         var matchVm = new MainWindowViewModel(() => CurrentPage = LibraryPage, themeService: _themeService);
         CurrentPage = matchVm;
         matchVm.LoadReplayCommand.Execute(summary.FilePath).Subscribe();
+    }
+
+    public void Dispose()
+    {
+        _windowTitleSubscription.Dispose();
+        LibraryPage.Dispose();
     }
 }

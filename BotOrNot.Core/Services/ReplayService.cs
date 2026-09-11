@@ -14,6 +14,13 @@ public interface IReplayService
 public sealed class ReplayService : IReplayService
 {
     private readonly ILogger<ReplayService> _logger;
+    private static readonly TimeSpan ParseTimeout = TimeSpan.FromSeconds(90);
+
+    // ReplayReader is synchronous and offers no cooperative cancellation. Keep a physical
+    // decoder lease until ReadReplay really exits, even when the caller stops waiting. This
+    // bounds timed-out/cancelled parser threads across overlapping scans instead of treating
+    // an abandoned await as available decoder capacity.
+    private static readonly SemaphoreSlim PhysicalDecoderSlots = new(4, 4);
 
     // Reuse a single no-op logger for the replay reader instead of creating a LoggerFactory per call
     private static readonly ILogger<ReplayReader> ReaderLogger = NullLoggerFactory.Instance.CreateLogger<ReplayReader>();
@@ -25,20 +32,34 @@ public sealed class ReplayService : IReplayService
 
     public async Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
     {
-        var reader = new ReplayReader(ReaderLogger, ParseMode.Normal);
+        await PhysicalDecoderSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
+        Task<FortniteReplayReader.Models.FortniteReplay> replayTask;
+        try
+        {
+            var reader = new ReplayReader(ReaderLogger, ParseMode.Normal);
+            replayTask = Task.Run(() => reader.ReadReplay(path), CancellationToken.None);
+        }
+        catch
+        {
+            PhysicalDecoderSlots.Release();
+            throw;
+        }
+        _ = replayTask.ContinueWith(
+            completedTask =>
+            {
+                // Observe a late fault after timeout/cancellation and release only when the
+                // synchronous decoder has physically stopped using CPU and parser state.
+                _ = completedTask.Exception;
+                PhysicalDecoderSlots.Release();
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
-        // Run the synchronous parser on a thread-pool thread. Use Task.WhenAny with a 90-second
-        // deadline so a hung parser (e.g. the infinite-loop bug in FortniteReplayReader for
-        // Fortnite 41.00 packets) surfaces as a TimeoutException instead of a frozen spinner.
-        // The background thread cannot be cancelled mid-flight; it leaks until the library
-        // returns on its own or the process exits. This is acceptable for a desktop app — the
-        // user has already seen the error and moved on.
-        var replayTask = Task.Run(() => reader.ReadReplay(path));
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(90));
-        var timeoutTask = Task.Delay(Timeout.Infinite, timeoutCts.Token);
-
-        if (await Task.WhenAny(replayTask, timeoutTask).ConfigureAwait(false) != replayTask)
+        var timeoutTask = Task.Delay(ParseTimeout, CancellationToken.None);
+        var cancelledTask = Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        var completed = await Task.WhenAny(replayTask, timeoutTask, cancelledTask).ConfigureAwait(false);
+        if (completed != replayTask)
         {
             cancellationToken.ThrowIfCancellationRequested();
             throw new TimeoutException(
