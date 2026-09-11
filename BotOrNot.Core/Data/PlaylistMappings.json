@@ -69,6 +69,12 @@
 
     {"playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSolo", "display_name": "Blitz Starfall Island - Solo", "_source": "manual"},
     {"playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRDuo", "display_name": "Blitz Starfall Island - Duos", "_source": "manual"},
-    {"playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSquad", "display_name": "Blitz Starfall Island - Squads", "_source": "manual"}
+    {"playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSquad", "display_name": "Blitz Starfall Island - Squads", "_source": "manual"},
+    { "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRSolo", "display_name": "Blitz Zero Build - Solo", "_source": "fortnite-api.com/v1/playlists" },
+    { "playlist_name": "Playlist_MatchMistSolo", "display_name": "Reload Build - Solo", "_source": "fortnite-api.com/v1/playlists" },
+    { "playlist_name": "Playlist_MatchMistDuo", "display_name": "Reload Build - Duos", "_source": "fortnite-api.com/v1/playlists" },
+    { "playlist_name": "Playlist_MatchMistSquad", "display_name": "Reload Build - Squads", "_source": "fortnite-api.com/v1/playlists" },
+    { "playlist_name": "Playlist_NoBuildBR_Habanero_Solo", "display_name": "Ranked Zero Build - Solo", "_source": "fortnite-api.com/v1/playlists" },
+    { "playlist_name": "Playlist_Trios", "display_name": "BR Build - Trios", "_source": "fortnite-api.com/v1/playlists" }
   ]
 }
