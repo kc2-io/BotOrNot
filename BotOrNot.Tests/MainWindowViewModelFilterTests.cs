@@ -1,4 +1,5 @@
 using BotOrNot.Avalonia.ViewModels;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
 
 namespace BotOrNot.Tests;
@@ -7,11 +8,20 @@ namespace BotOrNot.Tests;
 public class MainWindowViewModelFilterTests
 {
     private MainWindowViewModel _viewModel = null!;
+    private string _settingsPath = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _viewModel = new MainWindowViewModel();
+        _settingsPath = Path.Combine(Path.GetTempPath(), $"botornot-{Guid.NewGuid():N}.json");
+        _viewModel = new MainWindowViewModel(
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        File.Delete(_settingsPath);
     }
 
     private static PlayerRow Row(string? name = null, string? level = null, string? platform = null,

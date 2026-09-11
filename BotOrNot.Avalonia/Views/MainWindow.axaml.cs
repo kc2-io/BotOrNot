@@ -6,8 +6,13 @@ namespace BotOrNot.Avalonia.Views;
 public partial class MainWindow : Window
 {
     public MainWindow()
+        : this(new AppViewModel())
+    {
+    }
+
+    public MainWindow(AppViewModel viewModel)
     {
         InitializeComponent();
-        DataContext = new AppViewModel();
+        DataContext = viewModel;
     }
 }

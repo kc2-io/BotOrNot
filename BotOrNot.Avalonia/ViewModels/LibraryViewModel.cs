@@ -18,6 +18,7 @@ public class LibraryViewModel : ReactiveObject
 {
     private readonly IReplayCacheService _cacheService;
     private readonly Action<ReplaySummary> _onOpenReplay;
+    private readonly ISettingsService _settingsService;
 
     private string? _directoryPath;
     private bool _isScanning;
@@ -30,12 +31,16 @@ public class LibraryViewModel : ReactiveObject
     private double _avgBotPercent;
     private bool _hasReplays;
 
-    public LibraryViewModel(Action<ReplaySummary> onOpenReplay, IReplayCacheService? cacheService = null)
+    public LibraryViewModel(
+        Action<ReplaySummary> onOpenReplay,
+        IReplayCacheService? cacheService = null,
+        ISettingsService? settingsService = null)
     {
         _onOpenReplay = onOpenReplay;
         _cacheService = cacheService ?? new ReplayCacheService();
+        _settingsService = settingsService ?? new SettingsService();
 
-        var settings = SettingsService.Load();
+        var settings = _settingsService.Load();
         _directoryPath = settings.ReplayDirectory;
 
         Replays = new ObservableCollection<ReplaySummary>();
@@ -51,9 +56,7 @@ public class LibraryViewModel : ReactiveObject
         SetDirectoryCommand = ReactiveCommand.Create<string>(path =>
         {
             DirectoryPath = path;
-            var s = SettingsService.Load();
-            s.ReplayDirectory = path;
-            SettingsService.Save(s);
+            _settingsService.Update(settings => settings.ReplayDirectory = path);
         });
 
         if (!string.IsNullOrEmpty(_directoryPath))

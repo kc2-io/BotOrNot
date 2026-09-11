@@ -5,6 +5,7 @@ using global::Avalonia.Collections;
 using global::Avalonia.Controls;
 using global::Avalonia.VisualTree;
 using BotOrNot.Avalonia.ViewModels;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Avalonia.Views;
 using BotOrNot.Core.Models;
 
@@ -16,7 +17,9 @@ public static class DataGridTestHelper
         ObservableCollection<PlayerRow> players,
         ObservableCollection<PlayerRow> ownerEliminations)
     {
-        var vm = new MainWindowViewModel();
+        var tempSettingsPath = Path.Combine(Path.GetTempPath(), $"botornot-{Guid.NewGuid():N}.json");
+        var vm = new MainWindowViewModel(
+            themeService: new ThemeService(new SettingsService(tempSettingsPath)));
 
         var allPlayersField = typeof(MainWindowViewModel)
             .GetField("_allPlayers", BindingFlags.NonPublic | BindingFlags.Instance)!;
