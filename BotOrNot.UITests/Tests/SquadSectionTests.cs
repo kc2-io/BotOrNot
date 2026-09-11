@@ -52,15 +52,45 @@ public sealed class SquadSectionTests
     public async Task LoadingConfirmedSoloAfterTeam_ClearsAndHidesPreviousSquad()
     {
         var viewModel = CreateViewModel(TeamReplay(), SoloReplay());
+        var view = new MatchView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 1000, Height = 800 };
+        window.Show();
         await viewModel.LoadReplayCommand.Execute("team").FirstAsync();
         await viewModel.LoadReplayCommand.Execute("solo").FirstAsync();
+        window.UpdateLayout();
+        var squadGrid = view.FindControl<DataGrid>("SquadGrid")!;
+        var layout = (Grid)squadGrid.Parent!;
 
         Assert.Multiple(() =>
         {
             Assert.That(viewModel.HasSquadSection, Is.False);
             Assert.That(viewModel.Teammates, Is.Empty);
             Assert.That(viewModel.SquadStatusText, Is.Null);
+            Assert.That(layout.RowDefinitions[Grid.GetRow(squadGrid)].ActualHeight, Is.Zero,
+                "A hidden squad must not leave an empty star-sized region in solo replays.");
         });
+        window.Close();
+    }
+
+    [AvaloniaTest]
+    public async Task PartialUnknownAndFailedReplaysDoNotRetainPreviousSquadStats()
+    {
+        var partial = TeamReplay();
+        partial.Players.RemoveAt(1);
+        var unavailable = new ReplayData { Metadata = new ReplayMetadata { Playlist = "Playlist_DefaultDuo" } };
+        var viewModel = CreateViewModel(TeamReplay(), partial, unavailable);
+        await viewModel.LoadReplayCommand.Execute("team").FirstAsync();
+        await viewModel.LoadReplayCommand.Execute("partial").FirstAsync();
+        Assert.That(viewModel.HasSquadSection, Is.True);
+        Assert.That(viewModel.Teammates, Is.Empty);
+        Assert.That(viewModel.SquadStatusText, Does.Contain("partially observed"));
+        await viewModel.LoadReplayCommand.Execute("unavailable").FirstAsync();
+        Assert.That(viewModel.SquadStatusText, Does.Contain("unavailable").And.Contain("unknown"));
+        await viewModel.LoadReplayCommand.Execute("failure").FirstAsync();
+        Assert.That(viewModel.ErrorMessage, Does.Contain("sample failure"));
+        Assert.That(viewModel.HasSquadSection, Is.False);
+        Assert.That(viewModel.Teammates, Is.Empty);
+        Assert.That(viewModel.SquadStatusText, Is.Null);
     }
 
     [AvaloniaTest]
@@ -130,6 +160,7 @@ public sealed class SquadSectionTests
         private int _next;
 
         public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
-            => Task.FromResult(replays[_next++]);
+            => _next < replays.Length ? Task.FromResult(replays[_next++])
+                : Task.FromException<ReplayData>(new InvalidDataException("sample failure"));
     }
 }
