@@ -73,6 +73,32 @@ public static class PlaylistHelper
     }
 
     /// <summary>
+    /// Returns the maintained playlist catalog's team format from its canonical display-label
+    /// suffix. This is an interim adapter until the catalog stores a structured max-team-size
+    /// descriptor. Unknown raw IDs remain unknown even when their text contains a size word.
+    /// </summary>
+    public static int? GetKnownMaxTeamSize(string? playlistName)
+    {
+        var displayName = GetDisplayName(playlistName);
+        if (displayName == null)
+            return null;
+
+        if (displayName.EndsWith(" - Solo", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (displayName.EndsWith(" - Duo", StringComparison.OrdinalIgnoreCase) ||
+            displayName.EndsWith(" - Duos", StringComparison.OrdinalIgnoreCase))
+            return 2;
+        if (displayName.EndsWith(" - Trio", StringComparison.OrdinalIgnoreCase) ||
+            displayName.EndsWith(" - Trios", StringComparison.OrdinalIgnoreCase))
+            return 3;
+        if (displayName.EndsWith(" - Squad", StringComparison.OrdinalIgnoreCase) ||
+            displayName.EndsWith(" - Squads", StringComparison.OrdinalIgnoreCase))
+            return 4;
+
+        return null;
+    }
+
+    /// <summary>
     /// Gets the display name for a playlist, or returns the raw playlist string if no mapping exists.
     /// </summary>
     public static string GetDisplayNameWithFallback(string? playlistName)
