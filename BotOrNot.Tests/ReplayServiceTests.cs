@@ -223,6 +223,38 @@ public class ReplayServiceTests
             "Fortnite 41.00 replay should parse players — regression test for infinite loop and ShortComponents rotation fix");
     }
 
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 24.38475, "++Fortnite+Release-39.30", 50141518u)]
+    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 15.944183333333333, "++Fortnite+Release-39.40", 50341043u)]
+    public async Task Metadata_UsesRecordedDurationAndHeaderValues(
+        string replayFileName,
+        double expectedRecordingMinutes,
+        string expectedBranch,
+        uint expectedChangelist)
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", replayFileName);
+
+        var result = await service.LoadReplayAsync(replayPath);
+
+        Assert.That(result.Metadata.RecordingDurationMinutes, Is.EqualTo(expectedRecordingMinutes).Within(0.000001),
+            "Duration should be computed from Replay.Info.LengthInMs, not an absolute game-clock value.");
+        Assert.That(result.Metadata.Version, Is.EqualTo(expectedBranch));
+        Assert.That(result.Metadata.Changelist, Is.EqualTo(expectedChangelist));
+        Assert.That(result.Metadata.GameNetProtocol, Is.EqualTo(0),
+            "Protocol zero is a recorded value and must not be replaced with a guessed value.");
+    }
+
+    [Test]
+    public void Metadata_DefaultsLeaveUnavailableHeaderFieldsExplicit()
+    {
+        var metadata = new BotOrNot.Core.Models.ReplayMetadata();
+
+        Assert.That(metadata.Version, Is.Empty);
+        Assert.That(metadata.Changelist, Is.Zero);
+        Assert.That(metadata.GameNetProtocol, Is.Zero);
+        Assert.That(metadata.RecordingDurationMinutes, Is.Zero);
+    }
+
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]

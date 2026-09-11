@@ -26,7 +26,7 @@ public class LibraryViewModel : ReactiveObject
     private int _totalMatches;
     private int _totalWins;
     private double _winRate;
-    private double _avgKills;
+    private double? _avgKills;
     private double _avgBotPercent;
     private bool _hasReplays;
 
@@ -105,11 +105,13 @@ public class LibraryViewModel : ReactiveObject
         private set => this.RaiseAndSetIfChanged(ref _winRate, value);
     }
 
-    public double AvgKills
+    public double? AvgKills
     {
         get => _avgKills;
         private set => this.RaiseAndSetIfChanged(ref _avgKills, value);
     }
+
+    public string AvgKillsDisplay => AvgKills.HasValue ? $"{AvgKills.Value:F1}" : "Unknown";
 
     public double AvgBotPercent
     {
@@ -166,7 +168,9 @@ public class LibraryViewModel : ReactiveObject
         HasReplays = Replays.Count > 0;
         TotalWins = Replays.Count(r => r.IsWin);
         WinRate = TotalMatches > 0 ? (double)TotalWins / TotalMatches * 100 : 0;
-        AvgKills = TotalMatches > 0 ? Replays.Average(r => r.Kills) : 0;
+        var knownKillCounts = Replays.Select(r => r.Kills).OfType<int>().ToList();
+        AvgKills = knownKillCounts.Count > 0 ? knownKillCounts.Average() : null;
+        this.RaisePropertyChanged(nameof(AvgKillsDisplay));
         AvgBotPercent = TotalMatches > 0 ? Replays.Average(r => r.BotPercent) : 0;
 
         FrequentOpponents = Replays
