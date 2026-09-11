@@ -28,4 +28,6 @@ Numeric codes remain the broad compatibility fallback. A specific verified tag r
 
 The private issue attachment is not committed. An always-running anonymized trace regression records its measured clocks and raw nullable DBNO values. The owner knocks P6 at event 1089.590/frame 1089.996 (`IsDbno=true`); P6 emits unmatched raw `IsDbno=false` at frame 1096.994; P6 later finishes the owner and is eventually finished by P94 at event 1124.290/frame 1124.991. The explicit recovery clears the owner knock, leaving the two earlier credits at 633.210 and 657.760. The optional local binary test confirms `OwnerKills=2`, two derived rows, and no stale 18:44 row.
 
+The five committed fixtures retain matching authoritative/derived owner counts of **1, 1, 5, 8, and 3** in the table order above. F1 is the demonstrated behavior change: derived rows move from 3 to the authoritative 2 after the recovery invalidates the stale knock.
+
 No timeout is used. Initial reboot counters are baselines; only a later increase resets a life. Missing DBNO fields, cause 50 by itself, arbitrary later attacks, non-finite/unknown timestamps, and same-frame contradictory lifecycle evidence never create a recovery or inferred credit.

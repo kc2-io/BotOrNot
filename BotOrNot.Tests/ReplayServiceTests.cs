@@ -186,6 +186,8 @@ public class ReplayServiceTests
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 8)]
+    [TestCase("UnsavedReplay-2026.06.10-06.22.43.replay", 3)]
     public async Task OwnerElim_ShouldShowCorrectElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange
@@ -331,6 +333,8 @@ public class ReplayServiceTests
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 8)]
+    [TestCase("UnsavedReplay-2026.06.10-06.22.43.replay", 3)]
     public async Task OwnerElimListLengthMatchesElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange
