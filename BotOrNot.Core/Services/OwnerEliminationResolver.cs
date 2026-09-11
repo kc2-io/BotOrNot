@@ -57,7 +57,12 @@ public static class OwnerEliminationResolver
         List<OwnerEliminationDecision> decisions)
     {
         var groupEvents = events.ToArray();
-        var ambiguousVictims = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var ambiguousVictims = groupEvents
+            .Where(item => item.Kind == CombatLifecycleEventKind.Finish)
+            .GroupBy(item => item.VictimId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ambiguousKnockVictims = groupEvents
             .Where(item => item.Kind == CombatLifecycleEventKind.Knock)
             .GroupBy(item => item.VictimId, StringComparer.OrdinalIgnoreCase)
@@ -116,6 +121,17 @@ public static class OwnerEliminationResolver
                     state.IsAmbiguous = false;
                     break;
             }
+        }
+
+        // A tied finish/knock or reset has no trustworthy resulting life state. Do not let
+        // source order leave a fresh-looking knock that can receive credit at a later finish.
+        // A subsequently observed knock or explicit reset can establish a new lifecycle.
+        foreach (var victimId in ambiguousVictims)
+        {
+            var state = states[victimId];
+            state.KnockerId = null;
+            state.DbnoTrueObserved = false;
+            state.IsAmbiguous = true;
         }
     }
 

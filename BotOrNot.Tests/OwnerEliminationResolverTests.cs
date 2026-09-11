@@ -150,6 +150,33 @@ public class OwnerEliminationResolverTests
         AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public void TiedKnockAndFinishCannotSeedLaterCreditRegardlessOfSourceOrder(bool knockFirst)
+    {
+        var result = Resolve(
+            Knock(knockFirst ? 1 : 2, 20, "victim", Owner, true),
+            Finish(knockFirst ? 2 : 1, 20, "victim", "other"),
+            Finish(3, 30, "victim", "other"),
+            Knock(4, 40, "victim", Owner, true),
+            Finish(5, 50, "victim", "other"));
+
+        Assert.That(result.Select(item => item.Status), Is.EqualTo(new[]
+        {
+            OwnerCreditStatus.Uncertain, OwnerCreditStatus.Uncertain, OwnerCreditStatus.Credited
+        }));
+    }
+
+    [Test]
+    public void MultipleSameFrameFinishesDoNotReceiveOrderDependentKnockCredit()
+    {
+        var result = Resolve(
+            Knock(1, 10, "victim", Owner, true),
+            Finish(2, 20, "victim", "other"),
+            Finish(3, 20, "victim", "another"));
+        Assert.That(result.Select(item => item.Status), Is.All.EqualTo(OwnerCreditStatus.Uncertain));
+    }
+
     [Test]
     public void Resolve_RepeatedLivesRemainDistinct()
     {

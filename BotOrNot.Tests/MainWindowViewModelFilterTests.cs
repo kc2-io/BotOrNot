@@ -267,4 +267,3 @@ public class MainWindowViewModelFilterTests
             => Task.FromResult(_replays.Dequeue());
     }
 }
-}
