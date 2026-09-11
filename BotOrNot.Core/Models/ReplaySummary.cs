@@ -4,7 +4,8 @@ public enum ReplayAnalysisStatus
 {
     Complete,
     OwnerIdentityUnavailable,
-    OwnerKillsUnavailable
+    OwnerKillsUnavailable,
+    EliminationAttributionIncomplete
 }
 
 public sealed class OpponentSummary
@@ -54,6 +55,7 @@ public sealed class ReplaySummary
         ReplayAnalysisStatus.Complete => "Complete",
         ReplayAnalysisStatus.OwnerIdentityUnavailable => "Owner unknown",
         ReplayAnalysisStatus.OwnerKillsUnavailable => "Owner kills unknown",
+        ReplayAnalysisStatus.EliminationAttributionIncomplete => "Elimination details incomplete",
         _ => "Incomplete"
     };
     public bool IsWin => Placement == "1";

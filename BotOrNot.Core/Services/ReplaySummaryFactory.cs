@@ -13,9 +13,11 @@ public static class ReplaySummaryFactory
         var ownerPlayer = ownerPlayers.Count == 1 ? ownerPlayers[0] : null;
         var analysisStatus = ownerPlayer == null || string.IsNullOrWhiteSpace(data.OwnerId)
             ? ReplayAnalysisStatus.OwnerIdentityUnavailable
-            : data.OwnerKills.HasValue
-                ? ReplayAnalysisStatus.Complete
-                : ReplayAnalysisStatus.OwnerKillsUnavailable;
+            : !data.OwnerKills.HasValue
+                ? ReplayAnalysisStatus.OwnerKillsUnavailable
+                : data.HasUncertainEliminationAttribution || ownerEliminations.Count != data.OwnerKills.Value
+                    ? ReplayAnalysisStatus.EliminationAttributionIncomplete
+                    : ReplayAnalysisStatus.Complete;
         var opponentProjection = OpponentProjection.FromReplay(data);
 
         return new ReplaySummary
@@ -26,7 +28,10 @@ public static class ReplaySummaryFactory
             GameMode = data.Metadata.GameMode,
             Playlist = data.Metadata.Playlist,
             Placement = ownerPlayer?.Placement ?? "",
-            Kills = analysisStatus == ReplayAnalysisStatus.Complete ? data.OwnerKills : null,
+            Kills = analysisStatus == ReplayAnalysisStatus.OwnerIdentityUnavailable ||
+                    analysisStatus == ReplayAnalysisStatus.OwnerKillsUnavailable
+                ? null
+                : data.OwnerKills,
             BotKills = analysisStatus == ReplayAnalysisStatus.Complete
                 ? ownerEliminations.Count(player => player.IsBot)
                 : null,

@@ -471,6 +471,41 @@ public sealed class ReplayCacheServiceTests
         Assert.That(summary.Placement, Is.EqualTo("1"));
     }
 
+    [Test]
+    public void Summary_UncertainAttributionKeepsScalarKillsButNotDerivedBotKills()
+    {
+        var replayPath = CreateReplay("uncertain-attribution.replay");
+        var replay = CompleteData(kills: 1, durationMinutes: 5);
+        replay.HasUncertainEliminationAttribution = true;
+
+        var summary = ReplaySummaryFactory.Create(replay, new FileInfo(replayPath));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(summary.Kills, Is.EqualTo(1));
+            Assert.That(summary.BotKills, Is.Null);
+            Assert.That(summary.PlayerKills, Is.Null);
+            Assert.That(summary.AnalysisStatus, Is.EqualTo(ReplayAnalysisStatus.EliminationAttributionIncomplete));
+        });
+    }
+
+    [Test]
+    public void Summary_MissingDerivedRowsDoesNotTurnKnownKillIntoZeroBotKills()
+    {
+        var replayPath = CreateReplay("missing-attribution.replay");
+        var replay = CompleteData(kills: 1, durationMinutes: 5);
+        replay.OwnerEliminations.Clear();
+
+        var summary = ReplaySummaryFactory.Create(replay, new FileInfo(replayPath));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(summary.Kills, Is.EqualTo(1));
+            Assert.That(summary.BotKills, Is.Null);
+            Assert.That(summary.AnalysisStatus, Is.EqualTo(ReplayAnalysisStatus.EliminationAttributionIncomplete));
+        });
+    }
+
     private string CreateReplay(string fileName)
     {
         var path = Path.Combine(_directory, fileName);
@@ -478,26 +513,37 @@ public sealed class ReplayCacheServiceTests
         return path;
     }
 
-    private static ReplayData CompleteData(int kills, double durationMinutes) => new()
+    private static ReplayData CompleteData(int kills, double durationMinutes)
     {
-        OwnerId = "owner",
-        OwnerTeamIndex = 4,
-        OwnerName = "Recorder",
-        OwnerKills = kills,
-        Metadata = new ReplayMetadata { RecordingDurationMinutes = durationMinutes },
-        Players =
-        [
-            new PlayerRow
-            {
-                StableId = "owner",
-                Id = "owner",
-                Name = "Recorder",
-                TeamIndexValue = 4,
-                IsReplayOwner = true,
-                Bot = "false"
-            }
-        ]
-    };
+        var replay = new ReplayData
+        {
+            OwnerId = "owner",
+            OwnerTeamIndex = 4,
+            OwnerName = "Recorder",
+            OwnerKills = kills,
+            Metadata = new ReplayMetadata { RecordingDurationMinutes = durationMinutes },
+            Players =
+            [
+                new PlayerRow
+                {
+                    StableId = "owner",
+                    Id = "owner",
+                    Name = "Recorder",
+                    TeamIndexValue = 4,
+                    IsReplayOwner = true,
+                    Bot = "false"
+                }
+            ]
+        };
+        replay.OwnerEliminations.AddRange(Enumerable.Range(0, kills).Select(index => new PlayerRow
+        {
+            StableId = $"victim-{index}",
+            Id = $"victim-{index}",
+            Name = $"Victim {index}",
+            Bot = "false"
+        }));
+        return replay;
+    }
 
     private static async Task<List<ReplayScanUpdate>> CollectAsync(IAsyncEnumerable<ReplayScanUpdate> source)
     {

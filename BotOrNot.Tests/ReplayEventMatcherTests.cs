@@ -27,6 +27,19 @@ public class ReplayEventMatcherTests
         Assert.That(result.Matches, Is.Empty);
     }
 
+    [TestCase(double.NaN)]
+    [TestCase(double.PositiveInfinity)]
+    [TestCase(double.NegativeInfinity)]
+    [TestCase(-0.001)]
+    public void Correlate_RejectsInvalidTimes(double invalidTime)
+    {
+        var result = ReplayEventMatcher.Correlate(
+            [new EliminationEventEvidence(1, invalidTime, "victim", "actor", false, 3)],
+            [State(2, 0, "victim", "actor", false)]);
+
+        Assert.That(result.Matches, Is.Empty);
+    }
+
     [Test]
     public void Correlate_PrefersExactActorOverUnresolvedActor()
     {

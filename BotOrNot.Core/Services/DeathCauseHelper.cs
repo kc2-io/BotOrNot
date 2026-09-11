@@ -72,12 +72,28 @@ public static class DeathCauseHelper
     public static DeathCauseInfo ResolveEvent(int? eventCode, int? killFeedCode, IEnumerable<string>? deathTags)
     {
         var tags = NormalizeTags(deathTags);
-        var tagMapping = ResolveSpecificTag(tags);
+        var tagMappings = ResolveSpecificTags(tags);
         var eventMapping = ResolveCode(eventCode);
         var killFeedMapping = ResolveCode(killFeedCode);
 
-        if (tagMapping != null)
+        if (tagMappings.Count > 1)
         {
+            return new DeathCauseInfo
+            {
+                DisplayName = "Unknown",
+                RawEventCode = eventCode,
+                RawKillFeedCode = killFeedCode,
+                RawTags = tags,
+                TagRole = DeathCauseTagRole.KillFeedDeathContext,
+                Source = DeathCauseSource.SpecificEventTag,
+                ResolutionStatus = DeathCauseResolutionStatus.Conflicting,
+                Confidence = EvidenceConfidence.Medium
+            };
+        }
+
+        if (tagMappings.Count == 1)
+        {
+            var tagMapping = tagMappings[0];
             var numericCategory = eventMapping is { IsResolvable: true }
                 ? eventMapping.Category
                 : killFeedMapping is { IsResolvable: true }
@@ -103,7 +119,8 @@ public static class DeathCauseHelper
 
         if (eventMapping is { IsResolvable: true })
         {
-            var conflicts = killFeedMapping is { IsResolvable: true } && killFeedMapping.Category != eventMapping.Category;
+            var conflicts = killFeedMapping is { IsResolvable: true } &&
+                            !killFeedMapping.Label.Equals(eventMapping.Label, StringComparison.OrdinalIgnoreCase);
             return FromMapping(eventMapping, eventCode, killFeedCode, tags,
                 DeathCauseSource.EliminationEventCode,
                 conflicts ? DeathCauseResolutionStatus.Conflicting : DeathCauseResolutionStatus.Resolved,
@@ -134,12 +151,27 @@ public static class DeathCauseHelper
     public static DeathCauseInfo ResolveLegacy(string? deathCauseValue, IEnumerable<string>? deathTags)
     {
         var tags = NormalizeTags(deathTags);
-        var tagMapping = ResolveSpecificTag(tags);
+        var tagMappings = ResolveSpecificTags(tags);
         int? code = int.TryParse(deathCauseValue, out var parsedCode) ? parsedCode : null;
         var codeMapping = ResolveCode(code);
 
-        if (tagMapping != null)
+        if (tagMappings.Count > 1)
         {
+            return new DeathCauseInfo
+            {
+                DisplayName = "Unknown",
+                RawKillFeedCode = code,
+                RawTags = tags,
+                TagRole = DeathCauseTagRole.LegacyPlayerSnapshot,
+                Source = DeathCauseSource.LegacyPlayerSnapshotTag,
+                ResolutionStatus = DeathCauseResolutionStatus.Conflicting,
+                Confidence = EvidenceConfidence.Low
+            };
+        }
+
+        if (tagMappings.Count == 1)
+        {
+            var tagMapping = tagMappings[0];
             return new DeathCauseInfo
             {
                 Category = tagMapping.Category,
@@ -210,12 +242,20 @@ public static class DeathCauseHelper
             : $"Unknown ({code.Value})";
     }
 
-    private static TagMapping? ResolveSpecificTag(IReadOnlyList<string> tags)
+    private static IReadOnlyList<TagMapping> ResolveSpecificTags(IReadOnlyList<string> tags)
     {
-        foreach (var mapping in SpecificTagMappings)
-            if (tags.Any(tag => tag.Contains(mapping.Fragment, StringComparison.OrdinalIgnoreCase)))
-                return mapping;
-        return null;
+        return SpecificTagMappings.Where(mapping => tags.Any(tag => TagMatches(tag, mapping.Fragment)))
+            .DistinctBy(mapping => mapping.Label, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static bool TagMatches(string tag, string mapping)
+    {
+        if (mapping.Contains('.'))
+            return tag.Equals(mapping, StringComparison.OrdinalIgnoreCase);
+
+        return tag.StartsWith("Item.Weapon.", StringComparison.OrdinalIgnoreCase) &&
+               tag.Split('.').Any(segment => segment.Equals(mapping, StringComparison.OrdinalIgnoreCase));
     }
 
     private static IReadOnlyList<string> NormalizeTags(IEnumerable<string>? tags)

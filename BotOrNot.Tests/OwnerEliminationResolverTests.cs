@@ -98,12 +98,54 @@ public class OwnerEliminationResolverTests
     }
 
     [Test]
+    public void Resolve_UnorderedFinishCannotInheritKnownTimelineKnock()
+    {
+        var result = Resolve(
+            Knock(1, 100, "victim", Owner, true),
+            new CombatLifecycleEvent(2, null, CombatLifecycleEventKind.Finish, "victim", "other"));
+
+        AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+    }
+
+    [TestCase(double.NaN)]
+    [TestCase(double.PositiveInfinity)]
+    [TestCase(-1d)]
+    public void Resolve_InvalidTimeDirectOwnerFinishUsesOnlyDirectEvidence(double invalidTime)
+    {
+        var result = Resolve(new CombatLifecycleEvent(
+            1, invalidTime, CombatLifecycleEventKind.Finish, "victim", Owner));
+
+        AssertDecision(result.Single(), OwnerCreditStatus.Credited, OwnerCreditSource.DirectFinish);
+    }
+
+    [Test]
     public void Resolve_SameTimestampRecoveryAndFinishStaysUncertain()
     {
         var result = Resolve(
             Knock(1, 10, "victim", Owner, true),
             State(2, 20, "victim", isDbno: false),
             Finish(3, 20, "victim", "other"));
+
+        AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+    }
+
+    [Test]
+    public void Resolve_SameTimestampKnockAndFinishStaysUncertain()
+    {
+        var result = Resolve(
+            Knock(1, 20, "victim", Owner, true),
+            Finish(2, 20, "victim", "other"));
+
+        AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+    }
+
+    [Test]
+    public void Resolve_ConflictingSameTimestampKnocksRemainUncertainAtLaterFinish()
+    {
+        var result = Resolve(
+            Knock(1, 20, "victim", Owner, true),
+            Knock(2, 20, "victim", "other", true),
+            Finish(3, 30, "victim", "other"));
 
         AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
     }
