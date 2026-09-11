@@ -9,17 +9,15 @@ namespace BotOrNot.Core.Services;
 /// </summary>
 public static class PlaylistHelper
 {
-    private static readonly Dictionary<string, string> PlaylistMappings;
+    private static readonly PlaylistCatalog Catalog;
 
     static PlaylistHelper()
     {
-        PlaylistMappings = LoadPlaylistMappings();
+        Catalog = LoadPlaylistMappings();
     }
 
-    private static Dictionary<string, string> LoadPlaylistMappings()
+    private static PlaylistCatalog LoadPlaylistMappings()
     {
-        var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
         try
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -27,38 +25,16 @@ public static class PlaylistHelper
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
-                return mappings;
+                return PlaylistCatalog.Empty;
 
             using var reader = new StreamReader(stream);
-            var json = reader.ReadToEnd();
-
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("playlists", out var playlists))
-            {
-                foreach (var playlist in playlists.EnumerateArray())
-                {
-                    if (playlist.TryGetProperty("playlist_name", out var nameElement) &&
-                        playlist.TryGetProperty("display_name", out var displayElement))
-                    {
-                        var name = nameElement.GetString();
-                        var display = displayElement.GetString();
-
-                        if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(display))
-                        {
-                            mappings[name] = display;
-                        }
-                    }
-                }
-            }
+            return PlaylistCatalog.FromJson(reader.ReadToEnd());
         }
         catch
         {
             // If loading fails, return empty mappings - fallback logic will handle it
+            return PlaylistCatalog.Empty;
         }
-
-        return mappings;
     }
 
     /// <summary>
@@ -69,17 +45,26 @@ public static class PlaylistHelper
         if (string.IsNullOrEmpty(playlistName))
             return null;
 
-        return PlaylistMappings.TryGetValue(playlistName, out var displayName) ? displayName : null;
+        return Catalog.GetDisplayName(playlistName);
     }
 
     /// <summary>
-    /// Returns the maintained playlist catalog's team format from its canonical display-label
-    /// suffix. This is an interim adapter until the catalog stores a structured max-team-size
-    /// descriptor. Unknown raw IDs remain unknown even when their text contains a size word.
+    /// Returns the maintained playlist catalog's team format. Structured <c>teamSize</c>
+    /// descriptors take precedence; older catalog entries retain the canonical-label suffix
+    /// fallback. Unknown raw IDs remain unknown even when their text contains a size word.
     /// </summary>
     public static int? GetKnownMaxTeamSize(string? playlistName)
+        => GetKnownMaxTeamSize(Catalog, playlistName);
+
+    internal static int? GetKnownMaxTeamSize(PlaylistCatalog catalog, string? playlistName)
     {
-        var displayName = GetDisplayName(playlistName);
+        if (string.IsNullOrEmpty(playlistName))
+            return null;
+
+        if (catalog.GetTeamSize(playlistName) is { } teamSize)
+            return teamSize;
+
+        var displayName = catalog.GetDisplayName(playlistName);
         if (displayName == null)
             return null;
 
@@ -94,6 +79,8 @@ public static class PlaylistHelper
         if (displayName.EndsWith(" - Squad", StringComparison.OrdinalIgnoreCase) ||
             displayName.EndsWith(" - Squads", StringComparison.OrdinalIgnoreCase))
             return 4;
+        if (displayName.EndsWith(" - Six-stack", StringComparison.OrdinalIgnoreCase))
+            return 6;
 
         return null;
     }
@@ -111,4 +98,62 @@ public static class PlaylistHelper
         // Return raw playlist name if no mapping found
         return playlistName ?? "Unknown";
     }
+}
+
+internal sealed class PlaylistCatalog
+{
+    private readonly Dictionary<string, string> _displayNames;
+    private readonly Dictionary<string, int> _teamSizes;
+
+    private PlaylistCatalog(Dictionary<string, string> displayNames, Dictionary<string, int> teamSizes)
+    {
+        _displayNames = displayNames;
+        _teamSizes = teamSizes;
+    }
+
+    internal static PlaylistCatalog Empty { get; } = new(
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+        new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+
+    internal static PlaylistCatalog FromJson(string json)
+    {
+        var displayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var teamSizes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        using var document = JsonDocument.Parse(json);
+
+        if (!document.RootElement.TryGetProperty("playlists", out var playlists) ||
+            playlists.ValueKind != JsonValueKind.Array)
+        {
+            return new PlaylistCatalog(displayNames, teamSizes);
+        }
+
+        foreach (var playlist in playlists.EnumerateArray())
+        {
+            if (!playlist.TryGetProperty("playlist_name", out var nameElement) ||
+                !playlist.TryGetProperty("display_name", out var displayElement))
+            {
+                continue;
+            }
+
+            var name = nameElement.GetString();
+            var display = displayElement.GetString();
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(display))
+                continue;
+
+            displayNames[name] = display;
+            if (playlist.TryGetProperty("teamSize", out var teamSizeElement) &&
+                teamSizeElement.TryGetInt32(out var teamSize) && teamSize > 0)
+            {
+                teamSizes[name] = teamSize;
+            }
+        }
+
+        return new PlaylistCatalog(displayNames, teamSizes);
+    }
+
+    internal string? GetDisplayName(string playlistName)
+        => _displayNames.TryGetValue(playlistName, out var displayName) ? displayName : null;
+
+    internal int? GetTeamSize(string playlistName)
+        => _teamSizes.TryGetValue(playlistName, out var teamSize) ? teamSize : null;
 }
