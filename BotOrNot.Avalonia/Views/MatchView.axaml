@@ -202,6 +202,14 @@
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       ToolTip.Tip="{Binding StormPhaseTooltip}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>
@@ -319,6 +327,14 @@
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
                 <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       ToolTip.Tip="{Binding StormPhaseTooltip}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>

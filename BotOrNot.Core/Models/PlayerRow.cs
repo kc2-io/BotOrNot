@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace BotOrNot.Core.Models;
 
 public sealed class PlayerRow
@@ -33,6 +35,41 @@ public sealed class PlayerRow
 
     public int? CircleNumber { get; set; }
     public StormCircleStatus CircleStatus { get; set; }
+
+    [JsonIgnore]
+    public string StormPhaseDisplay => CircleStatus switch
+    {
+        StormCircleStatus.RecordedPhase when CircleNumber.HasValue => $"Phase {CircleNumber.Value}",
+        StormCircleStatus.BeforeFirstCircle => "Before phase 1",
+        _ => "Unknown"
+    };
+
+    [JsonIgnore]
+    public string StormPhaseTooltip => CircleStatus switch
+    {
+        StormCircleStatus.RecordedPhase when CircleNumber.HasValue =>
+            $"The replay recorded storm phase {CircleNumber.Value} at this elimination.",
+        StormCircleStatus.BeforeFirstCircle =>
+            "The replay explicitly recorded phase 0 at this elimination.",
+        _ => "No trustworthy storm phase had been recorded by this elimination."
+    };
+
+    [JsonIgnore]
+    public string? StormPhaseSortValue => CircleStatus switch
+    {
+        StormCircleStatus.RecordedPhase when CircleNumber.HasValue => CircleNumber.Value.ToString(),
+        StormCircleStatus.BeforeFirstCircle => "0",
+        _ => null
+    };
+
+    [JsonIgnore]
+    public string StormPhaseCsvValue => StormPhaseDisplay;
+
+    public void SetStormCircle(StormCircleResolution resolution)
+    {
+        CircleNumber = resolution.CircleNumber;
+        CircleStatus = resolution.Status;
+    }
 
     public bool IsBot => !string.IsNullOrEmpty(Bot) && Bot.Equals("true", StringComparison.OrdinalIgnoreCase);
     public bool IsWinner => Placement == "1";

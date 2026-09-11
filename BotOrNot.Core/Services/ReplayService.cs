@@ -331,8 +331,7 @@ public sealed class ReplayService : IReplayService
                         elimRow.ElimTime = eventTimeStr;
                     // A repeated finish is a fresh observation. Clear a stale circle when
                     // this event has no trustworthy phase instead of retaining an older death.
-                    elimRow.CircleNumber = circle.CircleNumber;
-                    elimRow.CircleStatus = circle.Status;
+                    elimRow.SetStormCircle(circle);
                 }
 
                 // Track who eliminated the replay owner

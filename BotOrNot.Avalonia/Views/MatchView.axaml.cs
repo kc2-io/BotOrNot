@@ -234,6 +234,7 @@ public partial class MatchView : UserControl
             "Place" => new(p => p.Placement, true, false, false),
             "Death Cause" => new(p => p.DeathCause, false, false, true),
             "Elim Time" => new(p => p.ElimTime, true, false, false),
+            "Storm Phase" => new(p => p.StormPhaseSortValue, true, false, false),
             "Pickaxe" => new(p => p.Pickaxe, false, false, false),
             "Glider" => new(p => p.Glider, false, false, false),
             _ => default
@@ -391,6 +392,7 @@ public partial class MatchView : UserControl
             "Place" => new(header, p => UnknownToDash(p.Placement)),
             "Death Cause" => new(header, p => p.DeathCause ?? ""),
             "Elim Time" => new(header, p => p.ElimTime ?? ""),
+            "Storm Phase" => new(header, p => p.StormPhaseCsvValue),
             "Pickaxe" => new(header, p => p.Pickaxe ?? ""),
             "Glider" => new(header, p => p.Glider ?? ""),
             _ => null
