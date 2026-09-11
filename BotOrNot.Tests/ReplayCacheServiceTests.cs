@@ -87,7 +87,21 @@ public sealed class ReplayCacheServiceTests
         CreateReplay("partial.replay");
         var replayService = new CountingReplayService(new ReplayData
         {
+            OwnerId = "owner",
+            OwnerTeamIndex = 4,
             OwnerName = "Recorder",
+            Players =
+            [
+                new PlayerRow
+                {
+                    StableId = "owner",
+                    Id = "owner",
+                    Name = "Recorder",
+                    TeamIndexValue = 4,
+                    IsReplayOwner = true,
+                    Bot = "false"
+                }
+            ],
             Metadata = new ReplayMetadata { RecordingDurationMinutes = 3.4 }
         });
         var cache = new ReplayCacheService(replayService, cachePath: _cachePath);
@@ -99,6 +113,48 @@ public sealed class ReplayCacheServiceTests
         Assert.That(summary.BotKills, Is.Null);
     }
 
+    [Test]
+    public async Task Summary_ContainsOnlyPerMatchDeduplicatedStableOpponents()
+    {
+        CreateReplay("opponents.replay");
+        var replay = CompleteData(kills: 1, durationMinutes: 5);
+        replay.Players.AddRange(
+        [
+            new PlayerRow { StableId = "mate", Id = "mate", Name = "Mate", TeamIndexValue = 4, Bot = "false" },
+            new PlayerRow { StableId = "enemy", Id = "enemy", Name = "Enemy", TeamIndexValue = 8, Bot = "false" },
+            new PlayerRow { StableId = "ENEMY", Id = "ENEMY", Name = "Enemy renamed", TeamIndexValue = 8, Bot = "false" },
+            new PlayerRow { StableId = "bot", Id = "bot", Name = "Bot", TeamIndexValue = 8, Bot = "true" }
+        ]);
+        var cache = new ReplayCacheService(new CountingReplayService(replay), cachePath: _cachePath);
+
+        var summary = (await cache.GetSummariesAsync(_directory)).Single();
+
+        Assert.That(summary.Opponents, Has.Count.EqualTo(1));
+        Assert.That(summary.Opponents.Single().StableId, Is.EqualTo("enemy").IgnoreCase);
+        Assert.That(summary.OpponentAnalysisComplete, Is.True);
+    }
+
+    [Test]
+    public void Summary_UsesOwnerFlagForPlacementInsteadOfDisplayName()
+    {
+        var replayPath = CreateReplay("placement.replay");
+        var replay = CompleteData(kills: 0, durationMinutes: 5);
+        replay.Players[0].Placement = "1";
+        replay.Players.Insert(0, new PlayerRow
+        {
+            StableId = "different-account",
+            Id = "different-account",
+            Name = "Recorder",
+            Placement = "99",
+            TeamIndexValue = 8,
+            Bot = "false"
+        });
+
+        var summary = ReplaySummaryFactory.Create(replay, new FileInfo(replayPath));
+
+        Assert.That(summary.Placement, Is.EqualTo("1"));
+    }
+
     private string CreateReplay(string fileName)
     {
         var path = Path.Combine(_directory, fileName);
@@ -108,10 +164,23 @@ public sealed class ReplayCacheServiceTests
 
     private static ReplayData CompleteData(int kills, double durationMinutes) => new()
     {
+        OwnerId = "owner",
+        OwnerTeamIndex = 4,
         OwnerName = "Recorder",
         OwnerKills = kills,
         Metadata = new ReplayMetadata { RecordingDurationMinutes = durationMinutes },
-        Players = [new PlayerRow { Name = "Recorder", Bot = "false" }]
+        Players =
+        [
+            new PlayerRow
+            {
+                StableId = "owner",
+                Id = "owner",
+                Name = "Recorder",
+                TeamIndexValue = 4,
+                IsReplayOwner = true,
+                Bot = "false"
+            }
+        ]
     };
 
     private sealed class CountingReplayService(ReplayData data) : IReplayService
