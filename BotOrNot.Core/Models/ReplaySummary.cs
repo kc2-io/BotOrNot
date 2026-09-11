@@ -12,7 +12,16 @@ public sealed class ReplaySummary
     public string FileName { get; set; } = "";
     public string FilePath { get; set; } = "";
     public DateTime FileDate { get; set; }
-    public string GameMode { get; set; } = "";
+    private string _legacyGameMode = "";
+    // Resolve from the raw ID at read time so cached summaries pick up mapping updates.
+    // Older summaries without a raw playlist retain their stored label.
+    public string GameMode
+    {
+        get => string.IsNullOrWhiteSpace(Playlist)
+            ? _legacyGameMode
+            : Services.PlaylistHelper.GetDisplayNameWithFallback(Playlist);
+        set => _legacyGameMode = value;
+    }
     public string Playlist { get; set; } = "";
     public string Placement { get; set; } = "";
     /// <summary>

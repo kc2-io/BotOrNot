@@ -7,6 +7,29 @@ namespace BotOrNot.Tests;
 [TestFixture]
 public class PlaylistMappingTests
 {
+    [TestCase("{\"GameMode\":\"Old label\",\"Playlist\":\"Playlist_MatchMistDuo\"}")]
+    [TestCase("{\"Playlist\":\"Playlist_MatchMistDuo\",\"GameMode\":\"Old label\"}")]
+    public void CachedSummaryUsesCurrentMappingRegardlessOfJsonPropertyOrder(string json)
+    {
+        var summary = JsonSerializer.Deserialize<BotOrNot.Core.Models.ReplaySummary>(json)!;
+        Assert.That(summary.GameMode, Is.EqualTo("Reload Build - Duos"));
+        var restored = JsonSerializer.Deserialize<BotOrNot.Core.Models.ReplaySummary>(
+            JsonSerializer.Serialize(summary))!;
+        Assert.That(restored.GameMode, Is.EqualTo("Reload Build - Duos"));
+    }
+
+    [Test]
+    public void CachedSummaryPreservesUnknownRawIdAndLegacyLabelWithoutAnId()
+    {
+        var unknown = new BotOrNot.Core.Models.ReplaySummary
+        {
+            Playlist = "Playlist_NotInMappings", GameMode = "Outdated label"
+        };
+        Assert.That(unknown.GameMode, Is.EqualTo("Playlist_NotInMappings"));
+        Assert.That(new BotOrNot.Core.Models.ReplaySummary { GameMode = "Legacy" }.GameMode,
+            Is.EqualTo("Legacy"));
+    }
+
     [TestCase("Playlist_RopeSmileSolo", "Reload Build - Solo")]
     [TestCase("Playlist_RopeSmileDuo", "Reload Build - Duos")]
     [TestCase("Playlist_Habanero_JumpBear_Duos", "Ranked Reload Build - Duos")]
