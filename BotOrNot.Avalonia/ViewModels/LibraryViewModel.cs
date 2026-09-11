@@ -10,6 +10,7 @@ namespace BotOrNot.Avalonia.ViewModels;
 
 public sealed class FrequentOpponent
 {
+    public string StableId { get; init; } = "";
     public string Name { get; init; } = "";
     public int Appearances { get; init; }
 }
@@ -177,11 +178,34 @@ public class LibraryViewModel : ReactiveObject
         AvgBotPercent = TotalMatches > 0 ? Replays.Average(r => r.BotPercent) : 0;
 
         FrequentOpponents = Replays
-            .SelectMany(r => r.PlayerNames)
-            .GroupBy(n => n, StringComparer.OrdinalIgnoreCase)
-            .OrderByDescending(g => g.Count())
+            .SelectMany((replay, matchIndex) => replay.Opponents
+                .Where(opponent => !string.IsNullOrWhiteSpace(opponent.StableId))
+                .GroupBy(opponent => opponent.StableId, StringComparer.OrdinalIgnoreCase)
+                .SelectMany(group => group.Select(opponent => new
+                {
+                    Opponent = opponent,
+                    replay.FileDate,
+                    MatchIndex = matchIndex
+                })))
+            .GroupBy(entry => entry.Opponent.StableId, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new FrequentOpponent
+            {
+                StableId = group.Key,
+                Name = group
+                    .Where(entry => !string.IsNullOrWhiteSpace(entry.Opponent.Name))
+                    .OrderByDescending(entry => entry.FileDate)
+                    .ThenBy(entry => entry.Opponent.Name, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(entry => entry.Opponent.Name, StringComparer.Ordinal)
+                    .Select(entry => entry.Opponent.Name)
+                    .FirstOrDefault() ?? "Unknown player",
+                Appearances = group.Select(entry => entry.MatchIndex).Distinct().Count()
+            })
+            .OrderByDescending(opponent => opponent.Appearances)
+            .ThenBy(opponent => opponent.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(opponent => opponent.Name, StringComparer.Ordinal)
+            .ThenBy(opponent => opponent.StableId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(opponent => opponent.StableId, StringComparer.Ordinal)
             .Take(10)
-            .Select(g => new FrequentOpponent { Name = g.Key, Appearances = g.Count() })
             .ToList();
 
         this.RaisePropertyChanged(nameof(FrequentOpponents));
