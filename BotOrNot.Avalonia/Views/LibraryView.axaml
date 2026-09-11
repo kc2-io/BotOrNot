@@ -7,30 +7,55 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
         <!-- Toolbar -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8" Spacing="8">
-            <Image Source="avares://BotOrNot/Assets/logo.png"
-                   Width="32" Height="32" VerticalAlignment="Center" />
-            <Button Content="Select Replay Folder" Click="PickDirectory_Click" />
-            <TextBlock Text="{Binding DirectoryPath}"
-                       Foreground="{DynamicResource SubtleTextBrush}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       MaxWidth="400"
-                       TextTrimming="CharacterEllipsis"
-                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <TextBlock Text="No folder selected"
-                       Foreground="{DynamicResource HintTextBrush}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
-            <Button Content="Scan"
-                    Command="{Binding ScanCommand}"
-                    IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <ProgressBar Value="{Binding ScanProgress}"
-                         Minimum="0" Maximum="100"
-                         IsVisible="{Binding IsScanning}"
-                         Width="120" Height="16" />
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
+            <Image Grid.RowSpan="2"
+                   Source="avares://BotOrNot/Assets/logo.png"
+                   Width="32" Height="32" Margin="0,0,8,0"
+                   VerticalAlignment="Top" />
+            <WrapPanel Grid.Column="1" Grid.Row="0">
+                <Button Content="Select Replay Folder" Click="PickDirectory_Click" Margin="0,0,8,4" />
+                <TextBlock Text="{Binding DirectoryPath}"
+                           Foreground="{DynamicResource SubtleTextBrush}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           MaxWidth="400" Margin="0,0,8,4"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Text="No folder selected"
+                           Foreground="{DynamicResource HintTextBrush}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+            </WrapPanel>
+            <WrapPanel Grid.Column="1" Grid.Row="1" Margin="0,6,0,0">
+                <Label Content="Replay scan limit"
+                       Margin="0,0,8,4"
+                       Target="{Binding #ReplayScanLimitInput}"
+                       VerticalAlignment="Center" />
+                <TextBox x:Name="ReplayScanLimitInput"
+                         Text="{Binding ReplayScanLimitText, UpdateSourceTrigger=PropertyChanged}"
+                         Width="80" Margin="0,0,8,4"
+                         Watermark="50"
+                         VerticalContentAlignment="Center"
+                         KeyDown="ReplayScanLimit_KeyDown" />
+                <Button Content="Apply &amp; Scan"
+                        Command="{Binding ApplyScanLimitCommand}" Margin="0,0,8,4"
+                        />
+                <ProgressBar Value="{Binding ScanProgress}"
+                             Minimum="0" Maximum="100"
+                             IsVisible="{Binding IsScanning}"
+                             Width="120" Height="16" Margin="0,0,8,4"
+                             VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ScanStatusText}"
+                           Margin="0,0,8,4"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource SubtleTextBrush}" />
+                <TextBlock Text="{Binding ScanOutcomeText}"
+                           Margin="0,0,8,4"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource SubtleTextBrush}" />
+            </WrapPanel>
+        </Grid>
 
         <!-- Error Banner -->
         <Border Grid.Row="1"
@@ -130,14 +155,20 @@
                 BorderThickness="0,1,0,0"
                 Padding="8,6"
                 MaxHeight="160">
-            <Grid RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,Auto,*">
                 <TextBlock Grid.Row="0"
                            Text="Frequent Opponents (top 10)"
                            FontWeight="SemiBold"
                            FontSize="12"
                            Margin="0,0,0,4"
                            Foreground="{DynamicResource SubtleTextBrush}" />
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding FrequentOpponents}">
+                <TextBlock Grid.Row="1"
+                           Text="{Binding OpponentDataIncompleteText}"
+                           Margin="0,0,0,4"
+                           FontSize="12"
+                           Foreground="{DynamicResource HintTextBrush}"
+                           IsVisible="{Binding HasIncompleteOpponentData}" />
+                <ItemsControl Grid.Row="2" ItemsSource="{Binding FrequentOpponents}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
