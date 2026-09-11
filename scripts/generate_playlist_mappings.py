@@ -136,7 +136,9 @@ def infer_descriptor(item: dict[str, Any], observed_date: str) -> dict[str, Any]
     build_mode = "Zero Build" if zero_build_evidence else "Build"
     team_size = item.get("maxTeamSize")
     if type(team_size) is not int or team_size < 1:
-        team_size = None
+        # A partial source record must not overwrite a valid historical descriptor with a
+        # non-serializable null team size.  Keep it unresolved for review instead.
+        return None
     ranked = "ranked" in rating or any("habanero" in value or ".comp" in value for value in item_tags)
     return {
         "family": family,

@@ -32,7 +32,7 @@ jobs:
       - name: Test generator and catalog validation
         run: |
           python scripts/test_playlist_generator.py
-          python -c "import json; d=json.load(open('BotOrNot.Core/Data/PlaylistMappings.json')); assert d['playlists']"
+          python -c "import json,sys; sys.path.insert(0, 'scripts'); import generate_playlist_mappings as g; g.canonical_catalog(json.load(open('BotOrNot.Core/Data/PlaylistMappings.json'))); g.load_overrides_from_value(json.load(open('scripts/playlist-overrides.json')))"
 
   refresh:
     if: github.event_name != 'pull_request'
@@ -41,6 +41,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    concurrency:
+      group: playlist-catalog-refresh
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

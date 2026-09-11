@@ -93,6 +93,30 @@ class PlaylistGeneratorTests(unittest.TestCase):
         catalog, _ = generator.build(self.catalog, partial, self.epic, {}, "2026-09-11")
         self.assertIn("Playlist_Historical", [item["playlist_name"] for item in catalog["playlists"]])
 
+    def test_missing_team_size_is_unresolved_and_does_not_corrupt_historical_record(self):
+        existing = {"playlists": [
+            {"playlist_name": "Playlist_BR", "display_name": "BR Build - Solo",
+             "family": "BR", "buildMode": "Build", "teamSize": 1, "rankedState": "unknown",
+             "variant": None, "sources": ["fortnite-api.com/v1/playlists"],
+             "observedDate": "2026-09-11", "confidence": "source-derived"}
+        ]}
+        partial = {"status": 200, "data": [source("Playlist_BR", team=None)]}
+        catalog, report = generator.build(existing, partial, epic(official("Playlist_BR", "Solo")),
+                                          {}, "2026-09-18", include_new=True)
+        self.assertEqual(catalog["playlists"][0]["teamSize"], 1)
+        self.assertIn("Playlist_BR", report["preserved"])
+        missing_team = source("Playlist_BR")
+        del missing_team["maxTeamSize"]
+        catalog, report = generator.build(existing, {"status": 200, "data": [missing_team]},
+                                          epic(official("Playlist_BR", "Solo")), {}, "2026-09-18", include_new=True)
+        self.assertEqual(catalog["playlists"][0]["teamSize"], 1)
+        self.assertIn("Playlist_BR", report["preserved"])
+        new_partial = {"status": 200, "data": [source("Playlist_New", team=None)]}
+        _, report = generator.build({"playlists": [{"playlist_name": "Playlist_Old", "display_name": "Old"}]},
+                                    new_partial, epic(official("Playlist_Else", "Else")), {}, "2026-09-18", include_new=True)
+        self.assertIn({"playlist_name": "Playlist_New", "reason": "unsupported-or-insufficient-evidence"},
+                      report["unresolved"])
+
     def test_rejects_malformed_sources_and_override_types(self):
         invalid_epics = [{}, {"error": "upstream failure"}, epic(), epic(official("Playlist_X", "x"), official("playlist_x", "x"))]
         for value in invalid_epics:
