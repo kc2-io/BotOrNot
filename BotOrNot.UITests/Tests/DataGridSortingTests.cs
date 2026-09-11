@@ -11,11 +11,11 @@ public class DataGridSortingTests
 {
     private static ObservableCollection<PlayerRow> CreateTestData() => new(new[]
     {
-        new PlayerRow { Name = "Alice",   Kills = "10", Level = "50",      Placement = "1",  Bot = "false" },
-        new PlayerRow { Name = "Bot1",    Kills = "2",  Level = "1",       Placement = "45", Bot = "true"  },
-        new PlayerRow { Name = "Charlie", Kills = "9",  Level = "unknown", Placement = "3",  Bot = "unknown" },
-        new PlayerRow { Name = "Diana",   Kills = "20", Level = "100",     Placement = null,  Bot = "false" },
-        new PlayerRow { Name = "Eve",     Kills = null, Level = "25",      Placement = "10", Bot = "true"  },
+        new PlayerRow { Name = "Alice",   Kills = "10", Level = "50",      Placement = "1",  Bot = "false",   CircleStatus = StormCircleStatus.RecordedPhase, CircleNumber = 10 },
+        new PlayerRow { Name = "Bot1",    Kills = "2",  Level = "1",       Placement = "45", Bot = "true",    CircleStatus = StormCircleStatus.RecordedPhase, CircleNumber = 2 },
+        new PlayerRow { Name = "Charlie", Kills = "9",  Level = "unknown", Placement = "3",  Bot = "unknown", CircleStatus = StormCircleStatus.Unknown },
+        new PlayerRow { Name = "Diana",   Kills = "20", Level = "100",     Placement = null,  Bot = "false",   CircleStatus = StormCircleStatus.BeforeFirstCircle },
+        new PlayerRow { Name = "Eve",     Kills = null, Level = "25",       Placement = "10", Bot = "true",    CircleStatus = StormCircleStatus.RecordedPhase, CircleNumber = 9 },
     });
 
     private Window CreateWindowWithTestData()
@@ -104,6 +104,42 @@ public class DataGridSortingTests
 
         var values = DataGridTestHelper.GetDisplayedValues(grid, p => p.Placement);
         Assert.That(values, Is.EqualTo(new[] { "1", "3", "10", "45", null }));
+    }
+
+    [AvaloniaTest]
+    [TestCase("OwnerEliminationsGrid")]
+    [TestCase("PlayersGrid")]
+    public void StormPhase_Click1_SortsPreFirstThenNumericAndUnknownLast(string gridName)
+    {
+        var window = CreateWindowWithTestData();
+        var grid = DataGridTestHelper.GetDataGrid(window, gridName);
+
+        DataGridTestHelper.ClickColumnHeader(window, grid, "Storm Phase");
+
+        var values = DataGridTestHelper.GetDisplayedValues(grid, p => p.StormPhaseDisplay);
+        Assert.That(values, Is.EqualTo(new[]
+        {
+            "Before phase 1", "Phase 2", "Phase 9", "Phase 10", "Unknown"
+        }));
+    }
+
+    [AvaloniaTest]
+    [TestCase("OwnerEliminationsGrid")]
+    [TestCase("PlayersGrid")]
+    public void StormPhase_Click3_SortsNumericDescendingAndUnknownLast(string gridName)
+    {
+        var window = CreateWindowWithTestData();
+        var grid = DataGridTestHelper.GetDataGrid(window, gridName);
+
+        DataGridTestHelper.ClickColumnHeader(window, grid, "Storm Phase");
+        DataGridTestHelper.ClickColumnHeader(window, grid, "Storm Phase");
+        DataGridTestHelper.ClickColumnHeader(window, grid, "Storm Phase");
+
+        var values = DataGridTestHelper.GetDisplayedValues(grid, p => p.StormPhaseDisplay);
+        Assert.That(values, Is.EqualTo(new[]
+        {
+            "Phase 10", "Phase 9", "Phase 2", "Before phase 1", "Unknown"
+        }));
     }
 
     // ── Bot column with unknowns (3-mode) ────────────────────────────
