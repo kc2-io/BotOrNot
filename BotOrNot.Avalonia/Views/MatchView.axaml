@@ -133,12 +133,13 @@
         </StackPanel>
 
         <!-- Owner Eliminations Header -->
-        <TextBlock Grid.Row="3"
-                   Text="{Binding OwnerKillsHeader}"
-                   FontWeight="Bold"
-                   FontSize="14"
-                   Margin="8,8,8,4"
-                   IsVisible="{Binding HasData}" />
+        <StackPanel Grid.Row="3" Margin="8,8,8,4" IsVisible="{Binding HasData}">
+            <TextBlock Text="{Binding OwnerKillsHeader}" FontWeight="Bold" FontSize="14" />
+            <TextBlock Text="{Binding EliminationCoverageNotice}"
+                       Foreground="{DynamicResource HintTextBrush}"
+                       FontSize="12"
+                       IsVisible="{Binding HasEliminationCoverageNotice}" />
+        </StackPanel>
 
         <!-- Owner Eliminations Grid -->
         <DataGrid Grid.Row="4"
@@ -200,7 +201,14 @@
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
                 <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
-                <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
+                <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding DeathCause}"
+                                       ToolTip.Tip="{Binding DeathCauseInfo.EvidenceSummary}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
                 <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
@@ -326,7 +334,14 @@
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
                 <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
-                <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
+                <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding DeathCause}"
+                                       ToolTip.Tip="{Binding DeathCauseInfo.EvidenceSummary}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
                 <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
