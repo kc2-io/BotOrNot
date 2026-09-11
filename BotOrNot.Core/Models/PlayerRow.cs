@@ -26,6 +26,8 @@ public sealed class PlayerRow
     public bool HasConflictingTeamIndex { get; set; }
     /// <summary>Whether the parser authoritatively identified this row as the replay recorder.</summary>
     public bool IsReplayOwner { get; set; }
+    /// <summary>Structured evidence for <see cref="DeathCause"/>, when available.</summary>
+    public DeathCauseInfo? DeathCauseInfo { get; set; }
     public string? DeathCause { get; set; }
     public string? Placement { get; set; }
     public string? ElimTime { get; set; }

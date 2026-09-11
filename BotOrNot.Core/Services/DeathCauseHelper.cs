@@ -1,117 +1,234 @@
+using BotOrNot.Core.Models;
+
 namespace BotOrNot.Core.Services;
 
 public static class DeathCauseHelper
 {
-    private static readonly Dictionary<string, string> WeaponTagMappings = new(StringComparer.OrdinalIgnoreCase)
+    private sealed record CauseMapping(string Label, DeathCauseCategory Category, bool IsResolvable = true);
+    private sealed record TagMapping(string Fragment, string Label, DeathCauseCategory Category);
+
+    private static readonly TagMapping[] SpecificTagMappings =
+    [
+        new("Area51Gun", "Arc Gun", DeathCauseCategory.PlayerWeapon),
+        new("Gameplay.Damage.DeployableTurret.Shot", "Turret", DeathCauseCategory.PlayerWeapon)
+    ];
+
+    private static readonly Dictionary<int, CauseMapping> DeathCauses = new()
     {
-        { "Area51Gun", "Arc Gun" }
+        { 0, new("Storm", DeathCauseCategory.Environment) },
+        { 1, new("Fall Damage", DeathCauseCategory.Environment) },
+        { 2, new("Pistol", DeathCauseCategory.PlayerWeapon) },
+        { 3, new("Shotgun", DeathCauseCategory.PlayerWeapon) },
+        { 4, new("Rifle", DeathCauseCategory.PlayerWeapon) },
+        { 5, new("SMG", DeathCauseCategory.PlayerWeapon) },
+        { 6, new("Sniper", DeathCauseCategory.PlayerWeapon) },
+        { 7, new("Sniper No Scope", DeathCauseCategory.PlayerWeapon) },
+        { 8, new("Melee", DeathCauseCategory.PlayerWeapon) },
+        { 9, new("Infinity Blade", DeathCauseCategory.PlayerWeapon) },
+        { 10, new("Grenade", DeathCauseCategory.PlayerWeapon) },
+        { 11, new("C4", DeathCauseCategory.PlayerWeapon) },
+        { 12, new("Grenade Launcher", DeathCauseCategory.PlayerWeapon) },
+        { 13, new("Rocket Launcher", DeathCauseCategory.PlayerWeapon) },
+        { 14, new("Minigun", DeathCauseCategory.PlayerWeapon) },
+        { 15, new("Bow", DeathCauseCategory.PlayerWeapon) },
+        { 16, new("Trap", DeathCauseCategory.PlayerWeapon) },
+        { 17, new("Bled Out", DeathCauseCategory.Environment) },
+        { 18, new("Banhammer", DeathCauseCategory.PlayerWeapon) },
+        { 19, new("Removed From Game", DeathCauseCategory.NonCombat) },
+        { 20, new("Boss Melee", DeathCauseCategory.PlayerWeapon) },
+        { 21, new("Boss Dive Attack", DeathCauseCategory.PlayerWeapon) },
+        { 22, new("Boss Ranged", DeathCauseCategory.PlayerWeapon) },
+        { 23, new("Vehicle", DeathCauseCategory.PlayerWeapon) },
+        { 24, new("Shopping Cart", DeathCauseCategory.PlayerWeapon) },
+        { 25, new("ATK", DeathCauseCategory.PlayerWeapon) },
+        { 26, new("Quad Crasher", DeathCauseCategory.PlayerWeapon) },
+        { 27, new("Biplane", DeathCauseCategory.PlayerWeapon) },
+        { 28, new("Biplane Gun", DeathCauseCategory.PlayerWeapon) },
+        { 29, new("LMG", DeathCauseCategory.PlayerWeapon) },
+        { 30, new("Stink Bomb", DeathCauseCategory.PlayerWeapon) },
+        { 31, new("Environmental", DeathCauseCategory.Environment) },
+        { 32, new("Fell Out Of World", DeathCauseCategory.Environment) },
+        { 33, new("Under Landscape", DeathCauseCategory.Environment) },
+        { 34, new("Turret", DeathCauseCategory.PlayerWeapon) },
+        { 35, new("Ship Cannon", DeathCauseCategory.PlayerWeapon) },
+        { 36, new("Cube", DeathCauseCategory.Environment) },
+        { 37, new("Balloon", DeathCauseCategory.Environment) },
+        { 38, new("Storm Surge", DeathCauseCategory.Environment) },
+        { 39, new("Lava", DeathCauseCategory.Environment) },
+        { 40, new("Zombie", DeathCauseCategory.Environment) },
+        { 41, new("Elite Zombie", DeathCauseCategory.Environment) },
+        { 42, new("Ranged Zombie", DeathCauseCategory.Environment) },
+        { 43, new("Brute", DeathCauseCategory.Environment) },
+        { 44, new("Elite Brute", DeathCauseCategory.Environment) },
+        { 45, new("Mega Brute", DeathCauseCategory.Environment) },
+        { 46, new("Switched To Spectate", DeathCauseCategory.NonCombat) },
+        { 47, new("Logged Out", DeathCauseCategory.NonCombat) },
+        { 48, new("Team Switch", DeathCauseCategory.NonCombat) },
+        { 49, new("Won Match", DeathCauseCategory.NonCombat) },
+        { 50, new("Unspecified", DeathCauseCategory.Unknown, false) },
+        { 51, new("MAX", DeathCauseCategory.Unknown, false) }
     };
 
-    private static readonly Dictionary<int, string> DeathCauses = new()
+    public static DeathCauseInfo ResolveEvent(int? eventCode, int? killFeedCode, IEnumerable<string>? deathTags)
     {
-        { 0, "Storm" },
-        { 1, "Fall Damage" },
-        { 2, "Pistol" },
-        { 3, "Shotgun" },
-        { 4, "Rifle" },
-        { 5, "SMG" },
-        { 6, "Sniper" },
-        { 7, "Sniper No Scope" },
-        { 8, "Melee" },
-        { 9, "Infinity Blade" },
-        { 10, "Grenade" },
-        { 11, "C4" },
-        { 12, "Grenade Launcher" },
-        { 13, "Rocket Launcher" },
-        { 14, "Minigun" },
-        { 15, "Bow" },
-        { 16, "Trap" },
-        { 17, "Bled Out" },
-        { 18, "Banhammer" },
-        { 19, "Removed From Game" },
-        { 20, "Boss Melee" },
-        { 21, "Boss Dive Attack" },
-        { 22, "Boss Ranged" },
-        { 23, "Vehicle" },
-        { 24, "Shopping Cart" },
-        { 25, "ATK" },
-        { 26, "Quad Crasher" },
-        { 27, "Biplane" },
-        { 28, "Biplane Gun" },
-        { 29, "LMG" },
-        { 30, "Stink Bomb" },
-        { 31, "Environmental" },
-        { 32, "Fell Out Of World" },
-        { 33, "Under Landscape" },
-        { 34, "Turret" },
-        { 35, "Ship Cannon" },
-        { 36, "Cube" },
-        { 37, "Balloon" },
-        { 38, "Storm Surge" },
-        { 39, "Lava" },
-        { 40, "Zombie" },
-        { 41, "Elite Zombie" },
-        { 42, "Ranged Zombie" },
-        { 43, "Brute" },
-        { 44, "Elite Brute" },
-        { 45, "Mega Brute" },
-        { 46, "Switched To Spectate" },
-        { 47, "Logged Out" },
-        { 48, "Team Switch" },
-        { 49, "Won Match" },
-        { 50, "Unspecified" },
-        { 51, "MAX" }
-    };
+        var tags = NormalizeTags(deathTags);
+        var tagMapping = ResolveSpecificTag(tags);
+        var eventMapping = ResolveCode(eventCode);
+        var killFeedMapping = ResolveCode(killFeedCode);
 
-    /// <summary>
-    /// Converts a death cause code to a human-readable string with the code in parentheses.
-    /// </summary>
-    /// <param name="deathCauseValue">The raw death cause value (integer as string)</param>
-    /// <returns>Human-readable death cause like "Storm (0)" or the original value if not recognized</returns>
-    public static string GetDisplayName(string? deathCauseValue)
-    {
-        if (string.IsNullOrWhiteSpace(deathCauseValue))
-            return "Unknown";
-
-        if (int.TryParse(deathCauseValue, out var code))
+        if (tagMapping != null)
         {
-            if (DeathCauses.TryGetValue(code, out var name))
-                return $"{name} ({code})";
-
-            // Known integer but not in our mapping
-            return $"Unknown ({code})";
+            var numericCategory = eventMapping is { IsResolvable: true }
+                ? eventMapping.Category
+                : killFeedMapping is { IsResolvable: true }
+                    ? killFeedMapping.Category
+                    : DeathCauseCategory.Unknown;
+            return new DeathCauseInfo
+            {
+                Category = tagMapping.Category,
+                DisplayName = tagMapping.Label,
+                RawEventCode = eventCode,
+                RawKillFeedCode = killFeedCode,
+                RawTags = tags,
+                TagRole = DeathCauseTagRole.KillFeedDeathContext,
+                Source = DeathCauseSource.SpecificEventTag,
+                ResolutionStatus = numericCategory != DeathCauseCategory.Unknown && numericCategory != tagMapping.Category
+                    ? DeathCauseResolutionStatus.Conflicting
+                    : DeathCauseResolutionStatus.Resolved,
+                // The tag belongs to a uniquely correlated player-state frame, not the
+                // event chunk itself, so keep correlation confidence explicit.
+                Confidence = EvidenceConfidence.Medium
+            };
         }
 
-        // Return original value if not a recognized integer code
-        return deathCauseValue;
+        if (eventMapping is { IsResolvable: true })
+        {
+            var conflicts = killFeedMapping is { IsResolvable: true } && killFeedMapping.Category != eventMapping.Category;
+            return FromMapping(eventMapping, eventCode, killFeedCode, tags,
+                DeathCauseSource.EliminationEventCode,
+                conflicts ? DeathCauseResolutionStatus.Conflicting : DeathCauseResolutionStatus.Resolved,
+                EvidenceConfidence.Medium, DeathCauseTagRole.KillFeedDeathContext);
+        }
+
+        if (killFeedMapping is { IsResolvable: true })
+        {
+            return FromMapping(killFeedMapping, eventCode, killFeedCode, tags,
+                DeathCauseSource.KillFeedCode, DeathCauseResolutionStatus.Resolved,
+                EvidenceConfidence.High, DeathCauseTagRole.KillFeedDeathContext);
+        }
+
+        var unknownCode = eventCode ?? killFeedCode;
+        return new DeathCauseInfo
+        {
+            DisplayName = FormatCode(unknownCode),
+            RawEventCode = eventCode,
+            RawKillFeedCode = killFeedCode,
+            RawTags = tags,
+            TagRole = tags.Count == 0 ? DeathCauseTagRole.None : DeathCauseTagRole.KillFeedDeathContext,
+            Source = DeathCauseSource.None,
+            ResolutionStatus = DeathCauseResolutionStatus.Unknown,
+            Confidence = unknownCode.HasValue || tags.Count > 0 ? EvidenceConfidence.Medium : EvidenceConfidence.None
+        };
     }
 
-    /// <summary>
-    /// Converts a death cause code to a human-readable string, falling back to death tags
-    /// when the numeric code is null or missing.
-    /// </summary>
-    public static string GetDisplayName(string? deathCauseValue, IEnumerable<string>? deathTags)
+    public static DeathCauseInfo ResolveLegacy(string? deathCauseValue, IEnumerable<string>? deathTags)
     {
-        // Try numeric code resolution first
-        if (!string.IsNullOrWhiteSpace(deathCauseValue))
-            return GetDisplayName(deathCauseValue);
+        var tags = NormalizeTags(deathTags);
+        var tagMapping = ResolveSpecificTag(tags);
+        int? code = int.TryParse(deathCauseValue, out var parsedCode) ? parsedCode : null;
+        var codeMapping = ResolveCode(code);
 
-        // Fall back to death tag resolution
-        if (deathTags != null)
+        if (tagMapping != null)
         {
-            foreach (var tag in deathTags)
+            return new DeathCauseInfo
             {
-                if (tag.StartsWith("Item.Weapon.", StringComparison.OrdinalIgnoreCase))
-                {
-                    foreach (var (key, displayName) in WeaponTagMappings)
-                    {
-                        if (tag.Contains(key, StringComparison.OrdinalIgnoreCase))
-                            return displayName;
-                    }
-                }
-            }
+                Category = tagMapping.Category,
+                DisplayName = tagMapping.Label,
+                RawKillFeedCode = code,
+                RawTags = tags,
+                TagRole = DeathCauseTagRole.LegacyPlayerSnapshot,
+                Source = DeathCauseSource.LegacyPlayerSnapshotTag,
+                ResolutionStatus = codeMapping is { IsResolvable: true } && codeMapping.Category != tagMapping.Category
+                    ? DeathCauseResolutionStatus.Conflicting
+                    : DeathCauseResolutionStatus.Resolved,
+                Confidence = EvidenceConfidence.Low
+            };
         }
 
-        return "Unknown";
+        if (codeMapping is { IsResolvable: true })
+        {
+            return FromMapping(codeMapping, null, code, tags,
+                DeathCauseSource.LegacyPlayerSnapshot, DeathCauseResolutionStatus.Resolved,
+                EvidenceConfidence.Low, DeathCauseTagRole.LegacyPlayerSnapshot);
+        }
+
+        return new DeathCauseInfo
+        {
+            DisplayName = code.HasValue ? FormatCode(code) :
+                string.IsNullOrWhiteSpace(deathCauseValue) ? "Unknown" : deathCauseValue,
+            RawKillFeedCode = code,
+            RawTags = tags,
+            TagRole = tags.Count == 0 ? DeathCauseTagRole.None : DeathCauseTagRole.LegacyPlayerSnapshot,
+            Source = string.IsNullOrWhiteSpace(deathCauseValue) && tags.Count == 0
+                ? DeathCauseSource.None
+                : DeathCauseSource.LegacyPlayerSnapshot,
+            ResolutionStatus = DeathCauseResolutionStatus.Unknown,
+            Confidence = string.IsNullOrWhiteSpace(deathCauseValue) && tags.Count == 0
+                ? EvidenceConfidence.None
+                : EvidenceConfidence.Low
+        };
+    }
+
+    public static string GetDisplayName(string? deathCauseValue) => ResolveLegacy(deathCauseValue, null).DisplayName;
+    public static string GetDisplayName(string? deathCauseValue, IEnumerable<string>? deathTags) =>
+        ResolveLegacy(deathCauseValue, deathTags).DisplayName;
+
+    private static DeathCauseInfo FromMapping(
+        CauseMapping mapping, int? eventCode, int? killFeedCode, IReadOnlyList<string> tags,
+        DeathCauseSource source, DeathCauseResolutionStatus status, EvidenceConfidence confidence,
+        DeathCauseTagRole tagRole) => new()
+    {
+        Category = mapping.Category,
+        DisplayName = $"{mapping.Label} ({(source is DeathCauseSource.KillFeedCode or DeathCauseSource.LegacyPlayerSnapshot ? killFeedCode : eventCode ?? killFeedCode)})",
+        RawEventCode = eventCode,
+        RawKillFeedCode = killFeedCode,
+        RawTags = tags,
+        TagRole = tags.Count == 0 ? DeathCauseTagRole.None : tagRole,
+        Source = source,
+        ResolutionStatus = status,
+        Confidence = confidence
+    };
+
+    private static CauseMapping? ResolveCode(int? code) =>
+        code.HasValue && DeathCauses.TryGetValue(code.Value, out var mapping) ? mapping : null;
+
+    private static string FormatCode(int? code)
+    {
+        if (!code.HasValue) return "Unknown";
+        return DeathCauses.TryGetValue(code.Value, out var mapping)
+            ? $"{mapping.Label} ({code.Value})"
+            : $"Unknown ({code.Value})";
+    }
+
+    private static TagMapping? ResolveSpecificTag(IReadOnlyList<string> tags)
+    {
+        foreach (var mapping in SpecificTagMappings)
+            if (tags.Any(tag => tag.Contains(mapping.Fragment, StringComparison.OrdinalIgnoreCase)))
+                return mapping;
+        return null;
+    }
+
+    private static IReadOnlyList<string> NormalizeTags(IEnumerable<string>? tags)
+    {
+        if (tags == null) return Array.Empty<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<string>();
+        foreach (var tag in tags)
+        {
+            if (string.IsNullOrWhiteSpace(tag)) continue;
+            var trimmed = tag.Trim();
+            if (seen.Add(trimmed)) normalized.Add(trimmed);
+        }
+        return normalized;
     }
 }
