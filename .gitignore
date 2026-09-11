@@ -54,6 +54,10 @@ Desktop.ini
 *.trx
 TestResult.xml
 
+# Python maintainer tooling
+__pycache__/
+*.pyc
+
 # NCrunch
 _NCrunch_*
 .*crunch*.local.xml

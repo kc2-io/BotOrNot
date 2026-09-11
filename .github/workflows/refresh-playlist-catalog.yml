@@ -1,0 +1,36 @@
+name: Refresh playlist catalog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test deterministic generator
+        run: python scripts/test_playlist_generator.py
+      - name: Refresh catalog from sources
+        run: |
+          python scripts/generate_playlist_mappings.py --download --include-new --write \
+            --observation-date "$(date -u +%F)"
+      - name: Open or update catalog pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/playlist-catalog
+          delete-branch: true
+          title: 'chore: refresh playlist catalog'
+          commit-message: 'chore: refresh playlist catalog'
+          body: |
+            Automated playlist catalog refresh. Review \`docs/playlist-catalog-report.json\`,
+            retained historical IDs, and any source conflicts before merging.
+          labels: data
