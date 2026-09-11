@@ -40,12 +40,15 @@ class PlaylistGeneratorTests(unittest.TestCase):
             source("Playlist_Six", team=6),
             source("Playlist_Ranked", team=2, rating="ranked-br-combined_build"),
             source("Playlist_UnknownBuild", team=1, rating="fun"),
+            source("Playlist_ConflictingBuild", "EFortGameType::ZeroBuild", 1,
+                   ["Athena.Playlist.NoBuildingMaterials"], rating="build"),
             source("Playlist_VK_Play", "EFortGameType::VKPlay", 16, ["Playlist.UGC.Play"]),
             source("Playlist_Conflict", team=1, name="Changed upstream name")
         ]}
         self.epic = epic(
             official("Playlist_BR", "Battle Royale"),
             official("Playlist_Conflict", "Official changed name"),
+            official("Playlist_OfficialOnly", "Official-only mode"),
         )
 
     def test_supported_descriptors_require_evidence_and_preserve_history(self):
@@ -59,9 +62,16 @@ class PlaylistGeneratorTests(unittest.TestCase):
         self.assertEqual(values["Playlist_Ranked"]["rankedState"], "ranked")
         self.assertNotIn("Playlist_VK_Play", values)
         self.assertNotIn("Playlist_UnknownBuild", values)
+        self.assertNotIn("Playlist_ConflictingBuild", values)
         self.assertIn("Playlist_Historical", report["preserved"])
         conflict = next(item for item in report["conflicts"] if item["playlist_name"] == "Playlist_Conflict")
         self.assertEqual(conflict["official_display_name"], "Official changed name")
+        coverage = report["officialCoverage"]
+        self.assertIn({"playlist_name": "Playlist_OfficialOnly", "official_display_name": "Official-only mode"},
+                      coverage["officialOnly"])
+        self.assertIn("Playlist_Historical", coverage["historicalMissing"])
+        self.assertIn({"playlist_name": "Playlist_Conflict", "official_display_name": "Official changed name",
+                       "preserved_display_name": "Reviewed label"}, coverage["labelConflicts"])
 
     def test_override_precedence_and_casefolded_ids(self):
         overrides = {"playlist_br": {
@@ -92,8 +102,8 @@ class PlaylistGeneratorTests(unittest.TestCase):
         with self.assertRaises(generator.ValidationError):
             generator.normalize_sources(malformed_tags, self.epic)
         malformed_team = {"status": 200, "data": [source("Playlist_X", team=True)]}
-        descriptor = generator.infer_descriptor(malformed_team["data"][0], "2026-09-11")
-        self.assertIsNone(descriptor["teamSize"] if descriptor else None)
+        with self.assertRaises(generator.ValidationError):
+            generator.normalize_sources(malformed_team, self.epic)
         with self.assertRaises(generator.ValidationError):
             generator.load_overrides_from_value({"overrides": [{"playlist_name": "Playlist_X", "teamSize": True}]})
 
@@ -127,6 +137,27 @@ class PlaylistGeneratorTests(unittest.TestCase):
         ]}
         with self.assertRaises(generator.ValidationError):
             generator.canonical_catalog(catalog)
+
+    def test_cli_output_as_input_is_stable_across_a_later_observation_date(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.json"
+            report = root / "report.json"
+            community = root / "community.json"
+            epic_file = root / "epic.json"
+            overrides = root / "overrides.json"
+            catalog.write_text(json.dumps(self.catalog), encoding="utf-8")
+            community.write_text(json.dumps(self.community), encoding="utf-8")
+            epic_file.write_text(json.dumps(self.epic), encoding="utf-8")
+            overrides.write_text('{"overrides":[]}', encoding="utf-8")
+            command = [sys.executable, str(Path(__file__).parent / "generate_playlist_mappings.py"),
+                       "--catalog", str(catalog), "--community", str(community), "--epic", str(epic_file),
+                       "--overrides", str(overrides), "--output", str(catalog), "--report", str(report),
+                       "--include-new", "--write"]
+            self.assertEqual(subprocess.run(command + ["--observation-date", "2026-09-11"]).returncode, 0)
+            first = (catalog.read_bytes(), report.read_bytes())
+            self.assertEqual(subprocess.run(command + ["--observation-date", "2026-09-18"]).returncode, 0)
+            self.assertEqual(first, (catalog.read_bytes(), report.read_bytes()))
 
 
 if __name__ == "__main__":

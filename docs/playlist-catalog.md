@@ -10,8 +10,9 @@ Validate saved, reproducible source inputs without changing files:
 python scripts/generate_playlist_mappings.py --community ..\issue-review-evidence\playlist-api.json --epic ..\issue-review-evidence\epic-content.json --observation-date 2026-09-11
 ~~~
 
-The dry run prints whether the catalog would change and counts for additions, conflicts, and
-unresolved entries. Review docs/playlist-catalog-report.json before writing.
+The dry run prints a complete candidate report, including official-source coverage, additions,
+conflicts, and unresolved entries. Redirect it to a temporary review file when useful; it does
+not modify the catalog or the committed docs/playlist-catalog-report.json.
 
 ~~~powershell
 python scripts/generate_playlist_mappings.py --community path\to\playlist-api.json --epic path\to\epic-content.json --observation-date YYYY-MM-DD --include-new --write
