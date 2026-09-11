@@ -67,6 +67,11 @@ def normalize_sources(community: Any, epic: Any) -> tuple[dict[str, dict[str, An
                 not isinstance(item["gameplayTags"], list) or
                 not all(isinstance(tag, str) for tag in item["gameplayTags"])):
             raise ValidationError(f"community playlist {item['id']!r} has malformed gameplayTags")
+        for field in ("gameType", "path", "ratingType", "name"):
+            if field in item and not isinstance(item[field], str):
+                raise ValidationError(f"community playlist {item['id']!r} has malformed {field}")
+        if "maxTeamSize" in item and item["maxTeamSize"] is not None and type(item["maxTeamSize"]) is not int:
+            raise ValidationError(f"community playlist {item['id']!r} has malformed maxTeamSize")
         items[key] = item
     try:
         playlists = epic["playlistinformation"]["playlist_info"]["playlists"]
@@ -112,25 +117,26 @@ def infer_descriptor(item: dict[str, Any], observed_date: str) -> dict[str, Any]
     if family not in SUPPORTED_FAMILIES:
         return None
 
-    zero_build = (
+    zero_build_evidence = (
         "zerobuild" in game_type or
         "nobuild" in path or
         "athena.playlist.nobuild" in item_tags or
         "athena.playlist.nobuildingmaterials" in item_tags or
         any(value.startswith("product.") and "zerobuild" in value for value in item_tags)
     )
+    rating = str(item.get("ratingType", "")).casefold()
     build_evidence = (
-        any(value.startswith("product.") and value.endswith(".build") for value in item_tags) or
+        any(value.startswith("product.") and value.endswith(".build") and "zero" not in value
+            for value in item_tags) or
         "athena.quests.nobuild.exclude" in item_tags or
-        str(item.get("ratingType", "")).casefold().endswith("build")
+        (rating.endswith("build") and "zero" not in rating and "nobuild" not in rating)
     )
-    if not zero_build and not build_evidence:
+    if zero_build_evidence == build_evidence:
         return None
-    build_mode = "Zero Build" if zero_build else "Build"
+    build_mode = "Zero Build" if zero_build_evidence else "Build"
     team_size = item.get("maxTeamSize")
     if type(team_size) is not int or team_size < 1:
         team_size = None
-    rating = str(item.get("ratingType", "")).casefold()
     ranked = "ranked" in rating or any("habanero" in value or ".comp" in value for value in item_tags)
     return {
         "family": family,
@@ -203,6 +209,11 @@ def load_overrides_from_value(raw: Any) -> dict[str, dict[str, Any]]:
                 raise ValidationError(f"override {value['playlist_name']!r} has malformed {field}")
         if "teamSize" in value and (type(value["teamSize"]) is not int or value["teamSize"] < 1):
             raise ValidationError(f"override {value['playlist_name']!r} has malformed teamSize")
+        allowed = {"playlist_name", "display_name", "family", "buildMode", "teamSize",
+                   "rankedState", "variant", "sources", "observedDate", "confidence"}
+        unexpected = set(value) - allowed
+        if unexpected:
+            raise ValidationError(f"override {value['playlist_name']!r} has unsupported fields {sorted(unexpected)}")
         key = value["playlist_name"].casefold()
         if key in result:
             raise ValidationError(f"override duplicate {value['playlist_name']!r}")
@@ -224,6 +235,29 @@ def canonical_catalog(existing: Any) -> list[dict[str, Any]]:
         if key in seen:
             raise ValidationError(f"catalog duplicate ignoring case: {record['playlist_name']!r}")
         seen.add(key)
+        if "family" in record and record["family"] not in SUPPORTED_FAMILIES:
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed family")
+        if "buildMode" in record and record["buildMode"] not in ("Build", "Zero Build"):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed buildMode")
+        if "teamSize" in record and (type(record["teamSize"]) is not int or record["teamSize"] < 1):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed teamSize")
+        if "rankedState" in record and record["rankedState"] not in ("ranked", "unknown"):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed rankedState")
+        if "variant" in record and record["variant"] is not None and (
+                not isinstance(record["variant"], str) or not record["variant"].strip()):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed variant")
+        if "sources" in record and (not isinstance(record["sources"], list) or not record["sources"] or
+                not all(isinstance(source, str) and source.strip() for source in record["sources"])):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed sources")
+        if "observedDate" in record:
+            if not isinstance(record["observedDate"], str):
+                raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed observedDate")
+            try:
+                date.fromisoformat(record["observedDate"])
+            except ValueError as error:
+                raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed observedDate") from error
+        if "confidence" in record and record["confidence"] not in ("source-derived", "curated-override"):
+            raise ValidationError(f"catalog record {record['playlist_name']!r} has malformed confidence")
         records.append(dict(record))
     return records
 
@@ -234,9 +268,24 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
     sources, official = normalize_sources(community, epic)
     by_id = {record["playlist_name"].casefold(): record for record in records}
     report: dict[str, list[Any]] = {key: [] for key in ("added", "changed", "preserved", "unresolved", "conflicts")}
+    official_coverage: dict[str, list[Any]] = {
+        "matched": [], "historicalMissing": [], "officialOnly": [], "labelConflicts": []
+    }
 
     for key, record in by_id.items():
         source = sources.get(key)
+        official_record = official.get(key)
+        if official_record:
+            official_coverage["matched"].append(record["playlist_name"])
+            official_label = official_record.get("display_name")
+            if official_label and official_label != record["display_name"]:
+                official_coverage["labelConflicts"].append({
+                    "playlist_name": record["playlist_name"],
+                    "official_display_name": official_label,
+                    "preserved_display_name": record["display_name"],
+                })
+        else:
+            official_coverage["historicalMissing"].append(record["playlist_name"])
         override = overrides.get(key)
         before = json.dumps(record, sort_keys=True, separators=(",", ":"))
         descriptor = infer_descriptor(source, observed_date) if source else None
@@ -249,7 +298,7 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
             # Labels in the existing catalog are reviewed historical data.  Preserve them even
             # when upstream names differ, and make that disagreement visible to maintainers.
             record.update(descriptor)
-            official_label = official.get(key, {}).get("display_name")
+            official_label = official_record.get("display_name") if official_record else None
             if source.get("name") and source["name"] != record["display_name"]:
                 report["conflicts"].append({"playlist_name": record["playlist_name"], "community_name": source["name"],
                                             "official_display_name": official_label,
@@ -261,7 +310,7 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
                     record.pop(field, None)
             report["conflicts"].append({"playlist_name": record["playlist_name"],
                                         "source_descriptor": descriptor,
-                                        "official_display_name": official.get(key, {}).get("display_name"),
+                                        "official_display_name": official_record.get("display_name") if official_record else None,
                                         "preserved_display_name": record["display_name"]})
             report["preserved"].append(record["playlist_name"])
         else:
@@ -298,8 +347,18 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
         records.append(record)
         report["added"].append(record["playlist_name"])
 
+    for key, record in official.items():
+        if key not in by_id:
+            official_coverage["officialOnly"].append({
+                "playlist_name": record["playlist_name"],
+                "official_display_name": record.get("display_name"),
+            })
+
+    canonical_catalog({"playlists": records})
     records.sort(key=lambda value: (value["playlist_name"].casefold(), value["playlist_name"]))
     for values in report.values():
+        values.sort(key=lambda value: (value if isinstance(value, str) else value["playlist_name"]).casefold())
+    for values in official_coverage.values():
         values.sort(key=lambda value: (value if isinstance(value, str) else value["playlist_name"]).casefold())
     catalog = {
         "_comment": "Generated by scripts/generate_playlist_mappings.py; historical labels are retained until reviewed.",
@@ -307,7 +366,8 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
         "_lastUpdated": existing.get("_lastUpdated", observed_date),
         "playlists": records,
     }
-    return catalog, {"schemaVersion": 1, "observedDate": observed_date, **report}
+    return catalog, {"schemaVersion": 1, "observedDate": observed_date, **report,
+                     "officialCoverage": official_coverage}
 
 
 def json_bytes(value: Any) -> bytes:
@@ -372,6 +432,7 @@ def main() -> int:
             "unresolved": len(report["unresolved"]),
             "conflicts": len(report["conflicts"]),
             "report": str(args.report),
+            "candidateReport": report,
         }, indent=2))
     return 0
 
