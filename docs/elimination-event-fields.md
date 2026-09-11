@@ -1,6 +1,6 @@
 # Elimination Event Fields
 
-Investigation of what data is available on each elimination event from `FortniteReplayReader 2.4.0`.
+Investigation of what data is available for each elimination and how BotOrNot associates it with recorded storm state using `FortniteReplayReader 3.0.4-botornot`.
 
 ## Event Type
 
@@ -10,7 +10,7 @@ Investigation of what data is available on each elimination event from `Fortnite
 
 | Field | Type | Example | Description |
 |---|---|---|---|
-| `Time` | string | `"00:51"` | Match time (MM:SS) when the event occurred |
+| `Time` | string | `"00:51"` | Formatted match time (MM:SS); intended for display rather than event ordering |
 | `Knocked` | bool | `true` | Whether this is a knock (true) or a finish (false) |
 | `GunType` | byte | `4`, `5` | Weapon category code |
 | `IsSelfElimination` | bool | `false` | Self-inflicted (fall damage, storm, etc.) |
@@ -37,11 +37,25 @@ Available on both `EliminatedInfo` and `EliminatorInfo`:
 
 ## Storm Circle
 
-There is **no explicit storm phase/circle field** on elimination events. However, the storm phase could be inferred from the `Time` field since storm circles follow a known schedule per game mode (e.g., first circle closes at ~3:20 in standard modes).
+There is no storm phase field on an elimination event itself. BotOrNot resolves the phase from the replay's replicated `SafeZoneIndicator` observations instead of estimating it from a mode schedule.
+
+Each safe-zone observation records:
+
+- `CurrentPhase`, the nullable integer phase replicated by Fortnite
+- `PhaseCount`, the nullable total configured phase count
+- `ReplayTimeSeconds`, the replay reader's frame clock
+- `ChannelIndex` and `ActorGuid`, which identify the replicated safe-zone source
+
+An elimination's event clock is `Info.StartTime / 1000`. The resolver selects the latest valid `CurrentPhase` observation at or before that event time. An update exactly on the event boundary applies to that event. `CurrentPhase` is the recorded absolute storm phase; it is not the number of observed shrink updates and it is not the observation's list index.
+
+Before the first replicated phase observation, the result is `Unknown`. A recorded `CurrentPhase` of `0` explicitly means `Before phase 1`. Missing phase exports remain nullable and do not masquerade as phase zero. An invalid latest phase or conflicting same-frame phases produce `Unknown` until a later valid observation. If the replay contains observations from multiple identified safe-zone actors, the resolver treats the whole association as ambiguous and returns `Unknown`.
+
+The formatted elimination `Time` and the safe-zone world-clock fields (`SafeZoneStartTime` and `SafeZoneFinishTime`) use different clock domains and must not be compared for this association.
 
 ## Currently Used by BotOrNot
 
 - `Time` — 60-second knock/finish credit window
+- `Info.StartTime` — precise elimination clock used to associate recorded storm observations
 - `Knocked` — distinguish knocks from finishes
 - `EliminatedInfo.Id` / `EliminatorInfo.Id` — player identification
 - `Eliminated` / `Eliminator` — legacy fallback IDs
