@@ -1,18 +1,19 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace BotOrNot.Core.Services;
 
 public static class ReflectionUtils
 {
-    private static readonly Dictionary<(Type, string), PropertyInfo?> Cache = new();
+    private static readonly ConcurrentDictionary<(Type, string), Lazy<PropertyInfo?>> Cache = new();
 
     private static PropertyInfo? FindProp(Type t, string name)
     {
-        var key = (t, name);
-        if (Cache.TryGetValue(key, out var pi)) return pi;
-        pi = t.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-        Cache[key] = pi;
-        return pi;
+        return Cache.GetOrAdd((t, name), static key => new Lazy<PropertyInfo?>(() =>
+            key.Item1.GetProperty(
+                key.Item2,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase),
+            LazyThreadSafetyMode.ExecutionAndPublication)).Value;
     }
 
     public static object? GetObject(object? obj, string prop)

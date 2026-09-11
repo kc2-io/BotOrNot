@@ -15,4 +15,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
     }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        (DataContext as IDisposable)?.Dispose();
+        base.OnClosed(e);
+    }
 }
