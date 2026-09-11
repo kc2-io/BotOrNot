@@ -31,7 +31,7 @@
                    VerticalAlignment="Center" />
             <Button x:Name="OpenButton" Content="Select Replay File" Click="OpenReplay_Click" />
             <TextBlock Text="or drag &amp; drop"
-                       Foreground="{DynamicResource HintTextBrush}"
+                       TextWrapping="Wrap"
                        FontSize="12"
                        VerticalAlignment="Center" />
             <Button x:Name="ColumnsButton" Content="Columns" />
@@ -134,9 +134,9 @@
 
         <!-- Owner Eliminations Header -->
         <StackPanel Grid.Row="3" Margin="8,8,8,4" IsVisible="{Binding HasData}">
-            <TextBlock Text="{Binding OwnerKillsHeader}" FontWeight="Bold" FontSize="14" />
+            <TextBlock Text="{Binding OwnerKillsHeader}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" />
             <TextBlock Text="{Binding EliminationCoverageNotice}"
-                       Foreground="{DynamicResource HintTextBrush}"
+                       TextWrapping="Wrap"
                        FontSize="12"
                        IsVisible="{Binding HasEliminationCoverageNotice}" />
         </StackPanel>
@@ -204,8 +204,13 @@
                 <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
-                            <TextBlock Text="{Binding DeathCause}"
-                                       ToolTip.Tip="{Binding DeathCauseInfo.EvidenceSummary}" />
+                            <TextBlock Text="{Binding DeathCause}">
+                                <ToolTip.Tip>
+                                    <ScrollViewer MaxWidth="560" MaxHeight="400">
+                                        <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </ToolTip.Tip>
+                            </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -337,8 +342,13 @@
                 <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
-                            <TextBlock Text="{Binding DeathCause}"
-                                       ToolTip.Tip="{Binding DeathCauseInfo.EvidenceSummary}" />
+                            <TextBlock Text="{Binding DeathCause}">
+                                <ToolTip.Tip>
+                                    <ScrollViewer MaxWidth="560" MaxHeight="400">
+                                        <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </ToolTip.Tip>
+                            </TextBlock>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
