@@ -23,7 +23,8 @@ public class PlaylistMappingTests
     {
         var unknown = new BotOrNot.Core.Models.ReplaySummary
         {
-            Playlist = "Playlist_NotInMappings", GameMode = "Outdated label"
+            Playlist = "Playlist_NotInMappings",
+            GameMode = "Outdated label"
         };
         Assert.That(unknown.GameMode, Is.EqualTo("Playlist_NotInMappings"));
         Assert.That(new BotOrNot.Core.Models.ReplaySummary { GameMode = "Legacy" }.GameMode,
@@ -65,6 +66,17 @@ public class PlaylistMappingTests
         Assert.That(
             PlaylistHelper.GetDisplayNameWithFallback(unknownPlaylist),
             Is.EqualTo(unknownPlaylist));
+    }
+
+    [TestCase("Playlist_DefaultSolo", 1)]
+    [TestCase("Playlist_MatchMistDuo", 2)]
+    [TestCase("Playlist_Trios", 3)]
+    [TestCase("Playlist_DefaultSquad", 4)]
+    [TestCase("playlist_defaultduo", 2)]
+    [TestCase("Playlist_UncataloguedSolo", null)]
+    public void KnownMaxTeamSizeRequiresExactCatalogEntry(string playlist, int? expectedTeamSize)
+    {
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(playlist), Is.EqualTo(expectedTeamSize));
     }
 
     [TestCase("Playlist_ForbiddenFruitOldNoBuildBRSolo", "Blitz Zero Build - Solo")]
