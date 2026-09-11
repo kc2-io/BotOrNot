@@ -13,7 +13,7 @@ public class MainWindowViewModel : ReactiveObject
 {
     private readonly IReplayService _replayService;
     private readonly Action? _onBack;
-    private ThemePreference _currentTheme;
+    private readonly IThemeService _themeService;
 
     private static readonly string AppVersion = (Assembly.GetExecutingAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0")
@@ -48,15 +48,17 @@ public class MainWindowViewModel : ReactiveObject
 
     private string? _eliminatorName;
 
-    public MainWindowViewModel(Action? onBack = null)
+    public MainWindowViewModel(
+        Action? onBack = null,
+        IReplayService? replayService = null,
+        IThemeService? themeService = null)
     {
         _onBack = onBack;
-        _replayService = new ReplayService();
+        _replayService = replayService ?? new ReplayService();
+        _themeService = themeService ?? new ThemeService(new SettingsService());
 
-        // Load saved theme preference and apply before window renders
-        var settings = SettingsService.Load();
-        _currentTheme = settings.Theme;
-        ApplyTheme();
+        _themeService.ApplySavedTheme();
+        UpdateThemeDisplay();
 
         LoadReplayCommand = ReactiveCommand.CreateFromTask<string>(LoadReplayAsync);
         LoadReplayCommand.ThrownExceptions.Subscribe(ex =>
@@ -191,26 +193,13 @@ public class MainWindowViewModel : ReactiveObject
 
     private void CycleTheme()
     {
-        _currentTheme = _currentTheme switch
-        {
-            ThemePreference.System => ThemePreference.Light,
-            ThemePreference.Light => ThemePreference.Dark,
-            ThemePreference.Dark => ThemePreference.System,
-            _ => ThemePreference.System
-        };
-
-        ApplyTheme();
-        SettingsService.Save(new AppSettings { Theme = _currentTheme });
+        _themeService.CycleTheme();
+        UpdateThemeDisplay();
     }
 
-    private void ApplyTheme()
+    private void UpdateThemeDisplay()
     {
-        if (global::Avalonia.Application.Current != null)
-        {
-            global::Avalonia.Application.Current.RequestedThemeVariant = SettingsService.ToThemeVariant(_currentTheme);
-        }
-
-        (ThemeIcon, ThemeToggleTooltip) = _currentTheme switch
+        (ThemeIcon, ThemeToggleTooltip) = _themeService.CurrentTheme switch
         {
             ThemePreference.Light => ("\u2600", "Theme: Light"),
             ThemePreference.Dark => ("\uD83C\uDF19", "Theme: Dark"),

@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using Avalonia.Headless.NUnit;
 using BotOrNot.Avalonia.ViewModels;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
 using BotOrNot.Core.Services;
 
@@ -27,7 +28,7 @@ public sealed class LibraryViewModelTests
                 Kills = null
             }
         ]);
-        var viewModel = new LibraryViewModel(_ => { }, cache)
+        var viewModel = new LibraryViewModel(_ => { }, cache, CreateSettingsService())
         {
             DirectoryPath = Path.GetTempPath()
         };
@@ -47,7 +48,7 @@ public sealed class LibraryViewModelTests
             new ReplaySummary { AnalysisStatus = ReplayAnalysisStatus.Complete, Kills = 6 },
             new ReplaySummary { AnalysisStatus = ReplayAnalysisStatus.OwnerKillsUnavailable, Kills = null }
         ]);
-        var viewModel = new LibraryViewModel(_ => { }, cache)
+        var viewModel = new LibraryViewModel(_ => { }, cache, CreateSettingsService())
         {
             DirectoryPath = Path.GetTempPath()
         };
@@ -65,4 +66,7 @@ public sealed class LibraryViewModelTests
             IProgress<int>? progress = null,
             CancellationToken cancellationToken = default) => Task.FromResult(summaries);
     }
+
+    private static ISettingsService CreateSettingsService() => new SettingsService(
+        Path.Combine(Path.GetTempPath(), $"botornot-{Guid.NewGuid():N}.json"));
 }
