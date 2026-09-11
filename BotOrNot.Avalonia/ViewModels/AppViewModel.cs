@@ -1,6 +1,8 @@
 using System.Reactive.Linq;
 using System.Reflection;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
 using ReactiveUI;
 
 namespace BotOrNot.Avalonia.ViewModels;
@@ -16,9 +18,18 @@ public class AppViewModel : ReactiveObject
     private ReactiveObject _currentPage;
     private string _windowTitle = BaseTitle;
 
-    public AppViewModel()
+    private readonly IThemeService _themeService;
+
+    public AppViewModel(
+        ISettingsService? settingsService = null,
+        IThemeService? themeService = null,
+        IReplayCacheService? cacheService = null)
     {
-        LibraryPage = new LibraryViewModel(NavigateToMatch);
+        settingsService ??= new SettingsService();
+        _themeService = themeService ?? new ThemeService(settingsService);
+        _themeService.ApplySavedTheme();
+
+        LibraryPage = new LibraryViewModel(NavigateToMatch, cacheService, settingsService);
         _currentPage = LibraryPage;
 
         // Keep window title in sync with the active page
@@ -46,7 +57,7 @@ public class AppViewModel : ReactiveObject
 
     private void NavigateToMatch(ReplaySummary summary)
     {
-        var matchVm = new MainWindowViewModel(() => CurrentPage = LibraryPage);
+        var matchVm = new MainWindowViewModel(() => CurrentPage = LibraryPage, themeService: _themeService);
         CurrentPage = matchVm;
         matchVm.LoadReplayCommand.Execute(summary.FilePath).Subscribe();
     }
