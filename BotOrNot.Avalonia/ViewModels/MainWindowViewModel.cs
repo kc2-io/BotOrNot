@@ -23,6 +23,7 @@ public class MainWindowViewModel : ReactiveObject
 
     private ObservableCollection<PlayerRow> _players = new();
     private ObservableCollection<PlayerRow> _ownerEliminations = new();
+    private readonly ObservableCollection<SquadMemberSummary> _teammates = new();
     private string _ownerKillsHeader = "Your Eliminations";
     private string _playersSeenHeader = "Players Seen";
     private bool _isLoading;
@@ -47,6 +48,9 @@ public class MainWindowViewModel : ReactiveObject
     private ObservableCollection<PlayerRow> _filteredOwnerEliminations = new();
 
     private string? _eliminatorName;
+    private string? _squadStatusText;
+    private bool _hasSquadSection;
+    private bool _hasSquadMembers;
 
     public MainWindowViewModel(
         Action? onBack = null,
@@ -79,6 +83,28 @@ public class MainWindowViewModel : ReactiveObject
     public ObservableCollection<PlayerRow> Players => _filteredPlayers;
 
     public ObservableCollection<PlayerRow> OwnerEliminations => _filteredOwnerEliminations;
+
+    /// <summary>Observed teammates, kept separate from the opponent filter and grids.</summary>
+    public ObservableCollection<SquadMemberSummary> Teammates => _teammates;
+
+    public string? SquadStatusText
+    {
+        get => _squadStatusText;
+        private set => this.RaiseAndSetIfChanged(ref _squadStatusText, value);
+    }
+
+    /// <summary>Only a positively identified solo match hides the squad area.</summary>
+    public bool HasSquadSection
+    {
+        get => _hasSquadSection;
+        private set => this.RaiseAndSetIfChanged(ref _hasSquadSection, value);
+    }
+
+    public bool HasSquadMembers
+    {
+        get => _hasSquadMembers;
+        private set => this.RaiseAndSetIfChanged(ref _hasSquadMembers, value);
+    }
 
     public string OwnerKillsHeader
     {
@@ -248,6 +274,7 @@ public class MainWindowViewModel : ReactiveObject
 
     private async Task LoadReplayAsync(string path)
     {
+        ResetReplayState();
         ErrorMessage = null;
         IsLoading = true;
 
@@ -262,6 +289,8 @@ public class MainWindowViewModel : ReactiveObject
                 _allPlayers.Add(p);
             foreach (var p in data.OwnerEliminations.OrderBy(p => string.IsNullOrEmpty(p.ElimTime) ? 1 : 0).ThenBy(p => p.ElimTime, StringComparer.Ordinal))
                 _allOwnerEliminations.Add(p);
+
+            ApplySquadProjection(SquadProjection.FromReplay(data));
 
             ApplyFilter();
 
@@ -349,5 +378,63 @@ public class MainWindowViewModel : ReactiveObject
         {
             IsLoading = false;
         }
+    }
+
+    private void ApplySquadProjection(SquadProjection projection)
+    {
+        HasSquadSection = projection.Status != SquadProjectionStatus.ConfirmedSolo;
+        _teammates.Clear();
+        foreach (var teammate in projection.Teammates)
+            _teammates.Add(teammate);
+        HasSquadMembers = _teammates.Count > 0;
+
+        SquadStatusText = projection.Status switch
+        {
+            SquadProjectionStatus.Complete => BuildSquadStatus("Squad confirmed", projection),
+            SquadProjectionStatus.Partial => BuildSquadStatus("Squad partially observed", projection),
+            SquadProjectionStatus.Unavailable => BuildSquadStatus("Squad data unavailable", projection),
+            _ => null
+        };
+    }
+
+    private static string BuildSquadStatus(string prefix, SquadProjection projection)
+    {
+        var membership = projection.ObservedTeamSize.HasValue
+            ? projection.ExpectedTeamSize.HasValue
+                ? $"{projection.ObservedTeamSize} of {projection.ExpectedTeamSize} observed"
+                : $"{projection.ObservedTeamSize} observed"
+            : projection.ExpectedTeamSize.HasValue
+                ? $"expected size {projection.ExpectedTeamSize}"
+                : "team size unknown";
+
+        var kills = projection.HasConflictingTeamKills
+            ? "team eliminations conflict"
+            : projection.TeamKills.HasValue
+                ? $"team eliminations {projection.TeamKills}"
+                : "team eliminations unknown";
+        return $"{prefix}: {membership}; {kills}.";
+    }
+
+    private void ResetReplayState()
+    {
+        _allPlayers.Clear();
+        _allOwnerEliminations.Clear();
+        _filteredPlayers.Clear();
+        _filteredOwnerEliminations.Clear();
+        _teammates.Clear();
+        OwnerKillsHeader = "Your Eliminations";
+        PlayersSeenHeader = "Players Seen";
+        WindowTitle = BaseTitle;
+        GameMode = null;
+        PlaylistName = null;
+        PlacementText = null;
+        DurationText = null;
+        ElimsSummary = null;
+        EliminatorName = null;
+        SquadStatusText = null;
+        HasSquadSection = false;
+        HasSquadMembers = false;
+        HasMetadata = false;
+        HasData = false;
     }
 }
