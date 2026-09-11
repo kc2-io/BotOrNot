@@ -1,0 +1,3524 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-09-11",
+  "added": [],
+  "changed": [],
+  "preserved": [
+    "Playlist_Blitz_Duos",
+    "Playlist_Blitz_Solo",
+    "Playlist_Blitz_Squad",
+    "Playlist_Comp_Blitz_Solo",
+    "Playlist_DefaultTrio",
+    "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
+    "Playlist_ForbiddenFruit_CalmSambucusBRSolo",
+    "Playlist_ForbiddenFruit_CalmSambucusBRSquad",
+    "Playlist_ForbiddenFruitNoBuildBRDuo",
+    "Playlist_ForbiddenFruitNoBuildBRSolo",
+    "Playlist_ForbiddenFruitNoBuildBRSquad",
+    "Playlist_ForbiddenFruitOldNoBuildBRSolo",
+    "Playlist_NoBuild_BlastBerry_Duo",
+    "Playlist_NoBuild_BlastBerry_Solo",
+    "Playlist_NoBuild_BlastBerry_Squad",
+    "Playlist_NoBuild_DashBerry_Duo",
+    "Playlist_NoBuild_DashBerry_Solo",
+    "Playlist_NoBuild_DashBerry_Squad",
+    "Playlist_NoBuild_PunchBerry_Duo",
+    "Playlist_NoBuild_PunchBerry_Solo",
+    "Playlist_NoBuild_PunchBerry_Squad",
+    "Playlist_NoBuild_Ranked_Duo",
+    "Playlist_NoBuild_Ranked_Solo",
+    "Playlist_NoBuild_Ranked_Squad",
+    "Playlist_NoBuild_Ranked_Trio",
+    "Playlist_NoBuildBR_Habanero_Solo",
+    "Playlist_NoBuildSunflowerDuo",
+    "Playlist_NoBuildSunflowerSolo",
+    "Playlist_NoBuildSunflowerSquad",
+    "Playlist_NoBuildSunflowerTrio",
+    "Playlist_Ranked_Duo",
+    "Playlist_Ranked_Solo",
+    "Playlist_Ranked_Squad",
+    "Playlist_Ranked_Trio"
+  ],
+  "unresolved": [
+    {
+      "playlist_name": "Playlist_Beanstalk",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerrySolo2",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_DefaultDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_DefaultQuint",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_DefaultSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_DefaultSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Duo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Quint",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Squad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Trio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Bots_Trios",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_BR_Lite",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Build_Cinco",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_CakePenSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Creative_Play_V2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DashBerryNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DashBerryNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DashBerryNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DefaultPIE",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DefaultQuint",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSolo_AIProfiling",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSquad_23",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSquad_Helios",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Deliver_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Deliver_Squads_ZB",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_DelMar",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Alpine",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo2_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Aqueduct",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Borealis",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze07",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze08",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09DriftingAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09DriftingAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09FlyingAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09FlyingAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cascade",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cave",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_10",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_4",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_5",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_6",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_7",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_8",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_9",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_Alternate",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_COD_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_EasyRider",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_PerfTest01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_10",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_4",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_5",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_6",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_7",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_8",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_9",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_Rotation",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_CoralCove",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cruise",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_DeathRace",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_DifficultTrack",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Draino_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Draino_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_GoldRush",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_Alternate",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra2_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra2_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Infinity_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Infinity_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Iron",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_JackRabbit_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_JackRabbit_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Jumper_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Jumper_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Kickflip_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Kickflip_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Limited",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Mobius",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ouroboros_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ouroboros_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_OuroborosAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_OuroborosAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Phoenix_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Phoenix_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_PirateAdventure",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Poseidon_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Poseidon_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Racing_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Racing_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Rally_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Rally_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RallyAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RallyAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ranked_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ranked_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RankedTest_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RoundTwoEasy",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Seamless_Tutorial",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap2_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Advanced_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Standard_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SweetJumps_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SweetJumps_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder02_Adv",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder02_Reversed",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder03_Scenic",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_ThunderWP_01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_ThunderWP_02",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Turbine_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Turbine_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Tutorial",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Twister",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Delulu",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Delulu_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_EmptyPerf",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_EventSandbox",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine_15v15",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine_NoBuild",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_CloseEncounters",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_Martin_Md",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore_Alt2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore_Alt2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentSquad_Casual",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FM_Build_Duo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_FM_Build_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_FM_Build_Squad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_FMClubIsland",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRStack",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRStackPC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_PlunderFlopBRDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_PlunderFlopBRSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_PlunderFlopBRSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_PlunderFlopBRStack",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_PlunderFlopBRStackPC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_TensePotatoBRDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_TensePotatoBRSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_TensePotatoBRSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_TensePotatoBRStack",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_TensePotatoBRStackPC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRStack",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRStackPC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRStack",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRStackPC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_FoxtrotSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_FoxtrotSquad_Alt",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_DashBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_DashBerry_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_DashBerry_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Duo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Squad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Trio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_JumpBear_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_JumpBear_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_MatchMist_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_MatchMist_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_MatchMist_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_DashBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_DashBerry_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_DashBerry_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Duo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Squad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Trio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_JumpBear_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_JumpBear_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_JumpBear_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_MatchMist_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_MatchMist_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_MatchMist_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PiperBoot_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PiperBoot_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PiperBoot_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PunchBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PunchBerry_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_PunchBerry_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_RopeSmile_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_RopeSmile_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_RopeSmile_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SourSpawn_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SourSpawn_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SourSpawn_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SquareClub_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SquareClub_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Sunflower_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Sunflower_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Sunflower_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVkPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_TimberStake_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_TimberStake_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_TimberStake_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PiperBoot_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PiperBoot_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PiperBoot_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PunchBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PunchBerry_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_PunchBerry_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_RopeSmile_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_RopeSmile_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_RopeSmile_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SourSpawn_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SourSpawn_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SourSpawn_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SquareClub_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SquareClub_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Sunflower_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Sunflower_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Sunflower_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_TimberStake_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_TimberStake_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_TimberStake_Squads",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroSquad_100_30",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroSquad_80_40",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Hoplite",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ItemTest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ItemTest_NoBuild",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_JumpBearSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Juno",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_LightBunny_Duo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_LightBunny_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_LocomotionInitiative",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Melt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MiniBread",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlayTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_BigBattle",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_CoffeeMuffin_Habanero_Duo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_CoffeeMuffin_Habanero_Solo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Habanero_Duo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Habanero_Squad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Habanero_Trio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Quint",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Squad_Storm_Data_Test",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Papaya",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PaprikaPlaytest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PaprikaSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PerfTest_Empty",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PilgrimQuickplay",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PilgrimQuickplay_Setlist",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootNoBuildOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Playground",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PlaygroundV2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Polaris",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_24",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_24_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_Alt_MiniMobile",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_MiniMobile",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_RusticPepperSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShootersFTUE_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_BlastBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_DashBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_DashBerryNoBuildSolo_MES",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_MatchMist_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_PiperBoot_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_PunchBerry_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_RopeSmile_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_SourSpawn_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_SunflowerDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_CTS_TimberStake_Duos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_ForbiddenFruitNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_JumpBearDuos_CTS",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_JumpBearNoBuildDuos_CTS",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_JumpBearNoBuildSolo_CTS",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_JumpBearSolo_CTS",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_RopeSmileSolo_CTS",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Icon_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Regular_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Regular_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Architect_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildSquad_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerryNoBuildSquad_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerrySquad_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlastBerrySquad_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Duos_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Icon_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Icon_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Squads_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildSolo_NPM_MES",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DashBerryNoBuildSolo_PBM_MES",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DefaultDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Delulu_NoBuild",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Duos_DS",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentDuos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildDuos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_ZBM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_ZBM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_TriosIcon_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_TriosIcon_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_DashBerryDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_Duos_JIP",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_MatchMistDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_PBM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_PBM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_SunflowerDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitNoBuild_Trios",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Melt_Solo_A",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Melt_Solos_NP",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ML_Test",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_CRS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Duos_DS",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Headset_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuo_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuo_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuos_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuos_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootNoBuildDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootNoBuildDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootNoBuildDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootNoBuildDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PiperBootNoBuildDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_PunchBerrySquad_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_DashBerryDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_PunchBerryDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_SunflowerDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_TimberStakeDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerrySolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerrySolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerrySolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerrySolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_BlastBerrySquad_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerrySolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerrySolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerrySolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_DashBerrySolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_JumpBearSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_MatchMistSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PiperBootSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryDuo_Icon",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerrySolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerrySolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerrySolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_PunchBerrySolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_RopeSmileSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SourSpawnSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_SquareClubNoBuildDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeSolo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeSolo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeSolo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RE_TimberStakeSolo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_REML_Test",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnNoBuildDuos",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerDuo_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerNoBuildDuo_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerNoBuildDuo_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerNoBuildSquad_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerNoBuildSquad_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerSquad_Fill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_SunflowerSquad_NoFill",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_CR",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_NPM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_PBM",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_RC",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ZF_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SourSpawnSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Sprout",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SquareClubDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SquareClubNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SquareClubNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SquareClubSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_StormDataTest_Squad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_StormTest_Squad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_StormTest_Squad_Mid",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerDuoTest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerOctet",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerTrio",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlayTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TigerRanchSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeNoBuildDuo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeNoBuildSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeNoBuildSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeSolo",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_TimberStakeSquad",
+      "reason": "new-source-entry-requires-review"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Edit",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Play",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Tournament",
+      "reason": "unsupported-or-insufficient-evidence"
+    }
+  ],
+  "conflicts": [
+    {
+      "playlist_name": "Playlist_BlastBerryDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Venture Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerrySolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Venture Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerrySquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Venture Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_DashBerryDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Slurp Rush Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_DashBerrySolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Slurp Rush Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_DashBerrySquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Slurp Rush Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_DefaultDuo",
+      "upstream_name": "Duos",
+      "preserved_display_name": "BR Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSolo",
+      "upstream_name": "Solo",
+      "preserved_display_name": "BR Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSquad",
+      "upstream_name": "Squads",
+      "preserved_display_name": "BR Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 2,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Starfall Island - Duos"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSolo",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Starfall Island - Solo"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSquad",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 4,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Starfall Island - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRDuo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 2,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Asteria Awakened - Duos"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSolo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Asteria Awakened - Solo"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSquad",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 4,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Asteria Awakened - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRSolo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Blitz Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_JumpBear_Duos",
+      "upstream_name": "Ranked Reload - Duo",
+      "preserved_display_name": "Ranked Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroDuo",
+      "upstream_name": "Duos",
+      "preserved_display_name": "Ranked BR Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistSolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistSquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Duo",
+      "upstream_name": "Zero Build - Duos",
+      "preserved_display_name": "BR Zero Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Habanero_Solo",
+      "source_descriptor": {
+        "family": "BR",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "ranked",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-11",
+        "confidence": "source-derived"
+      },
+      "preserved_display_name": "Ranked Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Solo",
+      "upstream_name": "Zero Build - Solo",
+      "preserved_display_name": "BR Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Squad",
+      "upstream_name": "Zero Build - Squads",
+      "preserved_display_name": "BR Zero Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Trio",
+      "upstream_name": "Zero Build - Trios",
+      "preserved_display_name": "BR Zero Build - Trios"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Build Surf City - Duo"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootSolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Build Surf City - Solo"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootSquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Build Surf City - Squad"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Oasis Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerrySolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Oasis Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerrySquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Oasis Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileSolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerDuo",
+      "upstream_name": "Reload - Duo",
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerSolo",
+      "upstream_name": "Reload - Solo",
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerSquad",
+      "upstream_name": "Reload - Squads",
+      "preserved_display_name": "Reload Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_Trios",
+      "upstream_name": "Trios",
+      "preserved_display_name": "BR Build - Trios"
+    }
+  ]
+}
