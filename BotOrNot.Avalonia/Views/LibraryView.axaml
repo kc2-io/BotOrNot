@@ -48,12 +48,10 @@
                              VerticalAlignment="Center" />
                 <TextBlock Text="{Binding ScanStatusText}"
                            Margin="0,0,8,4"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource SubtleTextBrush}" />
+                           VerticalAlignment="Center" />
                 <TextBlock Text="{Binding ScanOutcomeText}"
                            Margin="0,0,8,4"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource SubtleTextBrush}" />
+                           VerticalAlignment="Center" />
             </WrapPanel>
         </Grid>
 
@@ -166,7 +164,6 @@
                            Text="{Binding OpponentDataIncompleteText}"
                            Margin="0,0,0,4"
                            FontSize="12"
-                           Foreground="{DynamicResource HintTextBrush}"
                            IsVisible="{Binding HasIncompleteOpponentData}" />
                 <ItemsControl Grid.Row="2" ItemsSource="{Binding FrequentOpponents}">
                     <ItemsControl.ItemsPanel>
