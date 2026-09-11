@@ -204,7 +204,7 @@
                 <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
-                            <TextBlock Text="{Binding DeathCause}">
+                            <TextBlock Text="{Binding DeathCause}" Margin="12,0,8,0" VerticalAlignment="Center">
                                 <ToolTip.Tip>
                                     <ScrollViewer MaxWidth="560" MaxHeight="400">
                                         <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
@@ -342,7 +342,7 @@
                 <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
-                            <TextBlock Text="{Binding DeathCause}">
+                            <TextBlock Text="{Binding DeathCause}" Margin="12,0,8,0" VerticalAlignment="Center">
                                 <ToolTip.Tip>
                                     <ScrollViewer MaxWidth="560" MaxHeight="400">
                                         <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
