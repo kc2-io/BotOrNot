@@ -70,13 +70,31 @@ public class PlaylistMappingTests
 
     [TestCase("Playlist_DefaultSolo", 1)]
     [TestCase("Playlist_MatchMistDuo", 2)]
+    [TestCase("Playlist_PiperBootDuo", 2)]
+    [TestCase("Playlist_PiperBootSquad", 4)]
     [TestCase("Playlist_Trios", 3)]
     [TestCase("Playlist_DefaultSquad", 4)]
+    [TestCase("Playlist_DefaultTrio", 3)]
     [TestCase("playlist_defaultduo", 2)]
     [TestCase("Playlist_UncataloguedSolo", null)]
     public void KnownMaxTeamSizeRequiresExactCatalogEntry(string playlist, int? expectedTeamSize)
     {
         Assert.That(PlaylistHelper.GetKnownMaxTeamSize(playlist), Is.EqualTo(expectedTeamSize));
+    }
+
+    [Test]
+    public void ExplicitCatalogTeamSizeTakesPrecedenceAndSupportsSixStack()
+    {
+        var catalog = PlaylistCatalog.FromJson("""
+            { "playlists": [
+              { "playlist_name": "Playlist_TestSixStack", "display_name": "Non-canonical label", "teamSize": 6 },
+              { "playlist_name": "Playlist_LegacyTrio", "display_name": "Legacy mode - Trios" }
+            ] }
+            """);
+
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "Playlist_TestSixStack"), Is.EqualTo(6));
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "Playlist_LegacyTrio"), Is.EqualTo(3));
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "Playlist_UncataloguedSixStack"), Is.Null);
     }
 
     [TestCase("Playlist_ForbiddenFruitOldNoBuildBRSolo", "Blitz Zero Build - Solo")]
