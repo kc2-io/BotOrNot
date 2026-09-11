@@ -10,6 +10,7 @@ public static class OwnerEliminationResolver
         public string? KnockerId { get; set; }
         public bool DbnoTrueObserved { get; set; }
         public int? LastRebootCounter { get; set; }
+        public bool IsAmbiguous { get; set; }
     }
 
     public static IReadOnlyList<OwnerEliminationDecision> Resolve(
@@ -20,9 +21,10 @@ public static class OwnerEliminationResolver
 
         var states = new Dictionary<string, VictimState>(StringComparer.OrdinalIgnoreCase);
         var decisions = new List<OwnerEliminationDecision>();
-        var ordered = source
-            .OrderBy(item => item.ReplayTimeSeconds.HasValue ? 0 : 1)
-            .ThenBy(item => item.ReplayTimeSeconds)
+        var allEvents = source.ToArray();
+        var ordered = allEvents
+            .Where(item => IsValidTime(item.ReplayTimeSeconds))
+            .OrderBy(item => item.ReplayTimeSeconds)
             .ThenBy(item => item.Sequence)
             .ToArray();
 
@@ -39,6 +41,12 @@ public static class OwnerEliminationResolver
             index = end;
         }
 
+        // Unknown clocks cannot inherit or consume a timeline built from known clocks. A direct
+        // owner finish remains direct evidence; attribution through any knock is uncertain.
+        foreach (var item in allEvents.Where(item => !IsValidTime(item.ReplayTimeSeconds) &&
+                                                     item.Kind == CombatLifecycleEventKind.Finish))
+            decisions.Add(ResolveUnorderedFinish(ownerId, item));
+
         return decisions.OrderBy(decision => decision.EventSequence).ToArray();
     }
 
@@ -48,12 +56,25 @@ public static class OwnerEliminationResolver
         Dictionary<string, VictimState> states,
         List<OwnerEliminationDecision> decisions)
     {
+        var groupEvents = events.ToArray();
         var ambiguousVictims = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var ambiguousKnockVictims = groupEvents
+            .Where(item => item.Kind == CombatLifecycleEventKind.Knock)
+            .GroupBy(item => item.VictimId, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Select(item => item.ActorId).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var finish in events)
         {
-            if (finish.Kind != CombatLifecycleEventKind.Finish ||
-                !states.TryGetValue(finish.VictimId, out var state))
+            if (finish.Kind != CombatLifecycleEventKind.Finish)
                 continue;
+
+            states.TryGetValue(finish.VictimId, out var state);
+            state ??= new VictimState();
+
+            if (groupEvents.Any(item => item.Kind == CombatLifecycleEventKind.Knock &&
+                                        item.VictimId.Equals(finish.VictimId, StringComparison.OrdinalIgnoreCase)))
+                ambiguousVictims.Add(finish.VictimId);
 
             foreach (var item in events)
             {
@@ -80,6 +101,7 @@ public static class OwnerEliminationResolver
                 case CombatLifecycleEventKind.Knock:
                     state.KnockerId = item.ActorId;
                     state.DbnoTrueObserved = item.DbnoTrueObserved;
+                    state.IsAmbiguous = ambiguousKnockVictims.Contains(item.VictimId);
                     break;
 
                 case CombatLifecycleEventKind.PlayerState:
@@ -87,12 +109,30 @@ public static class OwnerEliminationResolver
                     break;
 
                 case CombatLifecycleEventKind.Finish:
-                    decisions.Add(ResolveFinish(ownerId, item, state, ambiguousVictims.Contains(item.VictimId)));
+                    decisions.Add(ResolveFinish(ownerId, item, state,
+                        ambiguousVictims.Contains(item.VictimId) || state.IsAmbiguous));
                     state.KnockerId = null;
                     state.DbnoTrueObserved = false;
+                    state.IsAmbiguous = false;
                     break;
             }
         }
+    }
+
+    private static OwnerEliminationDecision ResolveUnorderedFinish(string ownerId, CombatLifecycleEvent item)
+    {
+        var cause = item.DeathCause ?? DeathCauseInfo.Unknown;
+        if (item.VictimId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) ||
+            item.VictimId.Equals(item.ActorId, StringComparison.OrdinalIgnoreCase))
+            return new(item.Sequence, item.VictimId, OwnerCreditStatus.NotCredited,
+                OwnerCreditSource.SelfElimination, cause);
+
+        if (item.ActorId?.Equals(ownerId, StringComparison.OrdinalIgnoreCase) == true)
+            return new(item.Sequence, item.VictimId, OwnerCreditStatus.Credited,
+                OwnerCreditSource.DirectFinish, cause);
+
+        return new(item.Sequence, item.VictimId, OwnerCreditStatus.Uncertain,
+            OwnerCreditSource.AmbiguousLifecycle, cause);
     }
 
     private static OwnerEliminationDecision ResolveFinish(
@@ -147,6 +187,7 @@ public static class OwnerEliminationResolver
         {
             state.KnockerId = null;
             state.DbnoTrueObserved = false;
+            state.IsAmbiguous = false;
         }
     }
 
@@ -157,4 +198,7 @@ public static class OwnerEliminationResolver
                item.RebootCounter.HasValue && state.LastRebootCounter.HasValue &&
                item.RebootCounter.Value > state.LastRebootCounter.Value;
     }
+
+    private static bool IsValidTime(double? time) =>
+        time.HasValue && double.IsFinite(time.Value) && time.Value >= 0;
 }

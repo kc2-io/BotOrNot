@@ -15,6 +15,11 @@ public sealed class ReplayData
     /// Authoritative kill count from the owner's PlayerData.Kills property.
     /// </summary>
     public int? OwnerKills { get; set; }
+    /// <summary>
+    /// True when one or more finish events could not be safely attributed to or away from the owner.
+    /// The authoritative scalar kill count remains available, but derived kill rows are incomplete.
+    /// </summary>
+    public bool HasUncertainEliminationAttribution { get; set; }
     public string? OwnerEliminatedBy { get; set; }
     public ReplayMetadata Metadata { get; set; } = new();
 }

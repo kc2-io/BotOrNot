@@ -66,6 +66,50 @@ public class DeathCauseHelperTests
     }
 
     [Test]
+    public void ResolveEvent_DifferentNumericLabelsAreConflictingEvenWithinSameCategory()
+    {
+        var result = DeathCauseHelper.ResolveEvent(4, 3, null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.DisplayName, Is.EqualTo("Rifle (4)"));
+            Assert.That(result.RawKillFeedCode, Is.EqualTo(3));
+            Assert.That(result.ResolutionStatus, Is.EqualTo(DeathCauseResolutionStatus.Conflicting));
+        });
+    }
+
+    [Test]
+    public void ResolveEvent_DistinctRecognizedTagsAreConflictingWithoutOrderPrecedence()
+    {
+        var tags = new[]
+        {
+            "Gameplay.Damage.DeployableTurret.Shot",
+            "Item.Weapon.Ranged.Area51Gun"
+        };
+
+        var forward = DeathCauseHelper.ResolveEvent(50, null, tags);
+        var reverse = DeathCauseHelper.ResolveEvent(50, null, tags.Reverse());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(forward.DisplayName, Is.EqualTo("Unknown"));
+            Assert.That(forward.ResolutionStatus, Is.EqualTo(DeathCauseResolutionStatus.Conflicting));
+            Assert.That(reverse.DisplayName, Is.EqualTo(forward.DisplayName));
+            Assert.That(reverse.ResolutionStatus, Is.EqualTo(forward.ResolutionStatus));
+        });
+    }
+
+    [Test]
+    public void ResolveEvent_TagMappingsRequireExactPathOrSegment()
+    {
+        var nearArc = DeathCauseHelper.ResolveEvent(50, null, ["Item.Weapon.Ranged.Area51GunPrototype"]);
+        var nearTurret = DeathCauseHelper.ResolveEvent(50, null, ["Gameplay.Damage.DeployableTurret.Shot.Chained"]);
+
+        Assert.That(nearArc.Source, Is.EqualTo(DeathCauseSource.None));
+        Assert.That(nearTurret.Source, Is.EqualTo(DeathCauseSource.None));
+    }
+
+    [Test]
     public void ResolveEvent_DeployableTurretTagResolvesUnspecifiedEventCode()
     {
         var result = DeathCauseHelper.ResolveEvent(50, null,

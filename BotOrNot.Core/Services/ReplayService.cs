@@ -496,6 +496,7 @@ public sealed class ReplayService : IReplayService
             OwnerTeamIndex = ownerTeamIndex,
             OwnerName = ownerName,
             OwnerKills = ownerKills,
+            HasUncertainEliminationAttribution = decisions.Any(item => item.Status == OwnerCreditStatus.Uncertain),
             OwnerEliminatedBy = ownerEliminatedBy,
             Metadata = metadata
         };

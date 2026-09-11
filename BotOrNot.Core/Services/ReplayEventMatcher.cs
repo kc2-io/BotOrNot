@@ -52,6 +52,9 @@ public static class ReplayEventMatcher
     private static bool IsCandidate(EliminationEventEvidence elimination, PlayerStateEventEvidence state)
     {
         if (!elimination.ReplayTimeSeconds.HasValue || !state.ReplayTimeSeconds.HasValue ||
+            !double.IsFinite(elimination.ReplayTimeSeconds.Value) ||
+            !double.IsFinite(state.ReplayTimeSeconds.Value) ||
+            elimination.ReplayTimeSeconds.Value < 0 || state.ReplayTimeSeconds.Value < 0 ||
             !elimination.VictimId.Equals(state.VictimId, StringComparison.OrdinalIgnoreCase) ||
             Math.Abs(elimination.ReplayTimeSeconds.Value - state.ReplayTimeSeconds.Value) > MatchToleranceSeconds)
             return false;
