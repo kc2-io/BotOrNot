@@ -5,7 +5,7 @@ Issue #53 adds six raw playlist IDs to the embedded display-name table. The mapp
 Sources:
 
 - Community snapshot: [Fortnite-API playlist endpoint](https://fortnite-api.com/v1/playlists), captured in `work/issue-review-evidence/playlist-api.json`.
-- Official content snapshot: [Epic Fortnite content endpoint](https://fortnitecontent-website-prod07.ol.epicgames.com/content/api/pages/fortnite-game/), captured in `work/epic-content.json`; the playlist collection is `playlistinformation.playlist_info.playlists`.
+- Official content snapshot: [Epic Fortnite content endpoint](https://fortnitecontent-website-prod07.ol.epicgames.com/content/api/pages/fortnite-game/), captured in `work/issue-review-evidence/epic-content.json`; the playlist collection is `playlistinformation.playlist_info.playlists`.
 
 | ID | Supported fields | Display name |
 | --- | --- | --- |
