@@ -1,37 +1,30 @@
 # Playlist catalog maintenance
 
-\`BotOrNot.Core/Data/PlaylistMappings.json\` is embedded in the application. The application
-does not fetch playlists over the network. The catalog retains historical replay IDs even when
-they no longer appear in current source snapshots.
+BotOrNot.Core/Data/PlaylistMappings.json is embedded in the application. The application never
+fetches playlists at runtime. Historical replay IDs remain in the catalog even when they are
+absent from current source snapshots.
 
-Run the generator against the recorded review inputs without changing files:
+Validate saved, reproducible source inputs without changing files:
 
-\`\`\`powershell
-python scripts/generate_playlist_mappings.py \`
-  --community ..\\issue-review-evidence\\playlist-api.json \`
-  --epic ..\\issue-review-evidence\\epic-content.json \`
-  --observation-date 2026-09-11
-\`\`\`
+~~~powershell
+python scripts/generate_playlist_mappings.py --community ..\issue-review-evidence\playlist-api.json --epic ..\issue-review-evidence\epic-content.json --observation-date 2026-09-11
+~~~
 
-After reviewing the generated report, write it atomically:
+The dry run prints whether the catalog would change and counts for additions, conflicts, and
+unresolved entries. Review docs/playlist-catalog-report.json before writing.
 
-\`\`\`powershell
-python scripts/generate_playlist_mappings.py \`
-  --community path\\to\\playlist-api.json \`
-  --epic path\\to\\epic-content.json \`
-  --observation-date YYYY-MM-DD \`
-  --write
-\`\`\`
+~~~powershell
+python scripts/generate_playlist_mappings.py --community path\to\playlist-api.json --epic path\to\epic-content.json --observation-date YYYY-MM-DD --include-new --write
+~~~
 
-\`--download --write --observation-date YYYY-MM-DD\` downloads the two documented sources for
-maintainer use. It rejects non-success responses, malformed or empty data before replacing
-either output. Do not commit downloaded snapshots. Add a reviewed entry to
-\`scripts/playlist-overrides.json\` only when source inference cannot safely express the label,
-for example a verified rotating map. Overrides take precedence over source data.
-\`--include-new\` is deliberately required before source-derived IDs absent from the historical
-catalog can enter a proposed update.
+--download obtains the two documented source snapshots for maintainer use. Invalid HTTP, empty,
+malformed, or schema-invalid sources leave both outputs unchanged. Do not commit downloaded
+snapshots. Add a reviewed entry to scripts/playlist-overrides.json when source evidence cannot
+safely express a label, such as a verified rotating map; overrides take precedence. --include-new
+is required before a source-derived ID absent from the historical catalog can enter a proposed
+update.
 
-The weekly GitHub workflow runs the same generator, tests its deterministic rules, and opens or
-updates one \`automation/playlist-catalog\` pull request only when the catalog changes. It does
-not publish a release. After a maintainer reviews and merges that PR, use the normal \`v*\` tag
-release process in \`.github/workflows/release.yml\`.
+The weekly workflow validates generated output itself and opens or updates one
+automation/playlist-catalog pull request only when the catalog changes. It does not publish a
+release. After reviewing and merging that PR, use the normal v* tag release process in
+.github/workflows/release.yml.

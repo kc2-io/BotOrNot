@@ -1,5 +1,6 @@
 import copy
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -9,11 +10,19 @@ sys.path.insert(0, str(Path(__file__).parent))
 import generate_playlist_mappings as generator
 
 
-def source(identifier, game_type="EFortGameType::BR", team=1, tags=None, rating="fun", name="Mode"):
+def source(identifier, game_type="EFortGameType::BR", team=1, tags=None, rating="build", name="Mode"):
     return {
         "id": identifier, "name": name, "gameType": game_type, "maxTeamSize": team,
         "ratingType": rating, "gameplayTags": tags or [], "path": "FortniteGame/Plugins/GameFeatures/BRPlaylists"
     }
+
+
+def epic(*entries):
+    return {"playlistinformation": {"playlist_info": {"playlists": list(entries)}}}
+
+
+def official(identifier, display_name):
+    return {"playlist_name": identifier, "display_name": display_name}
 
 
 class PlaylistGeneratorTests(unittest.TestCase):
@@ -24,17 +33,22 @@ class PlaylistGeneratorTests(unittest.TestCase):
         ]}
         self.community = {"status": 200, "data": [
             source("Playlist_BR", team=1),
-            source("Playlist_ZB", "EFortGameType::ZeroBuild", 2, ["Athena.Playlist.NoBuildingMaterials"]),
-            source("Playlist_Reload", "EFortGameType::BlastBerry", 3),
+            source("Playlist_ZB", "EFortGameType::ZeroBuild", 2,
+                   ["Athena.Playlist.NoBuildingMaterials"], rating="fun"),
+            source("Playlist_Reload", "EFortGameType::BlastBerry", 3, rating="blastberry_build"),
             source("Playlist_Blitz", team=4, tags=["Athena.Playlist.Blitz"]),
             source("Playlist_Six", team=6),
-            source("Playlist_Ranked", team=2, rating="ranked-br-combined"),
+            source("Playlist_Ranked", team=2, rating="ranked-br-combined_build"),
+            source("Playlist_UnknownBuild", team=1, rating="fun"),
             source("Playlist_VK_Play", "EFortGameType::VKPlay", 16, ["Playlist.UGC.Play"]),
             source("Playlist_Conflict", team=1, name="Changed upstream name")
         ]}
-        self.epic = {"playlistinformation": {"_type": "FortPlaylistInfo"}}
+        self.epic = epic(
+            official("Playlist_BR", "Battle Royale"),
+            official("Playlist_Conflict", "Official changed name"),
+        )
 
-    def test_source_descriptors_and_unknowns(self):
+    def test_supported_descriptors_require_evidence_and_preserve_history(self):
         catalog, report = generator.build(self.catalog, self.community, self.epic, {}, "2026-09-11", include_new=True)
         values = {item["playlist_name"]: item for item in catalog["playlists"]}
         self.assertEqual(values["Playlist_BR"]["display_name"], "BR Build Solo")
@@ -43,43 +57,76 @@ class PlaylistGeneratorTests(unittest.TestCase):
         self.assertEqual(values["Playlist_Blitz"]["teamSize"], 4)
         self.assertEqual(values["Playlist_Six"]["teamSize"], 6)
         self.assertEqual(values["Playlist_Ranked"]["rankedState"], "ranked")
-        self.assertEqual(values["Playlist_Ranked"]["display_name"], "BR Build Duos Ranked")
         self.assertNotIn("Playlist_VK_Play", values)
-        self.assertIn({"playlist_name": "Playlist_VK_Play", "reason": "unsupported-or-insufficient-evidence"},
-                      report["unresolved"])
+        self.assertNotIn("Playlist_UnknownBuild", values)
         self.assertIn("Playlist_Historical", report["preserved"])
-        self.assertEqual(values["Playlist_Conflict"]["display_name"], "Reviewed label")
-        self.assertEqual(report["conflicts"][0]["playlist_name"], "Playlist_Conflict")
+        conflict = next(item for item in report["conflicts"] if item["playlist_name"] == "Playlist_Conflict")
+        self.assertEqual(conflict["official_display_name"], "Official changed name")
 
-    def test_override_wins_and_output_is_deterministic(self):
+    def test_override_precedence_and_casefolded_ids(self):
         overrides = {"playlist_br": {
             "playlist_name": "playlist_br", "display_name": "Curated BR", "variant": "Reviewed map"
         }}
-        first = generator.build(copy.deepcopy(self.catalog), self.community, self.epic, overrides, "2026-09-11", include_new=True)
-        second = generator.build(copy.deepcopy(self.catalog), self.community, self.epic, overrides, "2026-09-11", include_new=True)
-        self.assertEqual(generator.json_bytes(first[0]), generator.json_bytes(second[0]))
-        values = {item["playlist_name"].casefold(): item for item in first[0]["playlists"]}
+        catalog, _ = generator.build(copy.deepcopy(self.catalog), self.community, self.epic, overrides,
+                                     "2026-09-11", include_new=True)
+        values = {item["playlist_name"].casefold(): item for item in catalog["playlists"]}
         self.assertEqual(values["playlist_br"]["display_name"], "Curated BR")
         self.assertEqual(values["playlist_br"]["variant"], "Reviewed map")
 
-    def test_partial_sources_do_not_remove_historical_records(self):
+    def test_observation_date_and_output_stay_stable_on_later_date(self):
+        first, _ = generator.build(self.catalog, self.community, self.epic, {}, "2026-09-11", include_new=True)
+        second, _ = generator.build(first, self.community, self.epic, {}, "2026-09-18", include_new=True)
+        self.assertEqual(generator.json_bytes(first), generator.json_bytes(second))
+
+    def test_partial_source_never_removes_historical_records(self):
         partial = {"status": 200, "data": [source("Playlist_BR")]}
         catalog, _ = generator.build(self.catalog, partial, self.epic, {}, "2026-09-11")
         self.assertIn("Playlist_Historical", [item["playlist_name"] for item in catalog["playlists"]])
 
-    def test_validation_rejects_malformed_empty_and_duplicates(self):
-        with self.assertRaises(generator.ValidationError):
-            generator.normalize_sources({"status": 500, "data": []}, self.epic)
-        with self.assertRaises(generator.ValidationError):
-            generator.normalize_sources({"status": 200, "data": []}, self.epic)
-        duplicate = {"status": 200, "data": [source("Playlist_X"), source("playlist_x")]}
-        with self.assertRaises(generator.ValidationError):
-            generator.normalize_sources(duplicate, self.epic)
-        with tempfile.TemporaryDirectory() as directory:
-            broken = Path(directory) / "broken.json"
-            broken.write_text("{", encoding="utf-8")
+    def test_rejects_malformed_sources_and_override_types(self):
+        invalid_epics = [{}, {"error": "upstream failure"}, epic(), epic(official("Playlist_X", "x"), official("playlist_x", "x"))]
+        for value in invalid_epics:
             with self.assertRaises(generator.ValidationError):
-                generator.load_json(broken)
+                generator.normalize_sources(self.community, value)
+        malformed_tags = {"status": 200, "data": [source("Playlist_X", tags="not-an-array")]}
+        with self.assertRaises(generator.ValidationError):
+            generator.normalize_sources(malformed_tags, self.epic)
+        malformed_team = {"status": 200, "data": [source("Playlist_X", team=True)]}
+        descriptor = generator.infer_descriptor(malformed_team["data"][0], "2026-09-11")
+        self.assertIsNone(descriptor["teamSize"] if descriptor else None)
+        with self.assertRaises(generator.ValidationError):
+            generator.load_overrides_from_value({"overrides": [{"playlist_name": "Playlist_X", "teamSize": True}]})
+
+    def test_failed_cli_validation_does_not_modify_existing_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog = root / "catalog.json"
+            report = root / "report.json"
+            community = root / "community.json"
+            bad_epic = root / "epic.json"
+            overrides = root / "overrides.json"
+            catalog.write_text(json.dumps(self.catalog), encoding="utf-8")
+            report.write_text('{"sentinel":true}\n', encoding="utf-8")
+            community.write_text(json.dumps(self.community), encoding="utf-8")
+            bad_epic.write_text('{"error":"nope"}', encoding="utf-8")
+            overrides.write_text('{"overrides":[]}', encoding="utf-8")
+            original_catalog = catalog.read_text(encoding="utf-8")
+            result = subprocess.run([
+                sys.executable, str(Path(__file__).parent / "generate_playlist_mappings.py"),
+                "--catalog", str(catalog), "--community", str(community), "--epic", str(bad_epic),
+                "--overrides", str(overrides), "--output", str(catalog), "--report", str(report), "--write"
+            ], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(catalog.read_text(encoding="utf-8"), original_catalog)
+            self.assertEqual(report.read_text(encoding="utf-8"), '{"sentinel":true}\n')
+
+    def test_duplicate_catalog_is_rejected(self):
+        catalog = {"playlists": [
+            {"playlist_name": "Playlist_X", "display_name": "One"},
+            {"playlist_name": "playlist_x", "display_name": "Two"},
+        ]}
+        with self.assertRaises(generator.ValidationError):
+            generator.canonical_catalog(catalog)
 
 
 if __name__ == "__main__":

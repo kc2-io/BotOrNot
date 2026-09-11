@@ -52,7 +52,7 @@ def download(url: str) -> Any:
         raise ValidationError(f"{url}: invalid JSON: {error}") from error
 
 
-def normalize_sources(community: Any, epic: Any) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+def normalize_sources(community: Any, epic: Any) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     if (not isinstance(community, dict) or community.get("status") != 200 or
             not isinstance(community.get("data"), list) or not community["data"]):
         raise ValidationError("community source must be a successful {status: 200, data: [...]} response")
@@ -63,14 +63,32 @@ def normalize_sources(community: Any, epic: Any) -> tuple[dict[str, dict[str, An
         key = item["id"].casefold()
         if key in items:
             raise ValidationError(f"community source has duplicate playlist id {item['id']!r}")
+        if "gameplayTags" in item and (
+                not isinstance(item["gameplayTags"], list) or
+                not all(isinstance(tag, str) for tag in item["gameplayTags"])):
+            raise ValidationError(f"community playlist {item['id']!r} has malformed gameplayTags")
         items[key] = item
-    if not isinstance(epic, dict) or not epic:
-        raise ValidationError("Epic source must be a non-empty object")
-    return items, epic
+    try:
+        playlists = epic["playlistinformation"]["playlist_info"]["playlists"]
+    except (KeyError, TypeError) as error:
+        raise ValidationError("Epic source must contain playlistinformation.playlist_info.playlists") from error
+    if not isinstance(playlists, list) or not playlists:
+        raise ValidationError("Epic playlist list must be non-empty")
+    official: dict[str, dict[str, Any]] = {}
+    for item in playlists:
+        if not isinstance(item, dict) or not isinstance(item.get("playlist_name"), str) or not item["playlist_name"].strip():
+            raise ValidationError("Epic source contains a playlist without a non-empty playlist_name")
+        key = item["playlist_name"].casefold()
+        if key in official:
+            raise ValidationError(f"Epic source has duplicate playlist id {item['playlist_name']!r}")
+        if "display_name" in item and not isinstance(item["display_name"], str):
+            raise ValidationError(f"Epic playlist {item['playlist_name']!r} has malformed display_name")
+        official[key] = item
+    return items, official
 
 
 def tags(item: dict[str, Any]) -> set[str]:
-    return {value.casefold() for value in item.get("gameplayTags", []) if isinstance(value, str)}
+    return {value.casefold() for value in item.get("gameplayTags", [])}
 
 
 def infer_descriptor(item: dict[str, Any], observed_date: str) -> dict[str, Any] | None:
@@ -101,9 +119,16 @@ def infer_descriptor(item: dict[str, Any], observed_date: str) -> dict[str, Any]
         "athena.playlist.nobuildingmaterials" in item_tags or
         any(value.startswith("product.") and "zerobuild" in value for value in item_tags)
     )
+    build_evidence = (
+        any(value.startswith("product.") and value.endswith(".build") for value in item_tags) or
+        "athena.quests.nobuild.exclude" in item_tags or
+        str(item.get("ratingType", "")).casefold().endswith("build")
+    )
+    if not zero_build and not build_evidence:
+        return None
     build_mode = "Zero Build" if zero_build else "Build"
     team_size = item.get("maxTeamSize")
-    if not isinstance(team_size, int) or team_size < 1:
+    if type(team_size) is not int or team_size < 1:
         team_size = None
     rating = str(item.get("ratingType", "")).casefold()
     ranked = "ranked" in rating or any("habanero" in value or ".comp" in value for value in item_tags)
@@ -147,17 +172,37 @@ def label_agrees(record: dict[str, Any], descriptor: dict[str, Any]) -> bool:
     return word is None or word in label
 
 
+def with_stable_observation_date(record: dict[str, Any], descriptor: dict[str, Any],
+                                 observation_date: str) -> dict[str, Any]:
+    """Only date a descriptor when its semantic evidence changes."""
+    fields = ("family", "buildMode", "teamSize", "rankedState", "variant", "sources", "confidence")
+    if all(record.get(field) == descriptor.get(field) for field in fields) and record.get("observedDate"):
+        descriptor["observedDate"] = record["observedDate"]
+    else:
+        descriptor["observedDate"] = observation_date
+    return descriptor
+
+
 def load_overrides(path: Path | None) -> dict[str, dict[str, Any]]:
     if path is None:
         return {}
     raw = load_json(path)
+    return load_overrides_from_value(raw)
+
+
+def load_overrides_from_value(raw: Any) -> dict[str, dict[str, Any]]:
     values = raw.get("overrides") if isinstance(raw, dict) else None
     if not isinstance(values, list):
         raise ValidationError("override file must contain an overrides array")
     result: dict[str, dict[str, Any]] = {}
     for value in values:
-        if not isinstance(value, dict) or not isinstance(value.get("playlist_name"), str):
+        if not isinstance(value, dict) or not isinstance(value.get("playlist_name"), str) or not value["playlist_name"].strip():
             raise ValidationError("every override needs playlist_name")
+        for field in ("display_name", "family", "buildMode", "rankedState", "variant", "confidence"):
+            if field in value and (not isinstance(value[field], str) or not value[field].strip()):
+                raise ValidationError(f"override {value['playlist_name']!r} has malformed {field}")
+        if "teamSize" in value and (type(value["teamSize"]) is not int or value["teamSize"] < 1):
+            raise ValidationError(f"override {value['playlist_name']!r} has malformed teamSize")
         key = value["playlist_name"].casefold()
         if key in result:
             raise ValidationError(f"override duplicate {value['playlist_name']!r}")
@@ -166,12 +211,14 @@ def load_overrides(path: Path | None) -> dict[str, dict[str, Any]]:
 
 
 def canonical_catalog(existing: Any) -> list[dict[str, Any]]:
-    if not isinstance(existing, dict) or not isinstance(existing.get("playlists"), list):
+    if not isinstance(existing, dict) or not isinstance(existing.get("playlists"), list) or not existing["playlists"]:
         raise ValidationError("catalog must contain a playlists array")
     seen: set[str] = set()
     records = []
     for record in existing["playlists"]:
-        if not isinstance(record, dict) or not isinstance(record.get("playlist_name"), str) or not isinstance(record.get("display_name"), str):
+        if (not isinstance(record, dict) or not isinstance(record.get("playlist_name"), str) or
+                not record["playlist_name"].strip() or not isinstance(record.get("display_name"), str) or
+                not record["display_name"].strip()):
             raise ValidationError("every catalog record needs playlist_name and display_name")
         key = record["playlist_name"].casefold()
         if key in seen:
@@ -184,7 +231,7 @@ def canonical_catalog(existing: Any) -> list[dict[str, Any]]:
 def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[str, Any]],
           observed_date: str, include_new: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
     records = canonical_catalog(existing)
-    sources, _ = normalize_sources(community, epic)
+    sources, official = normalize_sources(community, epic)
     by_id = {record["playlist_name"].casefold(): record for record in records}
     report: dict[str, list[Any]] = {key: [] for key in ("added", "changed", "preserved", "unresolved", "conflicts")}
 
@@ -193,6 +240,8 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
         override = overrides.get(key)
         before = json.dumps(record, sort_keys=True, separators=(",", ":"))
         descriptor = infer_descriptor(source, observed_date) if source else None
+        if descriptor:
+            descriptor = with_stable_observation_date(record, descriptor, observed_date)
         if override:
             record.update({key: value for key, value in override.items() if key != "playlist_name"})
             record["_source"] = "curated-override"
@@ -200,8 +249,10 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
             # Labels in the existing catalog are reviewed historical data.  Preserve them even
             # when upstream names differ, and make that disagreement visible to maintainers.
             record.update(descriptor)
+            official_label = official.get(key, {}).get("display_name")
             if source.get("name") and source["name"] != record["display_name"]:
-                report["conflicts"].append({"playlist_name": record["playlist_name"], "upstream_name": source["name"],
+                report["conflicts"].append({"playlist_name": record["playlist_name"], "community_name": source["name"],
+                                            "official_display_name": official_label,
                                             "preserved_display_name": record["display_name"]})
         elif descriptor:
             if record.get("confidence") == "source-derived":
@@ -210,6 +261,7 @@ def build(existing: Any, community: Any, epic: Any, overrides: dict[str, dict[st
                     record.pop(field, None)
             report["conflicts"].append({"playlist_name": record["playlist_name"],
                                         "source_descriptor": descriptor,
+                                        "official_display_name": official.get(key, {}).get("display_name"),
                                         "preserved_display_name": record["display_name"]})
             report["preserved"].append(record["playlist_name"])
         else:
@@ -270,6 +322,10 @@ def atomic_write(path: Path, payload: bytes) -> None:
     os.replace(temporary, path)
 
 
+def file_bytes(path: Path) -> bytes | None:
+    return path.read_bytes() if path.exists() else None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--catalog", type=Path, default=Path("BotOrNot.Core/Data/PlaylistMappings.json"))
@@ -282,6 +338,7 @@ def main() -> int:
     parser.add_argument("--download", action="store_true", help="download explicit source snapshots before validation")
     parser.add_argument("--include-new", action="store_true", help="include source-derived entries not already in the catalog")
     parser.add_argument("--write", action="store_true", help="atomically replace output and report after validation")
+    parser.add_argument("--refresh-report", action="store_true", help="rewrite the report even if the catalog is unchanged")
     args = parser.parse_args()
     if args.download:
         community, epic = download(COMMUNITY_URL), download(EPIC_URL)
@@ -297,11 +354,25 @@ def main() -> int:
     catalog, report = build(load_json(args.catalog), community, epic, load_overrides(args.overrides),
                             observed_date, args.include_new)
     catalog_payload, report_payload = json_bytes(catalog), json_bytes(report)
+    catalog_changed = file_bytes(args.output) != catalog_payload
     if args.write:
-        atomic_write(args.output, catalog_payload)
-        atomic_write(args.report, report_payload)
+        # The report is the review companion for a specific catalog change.  Leaving it intact
+        # when the catalog is byte-identical prevents date-only weekly churn.
+        if catalog_changed:
+            atomic_write(args.output, catalog_payload)
+            atomic_write(args.report, report_payload)
+        elif args.refresh_report or not args.report.exists():
+            atomic_write(args.report, report_payload)
     else:
-        print(f"Validated {len(catalog['playlists'])} catalog entries; would write {args.output} and {args.report}.")
+        print(json.dumps({
+            "catalogEntries": len(catalog["playlists"]),
+            "catalogWouldChange": catalog_changed,
+            "added": len(report["added"]),
+            "changed": len(report["changed"]),
+            "unresolved": len(report["unresolved"]),
+            "conflicts": len(report["conflicts"]),
+            "report": str(args.report),
+        }, indent=2))
     return 0
 
 
