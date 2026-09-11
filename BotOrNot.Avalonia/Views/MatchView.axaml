@@ -15,7 +15,7 @@
         <conv:UnknownToDashConverter x:Key="UnknownToDashConverter" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,2*,Auto,3*"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,Auto,Auto,3*"
           DragDrop.AllowDrop="True"
           Background="Transparent">
 
@@ -214,12 +214,12 @@
                     IsVisible="{Binding HasSquadSection}">
             <TextBlock Text="Squad" FontWeight="Bold" FontSize="14" />
             <TextBlock Text="{Binding SquadStatusText}"
-                       Foreground="{DynamicResource HintTextBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 
         <DataGrid Grid.Row="6"
                   x:Name="SquadGrid"
+                  MaxHeight="200"
                   ItemsSource="{Binding Teammates}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
@@ -234,7 +234,7 @@
                 <DataGridTemplateColumn Header="Name" Width="2*" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="services:SquadMemberSummary">
-                            <TextBlock Text="{Binding Name}"
+                            <TextBlock Text="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip.Tip="{Binding Name}" />
                         </DataTemplate>
@@ -325,7 +325,7 @@
         </DataGrid>
 
         <!-- Empty-state drop zone (visible when no data loaded) -->
-        <Border Grid.Row="2" Grid.RowSpan="5"
+        <Border Grid.Row="2" Grid.RowSpan="7"
                 IsVisible="{Binding !HasData}"
                 Background="Transparent"
                 Margin="8">
@@ -349,7 +349,7 @@
         </Border>
 
         <!-- Drag-over overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="7"
+        <Border Grid.Row="0" Grid.RowSpan="9"
                 IsVisible="{Binding IsDropTargetActive}"
                 Background="{DynamicResource DragOverlayBackground}"
                 BorderBrush="{DynamicResource DragOverlayBorder}"
