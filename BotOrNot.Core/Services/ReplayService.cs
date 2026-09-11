@@ -56,8 +56,6 @@ public sealed class ReplayService : IReplayService
         string? ownerId = null;
         string? ownerName = null;
         int? ownerKills = null;
-        object? fallbackOwnerPd = null;
-        int fallbackMaxLocations = 0;
 
         // === PASS 1: Single iteration over PlayerData ===
         // Extracts player attributes, builds numericId lookup, and detects replay owner
@@ -123,31 +121,6 @@ public sealed class ReplayService : IReplayService
                     ownerKills = k;
             }
 
-            // Track fallback owner candidate (player with most locations)
-            if (ownerId == null)
-            {
-                var locations = ReflectionUtils.GetObject(pd, "Locations");
-                if (locations is System.Collections.IEnumerable enumerable)
-                {
-                    int count = 0;
-                    foreach (var _ in enumerable) count++;
-                    if (count > fallbackMaxLocations)
-                    {
-                        fallbackMaxLocations = count;
-                        fallbackOwnerPd = pd;
-                    }
-                }
-            }
-        }
-
-        // Apply fallback owner if primary detection didn't find one
-        if (string.IsNullOrEmpty(ownerId) && fallbackOwnerPd != null)
-        {
-            ownerId = ReflectionUtils.FirstString(fallbackOwnerPd, "PlayerId", "EpicId", "Id");
-            ownerName = ReflectionUtils.FirstString(fallbackOwnerPd, "PlayerName", "DisplayName", "Name");
-            var killsStr = ReflectionUtils.FirstString(fallbackOwnerPd, "Kills");
-            if (int.TryParse(killsStr, out var kills))
-                ownerKills = kills;
         }
 
         // === Compute squad sizes from TeamIndex grouping ===
@@ -307,7 +280,11 @@ public sealed class ReplayService : IReplayService
                     creditOwner = true;
                 }
 
-                if (creditOwner && playersById.TryGetValue(eliminatedId, out var victim))
+                // A self-elimination is useful for preventing false kill credit, but it is
+                // not evidence of recorder identity: any player can eliminate themselves.
+                if (creditOwner
+                    && !eliminatedId.Equals(ownerId, StringComparison.OrdinalIgnoreCase)
+                    && playersById.TryGetValue(eliminatedId, out var victim))
                 {
                     ownerEliminations.Add(new PlayerRow
                     {
@@ -336,8 +313,9 @@ public sealed class ReplayService : IReplayService
         var playlist = result.GameData?.CurrentPlaylist ?? "";
         var gameMode = PlaylistHelper.GetDisplayNameWithFallback(playlist);
         var maxPlayers = result.GameData?.MaxPlayers;
-        // result.Info was removed in FortniteReplayReader v3.x; MatchEndTime (seconds) is the closest equivalent
-        var matchDuration = (double)(result.GameData?.MatchEndTime ?? 0f) / 60.0;
+        // Info.LengthInMs is the duration of the recorded replay. MatchEndTime is an absolute
+        // game-clock value, so it cannot be treated as an elapsed duration without a matching start time.
+        var recordingDuration = result.Info.LengthInMs / 60000.0;
 
         var nonNpcCount = 0;
         foreach (var p in playersById.Values)
@@ -346,14 +324,15 @@ public sealed class ReplayService : IReplayService
         var metadata = new ReplayMetadata
         {
             FileName = Path.GetFileName(path),
-            Version = "",
-            GameNetProtocol = "",
+            Version = result.Header.Branch ?? "",
+            Changelist = result.Header.Changelist,
+            GameNetProtocol = result.Header.GameNetworkProtocolVersion,
             PlayerCount = nonNpcCount,
             EliminationCount = eliminationCount,
             GameMode = gameMode,
             Playlist = playlist,
             MaxPlayers = maxPlayers,
-            MatchDurationMinutes = matchDuration,
+            RecordingDurationMinutes = recordingDuration,
             WinningTeam = winningTeam,
             WinningPlayerIds = winningPlayerIds,
             WinningPlayerNames = winningPlayerNames

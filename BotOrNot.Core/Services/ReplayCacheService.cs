@@ -13,21 +13,31 @@ public interface IReplayCacheService
 public sealed class ReplayCacheService : IReplayCacheService
 {
     private const int MaxReplays = 50;
+    /// <summary>
+    /// Bump when a parser or summary interpretation changes. It is deliberately part of the
+    /// key so prior cache entries cannot masquerade as current analysis.
+    /// </summary>
+    public const string AnalysisRevision = "2026-09-10.1";
 
-    private static readonly string CacheDir = Path.Combine(
+    private static readonly string DefaultCacheDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BotOrNot");
 
-    private static readonly string CachePath = Path.Combine(CacheDir, "replay-cache.json");
+    private static readonly string DefaultCachePath = Path.Combine(DefaultCacheDir, "replay-cache.json");
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = false };
 
     private readonly IReplayService _replayService;
     private readonly ILogger<ReplayCacheService> _logger;
+    private readonly string _cachePath;
 
-    public ReplayCacheService(IReplayService? replayService = null, ILogger<ReplayCacheService>? logger = null)
+    public ReplayCacheService(
+        IReplayService? replayService = null,
+        ILogger<ReplayCacheService>? logger = null,
+        string? cachePath = null)
     {
         _replayService = replayService ?? new ReplayService();
         _logger = logger ?? NullLogger<ReplayCacheService>.Instance;
+        _cachePath = cachePath ?? DefaultCachePath;
     }
 
     public async Task<IReadOnlyList<ReplaySummary>> GetSummariesAsync(
@@ -85,6 +95,12 @@ public sealed class ReplayCacheService : IReplayCacheService
                 !string.IsNullOrEmpty(data.OwnerName) &&
                 p.Name?.Equals(data.OwnerName, StringComparison.OrdinalIgnoreCase) == true);
 
+            var analysisStatus = string.IsNullOrWhiteSpace(data.OwnerName)
+                ? ReplayAnalysisStatus.OwnerIdentityUnavailable
+                : data.OwnerKills.HasValue
+                    ? ReplayAnalysisStatus.Complete
+                    : ReplayAnalysisStatus.OwnerKillsUnavailable;
+
             return new ReplaySummary
             {
                 FileName = file.Name,
@@ -93,12 +109,13 @@ public sealed class ReplayCacheService : IReplayCacheService
                 GameMode = data.Metadata.GameMode,
                 Playlist = data.Metadata.Playlist,
                 Placement = ownerPlayer?.Placement ?? "",
-                Kills = data.OwnerKills ?? ownerElims.Count,
-                BotKills = botKills,
+                Kills = analysisStatus == ReplayAnalysisStatus.Complete ? data.OwnerKills : null,
+                BotKills = analysisStatus == ReplayAnalysisStatus.Complete ? botKills : null,
                 PlayerCount = nonNpc.Count,
                 BotCount = botCount,
-                DurationMinutes = data.Metadata.MatchDurationMinutes,
+                DurationMinutes = data.Metadata.RecordingDurationMinutes,
                 OwnerName = data.OwnerName ?? "",
+                AnalysisStatus = analysisStatus,
                 PlayerNames = nonNpc.Where(p => !p.IsBot)
                     .Select(p => p.Name ?? "")
                     .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -113,30 +130,36 @@ public sealed class ReplayCacheService : IReplayCacheService
     }
 
     private static string CacheKey(FileInfo file) =>
-        $"{file.Name}|{file.Length}|{file.LastWriteTimeUtc.Ticks}";
+        $"{AnalysisRevision}|{file.Name}|{file.Length}|{file.LastWriteTimeUtc.Ticks}";
 
-    private static Dictionary<string, ReplaySummary> LoadCache()
+    private Dictionary<string, ReplaySummary> LoadCache()
     {
         try
         {
-            if (File.Exists(CachePath))
+            if (File.Exists(_cachePath))
             {
-                var json = File.ReadAllText(CachePath);
-                return JsonSerializer.Deserialize<Dictionary<string, ReplaySummary>>(json, JsonOptions)
+                var json = File.ReadAllText(_cachePath);
+                var cache = JsonSerializer.Deserialize<Dictionary<string, ReplaySummary>>(json, JsonOptions)
                     ?? new Dictionary<string, ReplaySummary>();
+                var currentPrefix = $"{AnalysisRevision}|";
+                return cache
+                    .Where(entry => entry.Key.StartsWith(currentPrefix, StringComparison.Ordinal))
+                    .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
             }
         }
         catch { }
         return new Dictionary<string, ReplaySummary>();
     }
 
-    private static void SaveCache(Dictionary<string, ReplaySummary> cache)
+    private void SaveCache(Dictionary<string, ReplaySummary> cache)
     {
         try
         {
-            Directory.CreateDirectory(CacheDir);
+            var cacheDirectory = Path.GetDirectoryName(_cachePath);
+            if (!string.IsNullOrWhiteSpace(cacheDirectory))
+                Directory.CreateDirectory(cacheDirectory);
             var json = JsonSerializer.Serialize(cache, JsonOptions);
-            File.WriteAllText(CachePath, json);
+            File.WriteAllText(_cachePath, json);
         }
         catch { }
     }

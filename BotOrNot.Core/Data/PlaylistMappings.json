@@ -49,6 +49,11 @@
     { "playlist_name": "Playlist_NoBuildSunflowerTrio", "display_name": "Reload Zero Build - Trios", "_source": "manual" },
     { "playlist_name": "Playlist_NoBuildSunflowerSquad", "display_name": "Reload Zero Build - Squads", "_source": "manual" },
 
+    { "playlist_name": "Playlist_RopeSmileSolo", "display_name": "Reload Build - Solo", "_source": "manual" },
+    { "playlist_name": "Playlist_RopeSmileDuo", "display_name": "Reload Build - Duos", "_source": "manual" },
+    { "playlist_name": "Playlist_Habanero_JumpBear_Duos", "display_name": "Ranked Reload Build - Duos", "_source": "manual" },
+    { "playlist_name": "Playlist_HabaneroDuo", "display_name": "Ranked BR Build - Duos", "_source": "manual" },
+
     { "playlist_name": "Playlist_Ranked_Solo", "display_name": "Ranked BR Build - Solo", "_source": "manual" },
     { "playlist_name": "Playlist_Ranked_Duo", "display_name": "Ranked BR Build - Duos", "_source": "manual" },
     { "playlist_name": "Playlist_Ranked_Trio", "display_name": "Ranked BR Build - Trios", "_source": "manual" },

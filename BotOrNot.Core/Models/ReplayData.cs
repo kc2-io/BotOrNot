@@ -18,14 +18,22 @@ public sealed class ReplayData
 public sealed class ReplayMetadata
 {
     public string FileName { get; set; } = "";
+    /// <summary>The replay header branch, when present.</summary>
     public string Version { get; set; } = "";
-    public string GameNetProtocol { get; set; } = "";
+    /// <summary>The replay header changelist. A value of zero is retained as recorded.</summary>
+    public uint Changelist { get; set; }
+    /// <summary>The replay header game network protocol. A value of zero is retained as recorded.</summary>
+    public uint GameNetProtocol { get; set; }
     public int PlayerCount { get; set; }
     public int EliminationCount { get; set; }
     public string GameMode { get; set; } = "";
     public string Playlist { get; set; } = "";
     public int? MaxPlayers { get; set; }
-    public double MatchDurationMinutes { get; set; }
+    /// <summary>
+    /// Length of the recording in minutes. This is not necessarily the elapsed match duration:
+    /// a replay can begin late or stop before the match ends.
+    /// </summary>
+    public double RecordingDurationMinutes { get; set; }
     public int? WinningTeam { get; set; }
     public List<string> WinningPlayerIds { get; set; } = new();
     public List<string> WinningPlayerNames { get; set; } = new();

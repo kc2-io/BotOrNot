@@ -78,7 +78,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <TextBlock Text="Avg Kills:" FontSize="12" VerticalAlignment="Center"
                                    Foreground="{DynamicResource SubtleTextBrush}" />
-                        <TextBlock Text="{Binding AvgKills, StringFormat={}{0:F1}}" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding AvgKillsDisplay}" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
@@ -112,10 +112,11 @@
                 <DataGridTextColumn Header="Mode" Binding="{Binding GameMode}" Width="140" />
                 <DataGridTextColumn Header="Playlist" Binding="{Binding Playlist}" Width="120" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="60" />
-                <DataGridTextColumn Header="Duration" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
+                <DataGridTextColumn Header="Recorded" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="60" />
                 <DataGridTextColumn Header="Player Kills" Binding="{Binding PlayerKills}" Width="90" />
                 <DataGridTextColumn Header="Bot Kills" Binding="{Binding BotKills}" Width="80" />
+                <DataGridTextColumn Header="Analysis" Binding="{Binding AnalysisStatusText}" Width="130" />
                 <DataGridTextColumn Header="Players" Binding="{Binding PlayerCount}" Width="70" />
                 <DataGridTextColumn Header="Bots" Binding="{Binding BotCount}" Width="60" />
                 <DataGridTextColumn Header="Bot%" Binding="{Binding BotPercent, StringFormat={}{0:F1}%}" Width="70" />

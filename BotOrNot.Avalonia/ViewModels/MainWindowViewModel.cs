@@ -276,13 +276,24 @@ public class MainWindowViewModel : ReactiveObject
 
             ApplyFilter();
 
-            var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Your";
-            // Use authoritative kill count from PlayerData, fall back to event-based count
+            var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Owner";
+            // Event joins can be incomplete, so a missing authoritative owner count must remain unknown.
             var nonNpcEliminations = data.OwnerEliminations.Where(p => !p.IsNpc).ToList();
-            var totalKills = data.OwnerKills ?? nonNpcEliminations.Count;
             var botKills = nonNpcEliminations.Count(p => p.IsBot);
-            var playerKills = totalKills - botKills;
-            OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
+            if (data.OwnerKills.HasValue)
+            {
+                var totalKills = data.OwnerKills.Value;
+                var playerKills = totalKills - botKills;
+                OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
+                ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
+            }
+            else
+            {
+                OwnerKillsHeader = string.IsNullOrEmpty(data.OwnerName)
+                    ? "Owner analysis incomplete"
+                    : $"{ownerDisplay}'s elimination count is unknown";
+                ElimsSummary = "Eliminations unknown";
+            }
 
             // Build Players Seen header with breakdown (excluding NPCs)
             var npcCount = data.Players.Count(p => p.IsNpc);
@@ -325,8 +336,7 @@ public class MainWindowViewModel : ReactiveObject
             GameMode = data.Metadata.GameMode;
             PlaylistName = data.Metadata.Playlist;
             PlacementText = !string.IsNullOrEmpty(ownerPlacement) ? $"#{ownerPlacement}" : "?";
-            DurationText = $"{data.Metadata.MatchDurationMinutes:F1}m";
-            ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
+            DurationText = $"{data.Metadata.RecordingDurationMinutes:F1}m";
             HasMetadata = true;
             HasData = true;
         }
