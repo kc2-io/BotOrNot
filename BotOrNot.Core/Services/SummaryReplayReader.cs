@@ -20,6 +20,7 @@ internal sealed class SummaryReplayReader(ILogger? logger = null) : ReplayReader
 
     protected override bool UseReusableBuffers => SupportsRelease(Major, Minor);
     protected override bool UseReusableBunches => SupportsRelease(Major, Minor);
+    protected override bool UseFastSerializedIntegers => SupportsRelease(Major, Minor);
 
     protected override bool ShouldReadGroup(NetFieldExportGroup group) =>
         !SupportsRelease(Major, Minor) || group.PathName is not
