@@ -83,7 +83,8 @@ public sealed class OracleTests
             ]
         };
 
-        var canonical = CanonicalReplaySummary.From(identity, summary);
+        summary.FilePath = Path.Combine(Path.GetTempPath(), identity.RelativePath);
+        var canonical = CanonicalReplaySummary.From(identity, summary, summary.FilePath);
 
         Assert.Multiple(() =>
         {
@@ -91,12 +92,14 @@ public sealed class OracleTests
             Assert.That(canonical.BotKills, Is.Null);
             Assert.That(canonical.AnalysisStatus, Is.EqualTo(nameof(ReplayAnalysisStatus.OwnerKillsUnavailable)));
             Assert.That(canonical.OpponentAnalysisComplete, Is.False);
+            Assert.That(canonical.PlayerKills, Is.Null);
+            Assert.That(canonical.IsWin, Is.False);
             Assert.That(canonical.Opponents.Select(opponent => opponent.StableId), Is.EqualTo(new[] { "a", "z" }));
         });
     }
 
     [Test]
-    public void Compare_ReportsOnlyTheChangedPerFileField()
+    public void Compare_ReportsChangedStoredAndDerivedFields()
     {
         var baseline = Run("baseline", Canonical("match.replay", kills: 1));
         var candidate = Run("summary", Canonical("match.replay", kills: 2));
@@ -107,17 +110,57 @@ public sealed class OracleTests
         {
             Assert.That(result.IsExactMatch, Is.False);
             Assert.That(result.Deltas, Has.Count.EqualTo(1));
-            Assert.That(result.Deltas.Single().ChangedFields, Is.EqualTo(new[] { "Kills" }));
+            Assert.That(result.Deltas.Single().ChangedFields, Is.EqualTo(new[] { "Kills", "PlayerKills" }));
         });
+    }
+
+    [Test]
+    public void CanonicalProjection_RejectsSummaryForAnotherInputPath()
+    {
+        var identity = new ReplayManifestEntry("match.replay", 1, DateTime.UtcNow, "ABC", 1, 1);
+        var summary = new ReplaySummary
+        {
+            FileName = "match.replay",
+            FilePath = Path.Combine(Path.GetTempPath(), "other.replay")
+        };
+
+        var exception = Assert.Throws<InvalidDataException>(() => CanonicalReplaySummary.From(
+            identity, summary, Path.Combine(Path.GetTempPath(), "match.replay")));
+
+        Assert.That(exception!.Message, Does.Contain("does not resolve"));
+    }
+
+    [Test]
+    public async Task Validate_RejectsUnexpectedReplayUnlessHistoricalModeIsExplicit()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var expected = CreateReplay(root, "expected.replay", 1, DateTime.UtcNow);
+            var manifest = await ReplayManifestService.FreezeAsync(root);
+            CreateReplay(root, "newer.replay", 2, DateTime.UtcNow.AddSeconds(1));
+
+            var strictProblems = await ReplayManifestService.ValidateAsync(manifest, root);
+            var historicalProblems = await ReplayManifestService.ValidateAsync(manifest, root,
+                allowUnexpectedReplayFiles: true);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(strictProblems, Has.Some.Contains("unexpected replay file"));
+                Assert.That(historicalProblems, Is.Empty);
+            });
+        }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
     private static ReplayOracleRun Run(string profile, CanonicalReplaySummary summary) => new(
         1, profile, DateTime.UtcNow, "manifest", OracleJson.SummaryFingerprint([summary]),
+        new ReplayEnvironment("framework", "runtime", "os", "x64", 1, "core", "core-info", "parser", "parser-info", "hash"),
         new ReplayRunMetrics(0, 0, 0, 0, 1, 1, 0), [summary], []);
 
     private static CanonicalReplaySummary Canonical(string path, int? kills) => new(
         path, path, DateTime.UnixEpoch, "playlist", "mode", "", kills, null, 0, 0, 0, "",
-        nameof(ReplayAnalysisStatus.Complete), true, []);
+        nameof(ReplayAnalysisStatus.Complete), "Complete", true, kills, false, 0, []);
 
     private static string CreateTemporaryDirectory()
     {

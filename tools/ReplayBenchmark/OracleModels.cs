@@ -42,10 +42,25 @@ public sealed record CanonicalReplaySummary(
     double DurationMinutes,
     string OwnerName,
     string AnalysisStatus,
+    string AnalysisStatusText,
     bool OpponentAnalysisComplete,
+    int? PlayerKills,
+    bool IsWin,
+    double BotPercent,
     IReadOnlyList<CanonicalOpponent> Opponents)
 {
-    public static CanonicalReplaySummary From(ReplayManifestEntry identity, ReplaySummary summary) => new(
+    public static CanonicalReplaySummary From(
+        ReplayManifestEntry identity,
+        ReplaySummary summary,
+        string inputPath)
+    {
+        var expectedPath = Path.GetFullPath(inputPath);
+        var actualPath = Path.GetFullPath(summary.FilePath);
+        if (!string.Equals(expectedPath, actualPath, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(
+                $"Summary FilePath '{summary.FilePath}' does not resolve to decoded input '{expectedPath}'.");
+
+        return new(
         identity.RelativePath,
         summary.FileName,
         summary.FileDate.ToUniversalTime(),
@@ -59,12 +74,17 @@ public sealed record CanonicalReplaySummary(
         summary.DurationMinutes,
         summary.OwnerName,
         summary.AnalysisStatus.ToString(),
+        summary.AnalysisStatusText,
         summary.OpponentAnalysisComplete,
+        summary.PlayerKills,
+        summary.IsWin,
+        summary.BotPercent,
         summary.Opponents
             .Select(opponent => new CanonicalOpponent(opponent.StableId, opponent.Name))
             .OrderBy(opponent => opponent.StableId, StringComparer.Ordinal)
             .ThenBy(opponent => opponent.Name, StringComparer.Ordinal)
             .ToArray());
+    }
 }
 
 public sealed record ReplayRunFailure(string RelativePath, string ErrorType, string Message);
@@ -78,12 +98,47 @@ public sealed record ReplayRunMetrics(
     int SuccessCount,
     int FailureCount);
 
+public sealed record ReplayEnvironment(
+    string FrameworkDescription,
+    string RuntimeVersion,
+    string OperatingSystemDescription,
+    string ProcessArchitecture,
+    int ProcessorCount,
+    string CoreAssemblyVersion,
+    string CoreAssemblyInformationalVersion,
+    string ParserAssemblyVersion,
+    string ParserAssemblyInformationalVersion,
+    string ParserAssemblySha256);
+
+public sealed record DiagnosticMetric(double Milliseconds, long AllocatedBytes);
+
+/// <summary>Inclusive measurements. Nested parser stages intentionally overlap.</summary>
+public sealed record ReplayDiagnosticStage(
+    string Name,
+    long Calls,
+    double InclusiveMilliseconds,
+    long InclusiveAllocatedBytes);
+
+public sealed record ReplayDiagnosticRun(
+    int SchemaVersion,
+    DateTime CreatedUtc,
+    string FileName,
+    long FileLength,
+    ReplayEnvironment Environment,
+    DiagnosticMetric Constructor,
+    DiagnosticMetric ReadReplay,
+    IReadOnlyList<ReplayDiagnosticStage> Stages)
+{
+    public const int CurrentSchemaVersion = 1;
+}
+
 public sealed record ReplayOracleRun(
     int SchemaVersion,
     string Profile,
     DateTime CreatedUtc,
     string ManifestFingerprint,
     string SummaryFingerprint,
+    ReplayEnvironment Environment,
     ReplayRunMetrics Metrics,
     IReadOnlyList<CanonicalReplaySummary> Summaries,
     IReadOnlyList<ReplayRunFailure> Failures)

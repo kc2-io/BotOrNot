@@ -29,6 +29,10 @@ inventory can be frozen without replacing the 79-file acceptance corpus:
 dotnet $tool freeze $demos .\work\issue60-evidence\historic76-20260911-manifest.json --before 2026-09-12T00:00:00Z
 ```
 
+The standard validation/run commands reject an added or removed `.replay` file. Use
+`--allow-extra-replay-files` only when intentionally running a labelled historical subset against
+a directory that contains newer replays.
+
 Once the parser work exposes `ReplayService.LoadSummaryAsync(string, CancellationToken)`, run and
 compare the summary profile:
 
@@ -44,6 +48,17 @@ return type and cancellation signature at runtime.
 The manifest sort is the product selection order: descending write time, ordinal-ignore-case path,
 then ordinal path. Every run validates length, timestamp, and SHA-256 before it decodes anything.
 The canonical summary fingerprint includes identity, raw playlist and display name, all nullable
-counts, analysis status, opponent completeness, and sorted stable-ID/name opponent pairs. A
-comparison writes a per-file delta report so a different aggregate fingerprint cannot conceal a
-single changed replay.
+and derived UI counts, analysis status text, win and bot calculations, opponent completeness, and
+sorted stable-ID/name opponent pairs. It also verifies that `ReplaySummary.FilePath` resolves to
+the requested input path. A comparison writes a per-file delta report so a different aggregate
+fingerprint cannot conceal a single changed replay. Each run records runtime, OS, processor count,
+and core/parser assembly versions beside its timings and memory metrics.
+
+`diagnose` is an opt-in single-file parser investigation, not an acceptance benchmark. It measures
+reader construction separately and uses inclusive low-level stage timing/count/allocation probes.
+Its `ReceiveProperties` probe is deliberately instrumented and must never be used for release
+timings:
+
+```powershell
+dotnet $tool diagnose "$demos\one.replay" .\work\issue60-evidence\one-diagnostic.json
+```

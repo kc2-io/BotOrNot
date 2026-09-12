@@ -16,6 +16,8 @@ internal static class ReplayBenchmarkProgram
                 "validate" => await ValidateAsync(args),
                 "run" => await RunProfileAsync(args),
                 "compare" => await CompareAsync(args),
+                "refresh-environment" => await RefreshEnvironmentAsync(args),
+                "diagnose" => await DiagnoseAsync(args),
                 _ => Usage()
             };
         }
@@ -30,9 +32,11 @@ internal static class ReplayBenchmarkProgram
     {
         Console.Error.WriteLine("Usage:");
         Console.Error.WriteLine("  ReplayBenchmark freeze <replay-dir> <manifest.json> [--before <UTC ISO-8601>]");
-        Console.Error.WriteLine("  ReplayBenchmark validate <manifest.json> <replay-dir>");
-        Console.Error.WriteLine("  ReplayBenchmark run <normal|summary> <manifest.json> <replay-dir> <output.json> [concurrency]");
+        Console.Error.WriteLine("  ReplayBenchmark validate <manifest.json> <replay-dir> [--allow-extra-replay-files]");
+        Console.Error.WriteLine("  ReplayBenchmark run <normal|summary> <manifest.json> <replay-dir> <output.json> [concurrency] [--allow-extra-replay-files]");
         Console.Error.WriteLine("  ReplayBenchmark compare <normal.json> <summary.json> <deltas.json>");
+        Console.Error.WriteLine("  ReplayBenchmark refresh-environment <run.json>");
+        Console.Error.WriteLine("  ReplayBenchmark diagnose <replay-path> <diagnostic.json>");
         return 1;
     }
 
@@ -52,9 +56,11 @@ internal static class ReplayBenchmarkProgram
 
     private static async Task<int> ValidateAsync(string[] args)
     {
-        if (args.Length != 3) return Usage();
+        if (args.Length is not 3 and not 4 || args.Length == 4 &&
+            !string.Equals(args[3], "--allow-extra-replay-files", StringComparison.Ordinal))
+            return Usage();
         var manifest = await OracleJson.ReadAsync<ReplayManifest>(args[1]);
-        var problems = await ReplayManifestService.ValidateAsync(manifest, args[2]);
+        var problems = await ReplayManifestService.ValidateAsync(manifest, args[2], args.Length == 4);
         if (problems.Count == 0)
         {
             Console.WriteLine($"Valid: {manifest.Entries.Count} replay files ({ReplayManifestService.Fingerprint(manifest)})");
@@ -67,10 +73,15 @@ internal static class ReplayBenchmarkProgram
 
     private static async Task<int> RunProfileAsync(string[] args)
     {
-        if (args.Length is < 5 or > 6) return Usage();
-        var concurrency = args.Length == 6 ? int.Parse(args[5], System.Globalization.CultureInfo.InvariantCulture) : 2;
+        if (args.Length is < 5 or > 7) return Usage();
+        var allowExtra = args.Contains("--allow-extra-replay-files", StringComparer.Ordinal);
+        var remaining = args.Skip(5).Where(argument => argument != "--allow-extra-replay-files").ToArray();
+        if (remaining.Length > 1 || args.Skip(5).Any(argument => argument != "--allow-extra-replay-files" &&
+            !int.TryParse(argument, System.Globalization.CultureInfo.InvariantCulture, out _)))
+            return Usage();
+        var concurrency = remaining.Length == 1 ? int.Parse(remaining[0], System.Globalization.CultureInfo.InvariantCulture) : 2;
         var manifest = await OracleJson.ReadAsync<ReplayManifest>(args[2]);
-        var run = await ReplayOracleService.RunAsync(manifest, args[3], args[1], concurrency);
+        var run = await ReplayOracleService.RunAsync(manifest, args[3], args[1], concurrency, allowExtra);
         await OracleJson.WriteAsync(args[4], run);
         Console.WriteLine($"{run.Profile}: {run.Metrics.SuccessCount} loaded, {run.Metrics.FailureCount} failed, " +
             $"{run.Metrics.WallMilliseconds:F0} ms, {run.SummaryFingerprint}");
@@ -88,5 +99,23 @@ internal static class ReplayBenchmarkProgram
             ? "Exact summary match."
             : $"Summary mismatch: {comparison.Deltas.Count} delta(s).");
         return comparison.IsExactMatch ? 0 : 5;
+    }
+
+    private static async Task<int> RefreshEnvironmentAsync(string[] args)
+    {
+        if (args.Length != 2) return Usage();
+        var run = await OracleJson.ReadAsync<ReplayOracleRun>(args[1]);
+        await OracleJson.WriteAsync(args[1], ReplayOracleService.RefreshEnvironment(run));
+        return 0;
+    }
+
+    private static async Task<int> DiagnoseAsync(string[] args)
+    {
+        if (args.Length != 3) return Usage();
+        var diagnostic = ReplayDiagnostics.Diagnose(args[1]);
+        await OracleJson.WriteAsync(args[2], diagnostic);
+        Console.WriteLine($"Diagnostic {diagnostic.FileName}: constructor {diagnostic.Constructor.Milliseconds:F1} ms, " +
+            $"read {diagnostic.ReadReplay.Milliseconds:F1} ms");
+        return 0;
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 using BotOrNot.Core.Models;
 using BotOrNot.Core.Services;
 
@@ -39,7 +40,10 @@ public static class ReplayManifestService
     }
 
     public static async Task<IReadOnlyList<string>> ValidateAsync(
-        ReplayManifest manifest, string replayRoot, CancellationToken cancellationToken = default)
+        ReplayManifest manifest,
+        string replayRoot,
+        bool allowUnexpectedReplayFiles = false,
+        CancellationToken cancellationToken = default)
     {
         var root = Path.GetFullPath(replayRoot);
         var problems = new List<string>();
@@ -70,6 +74,17 @@ public static class ReplayManifestService
             if (!string.Equals(digest, entry.Sha256, StringComparison.Ordinal))
                 problems.Add($"{entry.RelativePath}: SHA-256 changed");
         }
+        if (!allowUnexpectedReplayFiles)
+        {
+            var expected = manifest.Entries.Select(entry => entry.RelativePath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var path in Directory.EnumerateFiles(root, "*.replay", SearchOption.TopDirectoryOnly))
+            {
+                var relativePath = Path.GetRelativePath(root, path);
+                if (!expected.Contains(relativePath))
+                    problems.Add($"{relativePath}: unexpected replay file");
+            }
+        }
         return problems;
     }
 
@@ -85,12 +100,14 @@ public static class ReplayOracleService
         string replayRoot,
         string profile,
         int concurrency,
+        bool allowUnexpectedReplayFiles = false,
         CancellationToken cancellationToken = default)
     {
         if (concurrency is < 1 or > 4)
             throw new ArgumentOutOfRangeException(nameof(concurrency), "Concurrency must be between 1 and 4.");
 
-        var validation = await ReplayManifestService.ValidateAsync(manifest, replayRoot, cancellationToken).ConfigureAwait(false);
+        var validation = await ReplayManifestService.ValidateAsync(manifest, replayRoot,
+            allowUnexpectedReplayFiles, cancellationToken).ConfigureAwait(false);
         if (validation.Count > 0)
             throw new InvalidOperationException("Frozen replay input changed:" + Environment.NewLine + string.Join(Environment.NewLine, validation));
 
@@ -110,7 +127,7 @@ public static class ReplayOracleService
                 {
                     var path = Path.Combine(replayRoot, entry.RelativePath);
                     var summary = await LoadAsync(profile, path, token).ConfigureAwait(false);
-                    summaries.Add(CanonicalReplaySummary.From(entry, summary));
+                    summaries.Add(CanonicalReplaySummary.From(entry, summary, path));
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
@@ -137,6 +154,7 @@ public static class ReplayOracleService
             DateTime.UtcNow,
             ReplayManifestService.Fingerprint(manifest),
             OracleJson.SummaryFingerprint(orderedSummaries),
+            CaptureEnvironment(),
             new ReplayRunMetrics(
                 stopwatch.Elapsed.TotalMilliseconds,
                 (process.TotalProcessorTime - cpuStart).TotalMilliseconds,
@@ -147,6 +165,39 @@ public static class ReplayOracleService
                 orderedFailures.Length),
             orderedSummaries,
             orderedFailures);
+    }
+
+    public static ReplayEnvironment CaptureEnvironment()
+    {
+        var coreAssembly = typeof(ReplayService).Assembly;
+        var parserAssembly = Assembly.Load("FortniteReplayReader");
+        return new ReplayEnvironment(
+            RuntimeInformation.FrameworkDescription,
+            Environment.Version.ToString(),
+            RuntimeInformation.OSDescription,
+            RuntimeInformation.ProcessArchitecture.ToString(),
+            Environment.ProcessorCount,
+            coreAssembly.GetName().Version?.ToString() ?? "unknown",
+            InformationalVersion(coreAssembly),
+            parserAssembly.GetName().Version?.ToString() ?? "unknown",
+            InformationalVersion(parserAssembly),
+            AssemblySha256(parserAssembly));
+    }
+
+    public static ReplayOracleRun RefreshEnvironment(ReplayOracleRun run) => run with
+    {
+        Environment = CaptureEnvironment()
+    };
+
+    private static string InformationalVersion(Assembly assembly) => assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+
+    private static string AssemblySha256(Assembly assembly)
+    {
+        if (string.IsNullOrWhiteSpace(assembly.Location) || !File.Exists(assembly.Location))
+            return "unknown";
+        using var stream = File.OpenRead(assembly.Location);
+        return Convert.ToHexString(SHA256.HashData(stream));
     }
 
     private static async Task<ReplaySummary> LoadAsync(string profile, string path, CancellationToken cancellationToken)
@@ -236,7 +287,11 @@ public static class ReplayComparisonService
         if (expected.DurationMinutes != actual.DurationMinutes) names.Add(nameof(expected.DurationMinutes));
         if (expected.OwnerName != actual.OwnerName) names.Add(nameof(expected.OwnerName));
         if (expected.AnalysisStatus != actual.AnalysisStatus) names.Add(nameof(expected.AnalysisStatus));
+        if (expected.AnalysisStatusText != actual.AnalysisStatusText) names.Add(nameof(expected.AnalysisStatusText));
         if (expected.OpponentAnalysisComplete != actual.OpponentAnalysisComplete) names.Add(nameof(expected.OpponentAnalysisComplete));
+        if (expected.PlayerKills != actual.PlayerKills) names.Add(nameof(expected.PlayerKills));
+        if (expected.IsWin != actual.IsWin) names.Add(nameof(expected.IsWin));
+        if (expected.BotPercent != actual.BotPercent) names.Add(nameof(expected.BotPercent));
         if (!expected.Opponents.SequenceEqual(actual.Opponents)) names.Add(nameof(expected.Opponents));
         return names;
     }
