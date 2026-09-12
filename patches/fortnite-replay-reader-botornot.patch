@@ -563,7 +563,7 @@ index ef54a6d..128ee00 100644
      public float LastRadius { get; set; }
      public FVector LastCenter { get; set; }
 diff --git a/src/Unreal.Core/BitReader.cs b/src/Unreal.Core/BitReader.cs
-index 1517bd0..c822015 100644
+index 1517bd0..9b9f097 100644
 --- a/src/Unreal.Core/BitReader.cs
 +++ b/src/Unreal.Core/BitReader.cs
 @@ -1,6 +1,7 @@
@@ -666,6 +666,25 @@ index 1517bd0..c822015 100644
      {
          uint value = 0;
          for (uint mask = 1; (value + mask) < maxValue; mask *= 2)
+@@ -325,6 +397,18 @@ public class BitReader : FBitArchive
+         var srcIndex = CurrentByte;
+         var nextSrcIndex = bitCountUsedInByte != 0 ? srcIndex + 1 : srcIndex;
+ 
++        if (EnableFastSerializedIntegers && !IsError && CanRead(8) && nextSrcIndex < Buffer.Length)
++        {
++            var span = Buffer.Span;
++            var readByte = (byte)(((span[srcIndex] >> bitCountUsedInByte) & srcMaskByte0)
++                | ((span[nextSrcIndex] & srcMaskByte1) << (bitCountLeftInByte & 7)));
++            if ((readByte & 1) == 0)
++            {
++                Position += 8;
++                return (uint)(readByte >> 1);
++            }
++        }
++
+         uint value = 0;
+         for (int It = 0, shiftCount = 0; It < 5; ++It, shiftCount += 7)
+         {
 diff --git a/src/Unreal.Core/Models/DataBunch.cs b/src/Unreal.Core/Models/DataBunch.cs
 index 54f5bbf..9bcabea 100644
 --- a/src/Unreal.Core/Models/DataBunch.cs

@@ -484,6 +484,85 @@ public sealed class ParserReadPolicyTests
         Assert.That(allocated, Is.Zero);
     }
 
+    [Test]
+    public void FastPackedIntegerMatchesOriginalForSingleAndMultiByteValuesAtEveryOffset()
+    {
+        var slow = new PackedIntProbeReader(useFastSerializedIntegers: false);
+        var fast = new PackedIntProbeReader(useFastSerializedIntegers: true);
+        var random = new Random(0x4acced);
+        uint[] values =
+        [
+            0, 1, 42, 127, 128, 255, 16_383, 16_384, 2_097_151,
+            2_097_152, 268_435_455, 268_435_456, uint.MaxValue,
+            (uint)random.NextInt64(uint.MaxValue),
+        ];
+
+        foreach (var value in values)
+        {
+            for (var offset = 0; offset <= 7; offset++)
+            {
+                foreach (var trailingBits in new[] { 0, 5 })
+                {
+                    var bits = Enumerable.Range(0, offset)
+                        .Select(index => (index & 1) == 0)
+                        .ToList();
+                    WritePacked(bits, value);
+                    bits.AddRange(Enumerable.Repeat(true, trailingBits));
+                    AssertPackedIntegerParity(
+                        slow, fast, CreateRawPacket(bits), offset, startInError: false,
+                        $"value={value}, offset={offset}, trailing={trailingBits}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void FastPackedIntegerMatchesOriginalForEveryTruncationAndPreexistingError()
+    {
+        var slow = new PackedIntProbeReader(useFastSerializedIntegers: false);
+        var fast = new PackedIntProbeReader(useFastSerializedIntegers: true);
+        uint[] values = [0, 42, 127, 128, 16_383, 16_384, 2_097_152, uint.MaxValue];
+
+        foreach (var value in values)
+        {
+            var encoded = new List<bool>();
+            WritePacked(encoded, value);
+            for (var offset = 0; offset <= 7; offset++)
+            {
+                for (var retainedBits = 0; retainedBits < encoded.Count; retainedBits++)
+                {
+                    var bits = Enumerable.Repeat(false, offset)
+                        .Concat(encoded.Take(retainedBits));
+                    AssertPackedIntegerParity(
+                        slow, fast, CreateRawPacket(bits), offset, startInError: false,
+                        $"truncated value={value}, offset={offset}, bits={retainedBits}");
+                }
+
+                var complete = Enumerable.Repeat(false, offset).Concat(encoded);
+                AssertPackedIntegerParity(
+                    slow, fast, CreateRawPacket(complete), offset, startInError: true,
+                    $"pre-error value={value}, offset={offset}");
+            }
+        }
+    }
+
+    [Test]
+    public void FastPackedIntegerDoesNotAllocateAfterWarmup()
+    {
+        var reader = new PackedIntProbeReader(useFastSerializedIntegers: true);
+        var bits = Enumerable.Repeat(false, 5).ToList();
+        WritePacked(bits, 42);
+        var packet = CreateRawPacket(bits);
+        for (var i = 0; i < 100; i++)
+            reader.Read(packet, offset: 5, startInError: false);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+            reader.Read(packet, offset: 5, startInError: false);
+
+        Assert.That(GC.GetAllocatedBytesForCurrentThread() - before, Is.Zero);
+    }
+
     private static void AssertSerializedIntegerParity(
         SerializedIntProbeReader slow,
         SerializedIntProbeReader fast,
@@ -495,6 +574,19 @@ public sealed class ParserReadPolicyTests
     {
         var expected = slow.Read(packet, offset, maxValue, startInError);
         var actual = fast.Read(packet, offset, maxValue, startInError);
+        Assert.That(actual, Is.EqualTo(expected), context);
+    }
+
+    private static void AssertPackedIntegerParity(
+        PackedIntProbeReader slow,
+        PackedIntProbeReader fast,
+        byte[] packet,
+        int offset,
+        bool startInError,
+        string context)
+    {
+        var expected = slow.Read(packet, offset, startInError);
+        var actual = fast.Read(packet, offset, startInError);
         Assert.That(actual, Is.EqualTo(expected), context);
     }
 
@@ -923,6 +1015,43 @@ public sealed class ParserReadPolicyTests
 
     private readonly record struct SerializedIntResult(
         uint Value, int Position, int BitsLeft, bool IsError, bool AtEnd);
+
+    private sealed class PackedIntProbeReader(bool useFastSerializedIntegers)
+        : FortniteReplayReader.ReplayReader(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FortniteReplayReader.ReplayReader>.Instance,
+            ParseMode.Minimal)
+    {
+        private int _offset;
+        private bool _startInError;
+        private bool _completed;
+        private SerializedIntResult _result;
+
+        protected override bool UseReusableBuffers => true;
+        protected override bool UseFastSerializedIntegers => useFastSerializedIntegers;
+
+        public SerializedIntResult Read(byte[] packet, int offset, bool startInError)
+        {
+            _offset = offset;
+            _startInError = startInError;
+            _completed = false;
+            ReceivedRawPacket(packet);
+            if (!_completed)
+                throw new InvalidOperationException("Packed integer probe did not complete.");
+            return _result;
+        }
+
+        public override void ReceivedPacket(FBitArchive bitReader)
+        {
+            bitReader.SkipBits(_offset);
+            if (_startInError)
+                bitReader.SetError();
+            var value = bitReader.ReadIntPacked();
+            _result = new SerializedIntResult(
+                value, bitReader.Position, bitReader.GetBitsLeft(),
+                bitReader.IsError, bitReader.AtEnd());
+            _completed = true;
+        }
+    }
 }
 
 public sealed class ReplayOwnerReconciliationTests
