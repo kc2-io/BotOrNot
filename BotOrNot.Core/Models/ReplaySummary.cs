@@ -7,6 +7,12 @@ public enum ReplayAnalysisStatus
     OwnerKillsUnavailable
 }
 
+public sealed class OpponentSummary
+{
+    public string StableId { get; set; } = "";
+    public string Name { get; set; } = "";
+}
+
 public sealed class ReplaySummary
 {
     public string FileName { get; set; } = "";
@@ -34,7 +40,12 @@ public sealed class ReplaySummary
     public int BotCount { get; set; }
     public double DurationMinutes { get; set; }
     public string OwnerName { get; set; } = "";
-    public List<string> PlayerNames { get; set; } = new();
+    public List<OpponentSummary> Opponents { get; set; } = new();
+    /// <summary>
+    /// False when missing owner, identity, or team evidence prevented a definitive relationship
+    /// for one or more human participants.
+    /// </summary>
+    public bool OpponentAnalysisComplete { get; set; }
     public ReplayAnalysisStatus AnalysisStatus { get; set; }
 
     public int? PlayerKills => Kills.HasValue && BotKills.HasValue ? Kills - BotKills : null;
