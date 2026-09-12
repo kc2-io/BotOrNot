@@ -924,3 +924,130 @@ public sealed class ParserReadPolicyTests
     private readonly record struct SerializedIntResult(
         uint Value, int Position, int BitsLeft, bool IsError, bool AtEnd);
 }
+
+public sealed class ReplayOwnerReconciliationTests
+{
+    [Test]
+    public void LateActorMappingResolvesExistingPlayer()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+
+        var beforeMapping = builder.Build(new FortniteReplayReader.Models.FortniteReplay());
+        Assert.That(beforeMapping.PlayerData.Single().IsReplayOwner, Is.False);
+
+        builder.AddActorChannel(1, 100);
+        var afterMapping = builder.Build(new FortniteReplayReader.Models.FortniteReplay());
+        Assert.That(afterMapping.PlayerData.Single().IsReplayOwner, Is.True);
+    }
+
+    [Test]
+    public void LatePlayerStateResolvesExistingActorMapping()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.AddActorChannel(1, 100);
+
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+
+        Assert.That(
+            builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+                .PlayerData.Single().IsReplayOwner,
+            Is.True);
+    }
+
+    [Test]
+    public void MissingMappingKeepsRetiredOwnerStable()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.AddActorChannel(1, 100);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+        builder.RemoveChannel(1);
+
+        var retired = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.Single();
+
+        Assert.That(retired.IsReplayOwner, Is.True);
+    }
+
+    [Test]
+    public void ChannelReuseMovesOwnerOnlyAfterRecorderResolvesAgain()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.AddActorChannel(1, 100);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+        builder.RemoveChannel(1);
+
+        builder.AddActorChannel(1, 200);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 2 });
+        var unresolved = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.ToDictionary(player => player.Id!.Value);
+        Assert.Multiple(() =>
+        {
+            Assert.That(unresolved[1].IsReplayOwner, Is.True);
+            Assert.That(unresolved[2].IsReplayOwner, Is.False);
+        });
+
+        builder.AddActorChannel(2, 100);
+        builder.UpdatePlayerState(2, new FortPlayerState { PlayerID = 3 });
+        var resolved = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.ToDictionary(player => player.Id!.Value);
+        Assert.Multiple(() =>
+        {
+            Assert.That(resolved[1].IsReplayOwner, Is.False);
+            Assert.That(resolved[2].IsReplayOwner, Is.False);
+            Assert.That(resolved[3].IsReplayOwner, Is.True);
+        });
+    }
+
+    [Test]
+    public void NewPlayersRemainFalseWhenResolvedOwnerIsUnchanged()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.AddActorChannel(1, 100);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+        builder.AddActorChannel(2, 200);
+        builder.UpdatePlayerState(2, new FortPlayerState { PlayerID = 2 });
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+
+        var players = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.ToDictionary(player => player.Id!.Value);
+        Assert.Multiple(() =>
+        {
+            Assert.That(players[1].IsReplayOwner, Is.True);
+            Assert.That(players[2].IsReplayOwner, Is.False);
+        });
+    }
+
+    [Test]
+    public void BuildRepairsExternallyMutatedOwnerFlags()
+    {
+        var builder = CreateBuilderWithRecorder(100);
+        builder.AddActorChannel(1, 100);
+        builder.UpdatePlayerState(1, new FortPlayerState { PlayerID = 1 });
+        builder.AddActorChannel(2, 200);
+        builder.UpdatePlayerState(2, new FortPlayerState { PlayerID = 2 });
+        var players = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.ToDictionary(player => player.Id!.Value);
+        players[1].IsReplayOwner = false;
+        players[2].IsReplayOwner = true;
+
+        var repaired = builder.Build(new FortniteReplayReader.Models.FortniteReplay())
+            .PlayerData.ToDictionary(player => player.Id!.Value);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(repaired[1].IsReplayOwner, Is.True);
+            Assert.That(repaired[2].IsReplayOwner, Is.False);
+        });
+    }
+
+    private static FortniteReplayReader.FortniteReplayBuilder CreateBuilderWithRecorder(uint actorId)
+    {
+        var builder = new FortniteReplayReader.FortniteReplayBuilder();
+        builder.UpdateGameState(new GameState
+        {
+            RecorderPlayerState = new ActorGuid { Value = actorId },
+        });
+        return builder;
+    }
+}
