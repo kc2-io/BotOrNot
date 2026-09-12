@@ -55,7 +55,7 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
         try
         {
             ReplayReader reader = summaryOnly
-                ? new SummaryReplayReader(ReaderLogger)
+                ? new SummaryReplayReader()
                 : new ReplayReader(ReaderLogger, ParseMode.Normal);
             replayTask = Task.Run(() => reader.ReadReplay(path), CancellationToken.None);
         }

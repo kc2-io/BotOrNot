@@ -10,7 +10,9 @@ namespace BotOrNot.Core.Services;
 /// Library-only profile. Full match loads always use the standard Normal reader.
 /// Unknown groups remain enabled so additions do not silently discard possible evidence.
 /// </summary>
-internal class SummaryReplayReader(ILogger logger) : ReplayReader(logger, ParseMode.Normal)
+// The parser explicitly supports a null logger. Unlike NullLogger, this also avoids
+// allocating params arrays and boxed values for disabled messages in its hot loops.
+internal class SummaryReplayReader(ILogger? logger = null) : ReplayReader(logger!, ParseMode.Normal)
 {
     // Decide before any exclusion. Unvalidated releases retain the full Normal decode,
     // so fallback never combines partially skipped data with a full projection.
