@@ -54,15 +54,17 @@ The formatted elimination `Time` and the safe-zone world-clock fields (`StartShr
 
 ## Currently Used by BotOrNot
 
-- `Time` — elimination time display and the existing 60-second knock/finish credit window
-- `Info.StartTime` — precise elimination clock used to associate recorded storm observations
+- `Time` — display fallback when the precise event clock is unavailable; never a knock-credit timeout
+- `Info.StartTime` — precise event clock for display, storm association, event correlation, and observed knock/finish ordering
 - `Knocked` — distinguish knocks from finishes
 - `EliminatedInfo.Id` / `EliminatorInfo.Id` — player identification
 - `Eliminated` / `Eliminator` — legacy fallback IDs
+- `GunType` — raw event code used by the structured death-cause resolver
+
+Owner credit follows observed knocks, explicit DBNO recovery, and reboot-counter increases. No elapsed-time threshold infers a recovery. See [death-cause coverage](death-cause-coverage.md) for evidence and limitations.
 
 ## Not Yet Used
 
-- `GunType` — could enhance death cause display
 - `IsSelfElimination` — could flag self-elims differently
 - `Distance` — engagement distance
 - `Location` — map position (could enable heatmaps)

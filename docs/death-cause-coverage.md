@@ -1,6 +1,8 @@
 # Death-cause event coverage
 
-This audit uses the five committed BR/Reload replay fixtures and parser `3.0.4-botornot`. Its denominator is **finish events** from `PlayerElimination`, not final player records and not every kill-feed update.
+The original audit uses the five committed BR/Reload replay fixtures and parser `3.0.4-botornot`. Its denominator is **finish events** from `PlayerElimination`, not final player records and not every kill-feed update.
+
+The current application uses parser `3.0.5-botornot`, retaining the same event API and the storm channel-lifecycle fix from #56.
 
 An event/kill-feed correlation requires the same stable victim, compatible DBNO kind, compatible actor when the actor resolves, and a unique match in both directions within 1.1 seconds. The bound is empirical: the largest nearest valid offset in the inspected BR/Reload/F1 corpus was 1.004 seconds. It is a bounded correlation heuristic, not universal event identity. Ambiguous candidates remain unmatched.
 
