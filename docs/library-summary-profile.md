@@ -43,6 +43,12 @@ and player state remain enabled. Unknown groups remain enabled. This is not a
 playlist filter and does not reduce the selected replay count. Full match loads
 retain storm circles and other detail projections.
 
+Exclusions apply only to the validated release families 39.30, 39.40, 41.00,
+41.10, 42.00, and 42.10. For other versions the policy allows every group from
+the start of the read, providing the full Normal decode without a partially
+optimized result or a second parse. Add a release only after fixture/corpus parity
+validation; seasonal version numbers alone do not establish compatibility.
+
 ## Validation and timing
 
 `ReplaySummaryProfileTests` compares every serialized summary property against the
