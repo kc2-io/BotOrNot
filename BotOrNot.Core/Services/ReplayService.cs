@@ -69,6 +69,30 @@ public sealed class ReplayService : IReplayService
 
         var result = await replayTask.ConfigureAwait(false);
 
+        // Safe-zone observations use the replay frame clock. Elimination EventInfo.StartTime
+        // uses the same clock, unlike the replicated world clock and formatted Time property.
+        var stormObservations = new List<StormCircleObservation>();
+        var safeZonesObj = ReflectionUtils.GetObject(result.MapData, "SafeZones");
+        if (safeZonesObj is System.Collections.IEnumerable safeZonesEnum)
+        {
+            foreach (var zone in safeZonesEnum)
+            {
+                var replayTime = ReflectionUtils.GetDouble(zone, "ReplayTimeSeconds");
+                if (!replayTime.HasValue)
+                    continue;
+
+                var channel = ReflectionUtils.GetUInt(zone, "ChannelIndex");
+                var actorGuid = ReflectionUtils.GetUInt(zone, "ActorGuid");
+                stormObservations.Add(new StormCircleObservation(
+                    replayTime.Value,
+                    ReflectionUtils.GetInt(zone, "CurrentPhase"),
+                    ReflectionUtils.GetInt(zone, "PhaseCount"),
+                    channel,
+                    actorGuid));
+            }
+        }
+        var stormCircleResolver = new StormCircleResolver(stormObservations);
+
         // Pre-size dictionaries for typical Fortnite lobby (~100 players)
         var playersById = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
         var playersByNumericId = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
@@ -298,9 +322,18 @@ public sealed class ReplayService : IReplayService
                 // Finish event — count it and record time on the eliminated player
                 eliminationCount++;
 
-                // Set elimination time on the player row
-                if (playersById.TryGetValue(eliminatedId, out var elimRow) && eventTimeStr != null)
-                    elimRow.ElimTime = eventTimeStr;
+                var circle = stormCircleResolver.Resolve(GetEventReplayTimeSeconds(elim));
+
+                // Set elimination time (and circle) on the player row
+                if (playersById.TryGetValue(eliminatedId, out var elimRow))
+                {
+                    if (eventTimeStr != null)
+                        elimRow.ElimTime = eventTimeStr;
+                    // A repeated finish is a fresh observation. Clear a stale circle when
+                    // this event has no trustworthy phase instead of retaining an older death.
+                    elimRow.CircleNumber = circle.CircleNumber;
+                    elimRow.CircleStatus = circle.Status;
+                }
 
                 // Track who eliminated the replay owner
                 if (!string.IsNullOrEmpty(ownerId) &&
@@ -354,7 +387,9 @@ public sealed class ReplayService : IReplayService
                         ElimTime = eventTimeStr,
                         Pickaxe = victim.Pickaxe,
                         Glider = victim.Glider,
-                        SquadSize = victim.SquadSize
+                        SquadSize = victim.SquadSize,
+                        CircleNumber = circle.CircleNumber,
+                        CircleStatus = circle.Status,
                     });
                 }
 
@@ -403,6 +438,13 @@ public sealed class ReplayService : IReplayService
             OwnerEliminatedBy = ownerEliminatedBy,
             Metadata = metadata
         };
+    }
+
+    private static double? GetEventReplayTimeSeconds(object elimination)
+    {
+        var info = ReflectionUtils.GetObject(elimination, "Info");
+        var startTimeMilliseconds = ReflectionUtils.GetDouble(info, "StartTime");
+        return startTimeMilliseconds.HasValue ? startTimeMilliseconds.Value / 1000d : null;
     }
 
     static string? FormatElimTime(TimeSpan? ts, object? rawTimeObj)
