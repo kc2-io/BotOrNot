@@ -23,14 +23,18 @@ public sealed class LibraryViewModelTests
         };
 
         viewModel.ScanCommand.Execute().Subscribe();
-        await WaitForAsync(() => observer.Milestones.Contains(LibraryScanMilestone.FinalModelState));
+        await WaitForAsync(() => observer.Milestones.Contains(LibraryScanMilestone.ScanDrained));
 
         Assert.Multiple(() =>
         {
             Assert.That(cache.Options?.MaxConcurrency, Is.EqualTo(4));
+            Assert.That(cache.WasDisposed, Is.True, "ScanDrained must follow enumerator disposal.");
             Assert.That(observer.Milestones, Does.Contain(LibraryScanMilestone.Invoked)
                 .And.Contain(LibraryScanMilestone.FirstModelRow)
-                .And.Contain(LibraryScanMilestone.FinalModelState));
+                .And.Contain(LibraryScanMilestone.FinalModelState)
+                .And.Contain(LibraryScanMilestone.ScanDrained));
+            Assert.That(observer.Milestones.IndexOf(LibraryScanMilestone.FinalModelState),
+                Is.LessThan(observer.Milestones.IndexOf(LibraryScanMilestone.ScanDrained)));
             Assert.That(viewModel.IsScanning, Is.False);
             Assert.That(viewModel.TotalMatches, Is.EqualTo(1));
         });
@@ -337,14 +341,22 @@ public sealed class LibraryViewModelTests
     private sealed class OptionsRecordingCache : IReplayCacheService
     {
         public ReplayScanOptions? Options { get; private set; }
+        public bool WasDisposed { get; private set; }
         public async IAsyncEnumerable<ReplayScanUpdate> ScanAsync(string directory, ReplayScanOptions? options = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Options = options;
-            yield return Update(ReplayScanStatus.Started, 0, 0, 0, available: 1, selected: 1);
-            yield return Update(ReplayScanStatus.Loaded, 1, 1, 0, Summary("benchmark.replay"), available: 1, selected: 1);
-            yield return Update(ReplayScanStatus.Completed, 1, 1, 0, available: 1, selected: 1);
-            await Task.CompletedTask;
+            try
+            {
+                yield return Update(ReplayScanStatus.Started, 0, 0, 0, available: 1, selected: 1);
+                yield return Update(ReplayScanStatus.Loaded, 1, 1, 0, Summary("benchmark.replay"), available: 1, selected: 1);
+                yield return Update(ReplayScanStatus.Completed, 1, 1, 0, available: 1, selected: 1);
+                await Task.CompletedTask;
+            }
+            finally
+            {
+                WasDisposed = true;
+            }
         }
     }
 

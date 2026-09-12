@@ -22,7 +22,10 @@ public enum LibraryScanMilestone
 {
     Invoked,
     FirstModelRow,
-    FinalModelState
+    FinalModelState,
+    // Emitted only after a successful stream has been completely enumerated, disposed, and
+    // the owning scan state has been cleaned up. This is the benchmark's terminal boundary.
+    ScanDrained
 }
 
 /// <summary>Optional diagnostic hook for the benchmark harness; product callers need not provide one.</summary>
@@ -284,6 +287,8 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         var pendingUpdates = new List<ReplayScanUpdate>(25);
         var batchStopwatch = Stopwatch.StartNew();
         var firstReplayPublished = false;
+        var completedUpdateSeen = false;
+        IAsyncEnumerator<ReplayScanUpdate>? enumerator = null;
 
         try
         {
@@ -292,7 +297,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             {
                 Limit = ReplayScanLimit
             };
-            await using var enumerator = _cacheService.ScanAsync(directory, scanOptions, cancellation.Token)
+            enumerator = _cacheService.ScanAsync(directory, scanOptions, cancellation.Token)
                 .GetAsyncEnumerator(cancellation.Token);
             Task<bool>? next = null;
             try
@@ -322,6 +327,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
                     var update = enumerator.Current;
                     pendingUpdates.Add(update);
+                    completedUpdateSeen |= update.IsComplete;
                     var firstReplay = !firstReplayPublished &&
                         (update.Status is ReplayScanStatus.Cached or ReplayScanStatus.Loaded);
                     if (update.Status == ReplayScanStatus.Started || firstReplay ||
@@ -356,6 +362,15 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         }
         finally
         {
+            if (enumerator is not null)
+            {
+                try
+                {
+                    await enumerator.DisposeAsync();
+                }
+                catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            }
+
             await OnUiThreadAsync(() =>
             {
                 if (generation == Volatile.Read(ref _scanGeneration))
@@ -368,6 +383,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                     _activeScanCancellation = null;
             }
             cancellation.Dispose();
+
+            if (completedUpdateSeen && generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+                MarkScanMilestone(LibraryScanMilestone.ScanDrained);
         }
     }
 
