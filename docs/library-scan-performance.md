@@ -94,19 +94,40 @@ there is no reason to repeat a clearly losing configuration 20 times.
 - Rejected: whole-block skipping for the three excluded groups (about 0.1 s gain),
   disabled tiered compilation (slower), and eight workers/server GC (higher memory
   use without reaching five seconds). No eight-worker policy ships.
-- Diagnostic only: skipping every framed export took 6.245 s / 21.047 CPU-s;
-  opaque content-block skipping took 4.303 s / 13.125 CPU-s. Both intentionally lose
+- Historical diagnostic only: skipping every framed export took 6.245 s / 21.047
+  CPU-s; opaque content-block skipping took 4.303 s / 13.125 CPU-s. Audit found
+  that scratch harness still used parser 3.0.9 without the fast-integer opt-in.
+  These are not controlled 3.0.12 comparisons. Both profiles intentionally lose
   required data and can never be used as valid library results.
 - Deferred: player-state field pruning needs to preserve creation/name/owner
   callbacks even when all fields in an update are filtered. Cosmetic pruning alone
   is unlikely to close the remaining gap.
 
-The next substantial experiment is sampled CPU profiling of the framed-versus-opaque
-gap, grouped by content-block type. Only if a concentrated cost is proven should a
-release-scoped read plan bypass generic export traversal for proven irrelevant
-blocks or decode required channel state directly. Preserve external names, actor
-lifecycle, event observation triggers, unknown-group fallback, and complete oracle
-parity. The earlier whole-block result is evidence that this approach may still fail.
+A subsequent sampled comparison explicitly restored parser 3.0.12 and enabled all
+three optimization hooks in each diagnostic reader. For one representative 41 MB
+replay, one fresh process per profile:
+
+| Profile | Wall time | Process CPU time |
+| --- | ---: | ---: |
+| Valid Summary | 1.324 s | 1.281 s |
+| All framed groups rejected (invalid data) | 1.031 s | 1.172 s |
+| Opaque content blocks (invalid data) | 0.918 s | 1.094 s |
+
+The fully opaque bypass saved only 113 ms (about 11%) over framed rejection on this
+input. A safe shortcut retaining required blocks would recover less. This does not
+support pursuing a generic content-block read plan as the next major optimization.
+The opaque floor is dominated by packet/bunch framing. In valid Summary, exclusive
+worker samples attributed 79 ms to ReadIntPacked, 19 ms to ReadBit, and 16 ms to
+ReadSerializedInt; no individual integer primitive can explain the remaining gap.
+This is a single-file diagnostic, not a corpus-wide lower bound or SLA result.
+
+Further work should first sample multiple representative files and the all-79
+critical path at the four-worker ceiling, then quantify a candidate before changing
+framing or introducing a second channel-state implementation. Preserve external
+names, actor lifecycle, event observation triggers, unknown-group fallback, and
+complete oracle parity. The current evidence does not identify a validated safe
+change that closes the five-second gap; neither worker inflation nor incomplete
+decoding is an acceptable substitute.
 
 ## Reproduction and provenance
 
