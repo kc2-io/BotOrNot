@@ -544,177 +544,6 @@ index ef54a6d..128ee00 100644
  
      public float LastRadius { get; set; }
      public FVector LastCenter { get; set; }
-diff --git a/src/Unreal.Core.Test/ReplayReadPolicyTest.cs b/src/Unreal.Core.Test/ReplayReadPolicyTest.cs
-new file mode 100644
-index 0000000..33ab485
---- /dev/null
-+++ b/src/Unreal.Core.Test/ReplayReadPolicyTest.cs
-@@ -0,0 +1,165 @@
-+using System.Collections.Generic;
-+using Unreal.Core.Attributes;
-+using Unreal.Core.Contracts;
-+using Unreal.Core.Models;
-+using Unreal.Core.Models.Enums;
-+using Unreal.Core.Test.Mocks;
-+using Xunit;
-+
-+namespace Unreal.Core.Test;
-+
-+[NetFieldExportGroup("policy-group", minimalParseMode: ParseMode.Minimal)]
-+public class PolicyGroup : INetFieldExportGroup
-+{
-+    [NetFieldExport("First", RepLayoutCmdType.PropertyBool)]
-+    public bool First { get; set; }
-+
-+    [NetFieldExport("Second", RepLayoutCmdType.PropertyBool)]
-+    public bool Second { get; set; }
-+}
-+
-+public class ReplayReadPolicyTest
-+{
-+    [Fact]
-+    public void RejectedGroupConsumesNetDeltaFieldsWithoutIgnoringChannel()
-+    {
-+        var reader = new FilteringReplayReader(readGroup: false, rejectedField: null);
-+        var group = CreateGroup();
-+        var archive = CreatePropertiesArchive();
-+
-+        var result = reader.ReceiveProperties(
-+            archive, group, 1, out var exportGroup,
-+            enablePropertyChecksum: false, netDeltaUpdate: true);
-+
-+        Assert.True(result);
-+        Assert.True(archive.AtEnd());
-+        Assert.False(archive.IsError);
-+        Assert.Null(exportGroup);
-+        Assert.Null(reader.LastExport);
-+        Assert.False(reader.IsIgnoringGroup(1, group.PathName));
-+    }
-+
-+    [Fact]
-+    public void DefaultPolicyPreservesExportForEmptyUpdate()
-+    {
-+        var reader = new FilteringReplayReader(readGroup: true, rejectedField: null);
-+        var group = CreateGroup();
-+        var archive = CreateEmptyPropertiesArchive();
-+
-+        var result = reader.ReceiveProperties(
-+            archive, group, 1, out var exportGroup, enablePropertyChecksum: false);
-+
-+        Assert.True(result);
-+        Assert.True(archive.AtEnd());
-+        Assert.False(archive.IsError);
-+        Assert.IsType<PolicyGroup>(exportGroup);
-+        Assert.Null(reader.LastExport);
-+    }
-+
-+    [Fact]
-+    public void RejectedFieldIsSkippedBeforeFollowingFieldIsDecoded()
-+    {
-+        var reader = new FilteringReplayReader(readGroup: true, rejectedField: "First");
-+        var group = CreateGroup();
-+        var archive = CreatePropertiesArchive();
-+
-+        var result = reader.ReceiveProperties(
-+            archive, group, 1, out var exportGroup, enablePropertyChecksum: false);
-+
-+        Assert.True(result);
-+        Assert.True(archive.AtEnd());
-+        Assert.False(archive.IsError);
-+        var parsed = Assert.IsType<PolicyGroup>(exportGroup);
-+        Assert.False(parsed.First);
-+        Assert.True(parsed.Second);
-+        Assert.Same(parsed, reader.LastExport);
-+        Assert.False(group.NetFieldExports[0]!.Incompatible);
-+    }
-+
-+    private static NetFieldExportGroup CreateGroup() => new()
-+    {
-+        PathName = "policy-group",
-+        NetFieldExportsLength = 2,
-+        NetFieldExports = new NetFieldExport?[]
-+        {
-+            new() { Handle = 0, Name = "First" },
-+            new() { Handle = 1, Name = "Second" },
-+        },
-+    };
-+
-+    private static NetBitReader CreatePropertiesArchive()
-+    {
-+        var bits = new List<bool>();
-+        WritePacked(bits, 1); // First field handle + 1.
-+        WritePacked(bits, 1); // One payload bit.
-+        bits.Add(true);
-+        WritePacked(bits, 2); // Second field handle + 1.
-+        WritePacked(bits, 1); // One payload bit.
-+        bits.Add(true);
-+        WritePacked(bits, 0); // End of properties.
-+
-+        var bytes = new byte[(bits.Count + 7) / 8];
-+        for (var index = 0; index < bits.Count; index++)
-+        {
-+            if (bits[index])
-+                bytes[index / 8] |= (byte)(1 << (index & 7));
-+        }
-+
-+        return new NetBitReader(bytes, bits.Count);
-+    }
-+
-+    private static NetBitReader CreateEmptyPropertiesArchive()
-+    {
-+        var bits = new List<bool>();
-+        WritePacked(bits, 0);
-+        return new NetBitReader(new byte[] { 0 }, bits.Count);
-+    }
-+
-+    private static void WritePacked(List<bool> bits, uint value)
-+    {
-+        do
-+        {
-+            var chunk = (byte)((value & 0x7f) << 1);
-+            value >>= 7;
-+            if (value != 0)
-+                chunk |= 1;
-+            for (var bit = 0; bit < 8; bit++)
-+                bits.Add((chunk & (1 << bit)) != 0);
-+        } while (value != 0);
-+    }
-+
-+    private sealed class FilteringReplayReader : ReplayReader<MockReplay>
-+    {
-+        private readonly bool _readGroup;
-+        private readonly string? _rejectedField;
-+
-+        public FilteringReplayReader(bool readGroup, string? rejectedField)
-+            : base(logger: null, ParseMode.Minimal)
-+        {
-+            _readGroup = readGroup;
-+            _rejectedField = rejectedField;
-+            Channels[1] = new UChannel { ChannelIndex = 1 };
-+        }
-+
-+        public INetFieldExportGroup? LastExport { get; private set; }
-+
-+        public bool IsIgnoringGroup(uint channelIndex, string group) =>
-+            Channels[channelIndex]!.IsIgnoringGroup(group);
-+
-+        protected override bool ShouldReadGroup(NetFieldExportGroup group) => _readGroup;
-+
-+        protected override bool ShouldReadField(NetFieldExportGroup group, NetFieldExport field) =>
-+            !string.Equals(field.Name, _rejectedField, StringComparison.Ordinal);
-+
-+        protected override void OnExportRead(uint channelIndex, INetFieldExportGroup? exportGroup) =>
-+            LastExport = exportGroup;
-+
-+        protected override void OnExternalDataRead(uint channelIndex, IExternalData? update)
-+        {
-+        }
-+
-+        protected override void OnNetDeltaRead(uint channelIndex, NetDeltaUpdate update)
-+        {
-+        }
-+    }
-+}
 diff --git a/src/Unreal.Core/BitReader.cs b/src/Unreal.Core/BitReader.cs
 index 1517bd0..0f4b819 100644
 --- a/src/Unreal.Core/BitReader.cs
@@ -766,6 +595,44 @@ index 1517bd0..0f4b819 100644
      public override bool AtEnd() => Position >= LastBit;
  
      public override bool CanRead(int count) => Position + count <= LastBit;
+diff --git a/src/Unreal.Core/Models/DataBunch.cs b/src/Unreal.Core/Models/DataBunch.cs
+index 54f5bbf..9bcabea 100644
+--- a/src/Unreal.Core/Models/DataBunch.cs
++++ b/src/Unreal.Core/Models/DataBunch.cs
+@@ -34,6 +34,33 @@ public class DataBunch
+         bIgnoreRPCs = InBunch.bIgnoreRPCs;
+         CloseReason = InBunch.CloseReason;
+     }
++
++    /// <summary>
++    /// Clears all state before this instance is used for another packet bunch. The archive of a
++    /// retained partial bunch is owned by its separate copy and is never reset through this method.
++    /// </summary>
++    internal void ResetForReuse()
++    {
++        Archive = null!;
++        PacketId = 0;
++        ChIndex = 0;
++        ChType = ChannelType.None;
++        ChName = ChannelName.None;
++        ChSequence = 0;
++        bOpen = false;
++        bClose = false;
++        bDormant = false;
++        bIsReplicationPaused = false;
++        bReliable = false;
++        bPartial = false;
++        bPartialInitial = false;
++        bHasPartialCustomExportsFinalBit = false;
++        bPartialFinal = false;
++        bHasPackageMapExports = false;
++        bHasMustBeMappedGUIDs = false;
++        bIgnoreRPCs = false;
++        CloseReason = ChannelCloseReason.Destroyed;
++    }
+     public FBitArchive Archive { get; set; }
+     public int PacketId { get; set; }
+     public uint ChIndex { get; set; }
 diff --git a/src/Unreal.Core/NetFieldParser.cs b/src/Unreal.Core/NetFieldParser.cs
 index a31b22c..46c49b4 100644
 --- a/src/Unreal.Core/NetFieldParser.cs
@@ -792,7 +659,7 @@ index a31b22c..46c49b4 100644
          };
  
 diff --git a/src/Unreal.Core/ReplayReader.cs b/src/Unreal.Core/ReplayReader.cs
-index 659dd08..957ed52 100644
+index 659dd08..d0370ad 100644
 --- a/src/Unreal.Core/ReplayReader.cs
 +++ b/src/Unreal.Core/ReplayReader.cs
 @@ -1,4 +1,4 @@
@@ -801,7 +668,7 @@ index 659dd08..957ed52 100644
  using System.Diagnostics.CodeAnalysis;
  using System.IO;
  using Microsoft.Extensions.Logging;
-@@ -60,6 +60,35 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -60,6 +60,42 @@ public abstract class ReplayReader<T> where T : Replay, new()
      protected NetGuidCache _netGuidCache;
      protected NetFieldParser _netFieldParser;
  
@@ -829,6 +696,13 @@ index 659dd08..957ed52 100644
 +    protected virtual bool UseReusableBuffers => false;
 +
 +    /// <summary>
++    /// Reuses a single transient DataBunch while parsing packet headers. Overrides must ensure
++    /// callbacks consume nonpartial bunches synchronously and never retain their object reference.
++    /// Partial bunches are copied into an independently owned DataBunch before retention.
++    /// </summary>
++    protected virtual bool UseReusableBunches => false;
++
++    /// <summary>
 +    /// Elapsed replay time for the frame whose packets are currently being decoded.
 +    /// This is separate from replicated world time and event display timestamps.
 +    /// </summary>
@@ -837,7 +711,15 @@ index 659dd08..957ed52 100644
      private int replayDataIndex = 0;
      private int checkpointIndex = 0;
      private int packetIndex = 0;
-@@ -106,6 +135,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -70,6 +106,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+ 
+     // Allocate these once
+     private readonly DataBunch _currentBunch = new();
++    private bool _reusableBunchInUse;
+     private readonly NetBitReader _packetReader = new();
+     private readonly NetBitReader _exportReader = new();
+     private readonly NetBitReader _cmdReader = new();
+@@ -106,6 +143,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
      public virtual T ReadReplay(FArchive archive)
      {
          Replay = new T();
@@ -845,7 +727,7 @@ index 659dd08..957ed52 100644
  
          ReadReplayInfo(archive);
          ReadReplayChunks(archive);
-@@ -131,6 +161,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -131,6 +169,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          bunchIndex = 0;
          InPacketId = 0;
          PartialBunch = null;
@@ -853,7 +735,7 @@ index 659dd08..957ed52 100644
  
          _netGuidCache.Cleanup();
      }
-@@ -515,6 +546,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -515,6 +554,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          _cmdReader.EngineNetworkVersion = header.EngineNetworkVersion;
          _cmdReader.NetworkVersion = header.NetworkVersion;
          _cmdReader.ReplayHeaderFlags = header.Flags;
@@ -861,7 +743,7 @@ index 659dd08..957ed52 100644
      }
  
  
-@@ -732,7 +764,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -732,7 +772,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          for (var i = 0; i < numGuids; i++)
          {
              var size = archive.ReadInt32();
@@ -870,7 +752,7 @@ index 659dd08..957ed52 100644
              InternalLoadObject(_exportReader, true);
          }
      }
-@@ -815,6 +847,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -815,6 +855,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          }
  
          var timeSeconds = archive.ReadSingle();
@@ -878,7 +760,7 @@ index 659dd08..957ed52 100644
          _logger?.LogDebug("ReadDemoFrameIntoPlaybackPackets at {}", timeSeconds);
  
          if (archive.NetworkVersion >= NetworkVersionHistory.HISTORY_LEVEL_STREAMING_FIXES)
-@@ -1374,6 +1407,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1374,6 +1415,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
                      continue;
                  }
  
@@ -890,7 +772,7 @@ index 659dd08..957ed52 100644
                  if (fieldCache.Incompatible)
                  {
                      // We've already warned about this property once, so no need to continue to do so
-@@ -1518,7 +1556,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1518,7 +1564,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          if (export != null)
          {
              var numBits = reader.GetBitsLeft();
@@ -899,7 +781,7 @@ index 659dd08..957ed52 100644
              export.Serialize(_cmdReader);
  
              if (_cmdReader.IsError)
-@@ -1630,7 +1668,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1630,7 +1676,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
      ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L2971
      ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L3022
      /// </summary>
@@ -908,7 +790,7 @@ index 659dd08..957ed52 100644
      {
          exportGroup = default;
  
-@@ -1673,13 +1711,8 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1673,13 +1719,8 @@ public abstract class ReplayReader<T> where T : Replay, new()
          }
  
          _logger?.LogDebug("ReceiveProperties: group {}", group.PathName);
@@ -924,7 +806,7 @@ index 659dd08..957ed52 100644
  
          var hasdata = false;
  
-@@ -1710,6 +1743,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1710,6 +1751,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  continue;
              }
  
@@ -939,7 +821,7 @@ index 659dd08..957ed52 100644
              if (export is null)
              {
                  _logger?.LogWarning("Couldnt find handle {handle} for group {pathname}, numbits is {numBits}", handle, group.PathName, numBits);
-@@ -1725,10 +1766,24 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1725,10 +1774,24 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  continue;
              }
  
@@ -965,7 +847,7 @@ index 659dd08..957ed52 100644
                  if (!_netFieldParser.ReadField(exportGroup, export, handle, group, _cmdReader))
                  {
                      // Set field incompatible since we couldnt (or didnt want to) parse it.
-@@ -1770,6 +1825,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1770,6 +1833,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
              }
          }
  
@@ -984,7 +866,7 @@ index 659dd08..957ed52 100644
          if (!netDeltaUpdate && hasdata)
          {
              OnExportRead(channelIndex, exportGroup);
-@@ -1921,6 +1988,30 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1921,6 +1996,30 @@ public abstract class ReplayReader<T> where T : Replay, new()
      /// <summary>
      /// see https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/NetConnection.cpp#L1007
      /// </summary>
@@ -1015,7 +897,7 @@ index 659dd08..957ed52 100644
      public virtual void ReceivedRawPacket(ReadOnlySpan<byte> packet)
      {
          var lastByte = packet[^1];
-@@ -1936,7 +2027,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1936,7 +2035,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  bitSize--;
              }
  
@@ -1024,7 +906,37 @@ index 659dd08..957ed52 100644
              try
              {
                  ReceivedPacket(_packetReader);
-@@ -2091,6 +2182,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1959,6 +2058,16 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     /// </summary>
+     public virtual void ReceivedPacket(FBitArchive bitReader)
+     {
++        // A direct nested ReceivedPacket call must not overwrite the outer transient bunch.
++        // Reentrant ReceivedRawPacket remains unsupported because it also shares _packetReader.
++        var reuseBunchInThisPacket = UseReusableBunches && !_reusableBunchInUse;
++        if (reuseBunchInThisPacket)
++        {
++            _reusableBunchInUse = true;
++        }
++
++        try
++        {
+         // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/DemoNetDriver.cpp#L5101
+         // InternalAck always true!
+ 
+@@ -1981,7 +2090,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
+             // FInBunch
+             // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/DataBunch.cpp#L18
+             // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Public/Net/DataBunch.h#L168
+-            var bunch = new DataBunch();
++            var bunch = reuseBunchInThisPacket ? _currentBunch : new DataBunch();
++            if (reuseBunchInThisPacket)
++            {
++                bunch.ResetForReuse();
++            }
+ 
+             var bControl = bitReader.ReadBit();
+             bunch.PacketId = InPacketId;
+@@ -2091,6 +2204,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  bunch.Archive = bitReader;
              }
  
@@ -1037,3 +949,18 @@ index 659dd08..957ed52 100644
              bunchIndex++;
  
              if (bunch.bHasPackageMapExports)
+@@ -2200,6 +2319,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         {
+             _logger?.LogWarning("Packet {} not fully read...", packetIndex);
+         }
++        }
++        finally
++        {
++            if (reuseBunchInThisPacket)
++            {
++                _reusableBunchInUse = false;
++            }
++        }
+     }
+ 
+     /// <summary>

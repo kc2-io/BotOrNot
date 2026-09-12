@@ -302,6 +302,91 @@ public sealed class ParserReadPolicyTests
         Assert.That(reusableBytes, Is.LessThan(copyingBytes));
     }
 
+    [Test]
+    public void ReusableBunchResetsAllMutableHeaderStateBetweenPackets()
+    {
+        var reader = new BunchProbeReader(useReusableBunches: true, dirtyFirstBunch: true);
+        reader.ReceivedPacket(CreateBunchArchive(
+            CreateNonPartialBunchBits(channelIndex: 4, open: true, close: true,
+                dormant: true, paused: true, reliable: true)));
+        reader.ReceivedPacket(CreateBunchArchive(
+            CreateNonPartialBunchBits(channelIndex: 9)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reader.BunchReferences, Has.Count.EqualTo(2));
+            Assert.That(reader.BunchReferences[1], Is.SameAs(reader.BunchReferences[0]));
+            Assert.That(reader.Headers[0].ChIndex, Is.EqualTo(4));
+            Assert.That(reader.Headers[0].bOpen, Is.True);
+            Assert.That(reader.Headers[0].bClose, Is.True);
+            Assert.That(reader.Headers[0].bDormant, Is.True);
+            Assert.That(reader.Headers[0].bIsReplicationPaused, Is.True);
+            Assert.That(reader.Headers[0].bReliable, Is.True);
+            Assert.That(reader.Headers[1].ChIndex, Is.EqualTo(9));
+            Assert.That(reader.Headers[1].PacketId, Is.EqualTo(2));
+            Assert.That(reader.Headers[1].AllOptionalFlagsClear, Is.True);
+            Assert.That(reader.Headers[1].CloseReason, Is.EqualTo(ChannelCloseReason.Destroyed));
+            Assert.That(reader.Headers[1].ChType, Is.EqualTo(ChannelType.None));
+            Assert.That(reader.Headers[1].ChName, Is.EqualTo(ChannelName.None));
+            Assert.That(reader.Headers[1].ChSequence, Is.Zero);
+        });
+    }
+
+    [Test]
+    public void DefaultBunchPathKeepsDistinctObjects()
+    {
+        var reader = new BunchProbeReader(useReusableBunches: false);
+        reader.ReceivedPacket(CreateBunchArchive(CreateNonPartialBunchBits(channelIndex: 4)));
+        reader.ReceivedPacket(CreateBunchArchive(CreateNonPartialBunchBits(channelIndex: 9)));
+
+        Assert.That(reader.BunchReferences[1], Is.Not.SameAs(reader.BunchReferences[0]));
+    }
+
+    [Test]
+    public void ReusableBunchDoesNotOverwriteOuterBunchDuringNestedPacket()
+    {
+        var reader = new BunchProbeReader(useReusableBunches: true, nestOnFirstBunch: true);
+        reader.ReceivedPacket(CreateBunchArchive(CreateNonPartialBunchBits(channelIndex: 4)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reader.BunchReferences, Has.Count.EqualTo(2));
+            Assert.That(reader.BunchReferences[1], Is.Not.SameAs(reader.BunchReferences[0]));
+            Assert.That(reader.BunchReferences[0].ChIndex, Is.EqualTo(4));
+            Assert.That(reader.BunchReferences[1].ChIndex, Is.EqualTo(9));
+        });
+    }
+
+    [Test]
+    public void ReusableBunchAvoidsPerPacketObjectAllocation()
+    {
+        var bits = CreateNonPartialBunchBits(channelIndex: 4);
+        var archive = CreateBunchArchive(bits);
+        var reusable = new BunchProbeReader(useReusableBunches: true);
+        var copying = new BunchProbeReader(useReusableBunches: false);
+        reusable.ReceivedPacket(archive);
+        archive.Reset();
+        copying.ReceivedPacket(archive);
+
+        var beforeReusable = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+        {
+            archive.Reset();
+            reusable.ReceivedPacket(archive);
+        }
+        var reusableBytes = GC.GetAllocatedBytesForCurrentThread() - beforeReusable;
+
+        var beforeCopying = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+        {
+            archive.Reset();
+            copying.ReceivedPacket(archive);
+        }
+        var copyingBytes = GC.GetAllocatedBytesForCurrentThread() - beforeCopying;
+
+        Assert.That(reusableBytes, Is.LessThan(copyingBytes));
+    }
+
     private static NetFieldExportGroup CreateGroup() => new()
     {
         PathName = PlayerStatePath,
@@ -424,6 +509,37 @@ public sealed class ParserReadPolicyTests
         bits.AddRange(payload);
         return CreateRawPacket(bits);
     }
+
+    private static List<bool> CreateNonPartialBunchBits(
+        uint channelIndex, bool open = false, bool close = false,
+        bool dormant = false, bool paused = false, bool reliable = false)
+    {
+        var bits = new List<bool>();
+        bits.Add(false); // Legacy ack dummy.
+        bits.Add(open || close);
+        if (open || close)
+        {
+            bits.Add(open);
+            bits.Add(close);
+        }
+        if (close)
+            bits.Add(dormant);
+        bits.Add(paused);
+        bits.Add(reliable);
+        WriteSerializedInt(bits, channelIndex, 10_240);
+        bits.Add(false); // bHasPackageMapExports.
+        bits.Add(false); // bHasMustBeMappedGUIDs.
+        bits.Add(false); // bPartial.
+        WriteSerializedInt(bits, 0, (uint)ChannelType.MAX);
+        WriteSerializedInt(bits, 0, 16_384); // Empty bunch data.
+        return bits;
+    }
+
+    private static NetBitReader CreateBunchArchive(List<bool> bits) =>
+        new(PackBits(bits), bits.Count)
+        {
+            EngineNetworkVersion = EngineNetworkVersionHistory.HISTORY_INITIAL,
+        };
 
     private static byte[] PackBits(IReadOnlyList<bool> bits)
     {
@@ -572,6 +688,7 @@ public sealed class ParserReadPolicyTests
         public bool CompletedArchiveError { get; private set; }
 
         protected override bool UseReusableBuffers => true;
+        protected override bool UseReusableBunches => true;
 
         public override bool ReceivedSequencedBunch(DataBunch bunch)
         {
@@ -582,5 +699,74 @@ public sealed class ParserReadPolicyTests
             CompletedArchiveError = bunch.Archive.IsError;
             return false;
         }
+    }
+
+    private sealed class BunchProbeReader(
+        bool useReusableBunches, bool dirtyFirstBunch = false, bool nestOnFirstBunch = false)
+        : FortniteReplayReader.ReplayReader(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FortniteReplayReader.ReplayReader>.Instance,
+            ParseMode.Minimal)
+    {
+        public List<DataBunch> BunchReferences { get; } = [];
+        public List<BunchHeaderSnapshot> Headers { get; } = [];
+
+        protected override bool UseReusableBunches => useReusableBunches;
+
+        public override void ReceivedRawBunch(DataBunch bunch)
+        {
+            BunchReferences.Add(bunch);
+            Headers.Add(new BunchHeaderSnapshot(bunch));
+            if (dirtyFirstBunch && BunchReferences.Count == 1)
+            {
+                bunch.bIgnoreRPCs = true;
+                bunch.bHasPartialCustomExportsFinalBit = true;
+                bunch.bHasPackageMapExports = true;
+                bunch.bHasMustBeMappedGUIDs = true;
+                bunch.bPartial = true;
+                bunch.bPartialInitial = true;
+                bunch.bPartialFinal = true;
+                bunch.ChSequence = 99;
+            }
+            if (nestOnFirstBunch && BunchReferences.Count == 1)
+                ReceivedPacket(CreateBunchArchive(CreateNonPartialBunchBits(channelIndex: 9)));
+        }
+    }
+
+    private sealed record BunchHeaderSnapshot
+    {
+        public BunchHeaderSnapshot(DataBunch bunch)
+        {
+            PacketId = bunch.PacketId;
+            ChIndex = bunch.ChIndex;
+#pragma warning disable CS0618 // Verify that reuse clears every observable DataBunch field.
+            ChType = bunch.ChType;
+#pragma warning restore CS0618
+            ChName = bunch.ChName;
+            ChSequence = bunch.ChSequence;
+            bOpen = bunch.bOpen;
+            bClose = bunch.bClose;
+            bDormant = bunch.bDormant;
+            bIsReplicationPaused = bunch.bIsReplicationPaused;
+            bReliable = bunch.bReliable;
+            CloseReason = bunch.CloseReason;
+            AllOptionalFlagsClear = !bunch.bOpen && !bunch.bClose && !bunch.bDormant
+                && !bunch.bIsReplicationPaused && !bunch.bReliable && !bunch.bPartial
+                && !bunch.bPartialInitial && !bunch.bHasPartialCustomExportsFinalBit
+                && !bunch.bPartialFinal && !bunch.bHasPackageMapExports
+                && !bunch.bHasMustBeMappedGUIDs && !bunch.bIgnoreRPCs;
+        }
+
+        public int PacketId { get; }
+        public uint ChIndex { get; }
+        public ChannelType ChType { get; }
+        public ChannelName ChName { get; }
+        public int ChSequence { get; }
+        public bool bOpen { get; }
+        public bool bClose { get; }
+        public bool bDormant { get; }
+        public bool bIsReplicationPaused { get; }
+        public bool bReliable { get; }
+        public ChannelCloseReason CloseReason { get; }
+        public bool AllOptionalFlagsClear { get; }
     }
 }
