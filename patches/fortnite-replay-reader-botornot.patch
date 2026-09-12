@@ -715,6 +715,57 @@ index 0000000..33ab485
 +        }
 +    }
 +}
+diff --git a/src/Unreal.Core/BitReader.cs b/src/Unreal.Core/BitReader.cs
+index 1517bd0..0f4b819 100644
+--- a/src/Unreal.Core/BitReader.cs
++++ b/src/Unreal.Core/BitReader.cs
+@@ -14,6 +14,7 @@ namespace Unreal.Core;
+ public class BitReader : FBitArchive
+ {
+     private ReadOnlyMemory<byte> Buffer { get; set; }
++    private byte[] _reusableBuffer = [];
+ 
+     public override int Position { get; protected set; }
+ 
+@@ -74,6 +75,38 @@ public class BitReader : FBitArchive
+         IsError = false;
+     }
+ 
++    /// <summary>
++    /// Copies input into storage owned by this reader and reuses that storage on later fills.
++    /// The returned spans from this reader remain valid only until the next reusable fill.
++    /// </summary>
++    internal void FillBufferReusable(ReadOnlySpan<byte> input) =>
++        FillBufferReusable(input, checked(input.Length * 8));
++
++    /// <summary>
++    /// Copies input into storage owned by this reader and reuses that storage on later fills.
++    /// The returned spans from this reader remain valid only until the next reusable fill.
++    /// </summary>
++    internal void FillBufferReusable(ReadOnlySpan<byte> input, int bitCount)
++    {
++        if (bitCount < 0 || bitCount > (long)input.Length * 8)
++        {
++            throw new ArgumentOutOfRangeException(nameof(bitCount));
++        }
++
++        if (_reusableBuffer.Length < input.Length)
++        {
++            _reusableBuffer = new byte[input.Length];
++        }
++
++        input.CopyTo(_reusableBuffer);
++        Buffer = _reusableBuffer.AsMemory(0, input.Length);
++        LastBit = bitCount;
++        Position = 0;
++        MarkPosition = 0;
++        IsError = false;
++        _tempLastBit.Clear();
++    }
++
+     public override bool AtEnd() => Position >= LastBit;
+ 
+     public override bool CanRead(int count) => Position + count <= LastBit;
 diff --git a/src/Unreal.Core/NetFieldParser.cs b/src/Unreal.Core/NetFieldParser.cs
 index a31b22c..46c49b4 100644
 --- a/src/Unreal.Core/NetFieldParser.cs
@@ -741,7 +792,7 @@ index a31b22c..46c49b4 100644
          };
  
 diff --git a/src/Unreal.Core/ReplayReader.cs b/src/Unreal.Core/ReplayReader.cs
-index 659dd08..ce1a213 100644
+index 659dd08..957ed52 100644
 --- a/src/Unreal.Core/ReplayReader.cs
 +++ b/src/Unreal.Core/ReplayReader.cs
 @@ -1,4 +1,4 @@
@@ -750,7 +801,7 @@ index 659dd08..ce1a213 100644
  using System.Diagnostics.CodeAnalysis;
  using System.IO;
  using Microsoft.Extensions.Logging;
-@@ -60,6 +60,28 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -60,6 +60,35 @@ public abstract class ReplayReader<T> where T : Replay, new()
      protected NetGuidCache _netGuidCache;
      protected NetFieldParser _netFieldParser;
  
@@ -771,6 +822,13 @@ index 659dd08..ce1a213 100644
 +    protected virtual bool ShouldReadField(NetFieldExportGroup group, NetFieldExport field) => true;
 +
 +    /// <summary>
++    /// Reuses storage owned by the reader for transient packet, export, and property payloads.
++    /// Overrides must return <see langword="false"/> unless all supported replay versions consume
++    /// those payloads synchronously and do not retain spans returned from their archives.
++    /// </summary>
++    protected virtual bool UseReusableBuffers => false;
++
++    /// <summary>
 +    /// Elapsed replay time for the frame whose packets are currently being decoded.
 +    /// This is separate from replicated world time and event display timestamps.
 +    /// </summary>
@@ -779,7 +837,7 @@ index 659dd08..ce1a213 100644
      private int replayDataIndex = 0;
      private int checkpointIndex = 0;
      private int packetIndex = 0;
-@@ -106,6 +128,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -106,6 +135,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
      public virtual T ReadReplay(FArchive archive)
      {
          Replay = new T();
@@ -787,7 +845,7 @@ index 659dd08..ce1a213 100644
  
          ReadReplayInfo(archive);
          ReadReplayChunks(archive);
-@@ -131,6 +154,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -131,6 +161,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          bunchIndex = 0;
          InPacketId = 0;
          PartialBunch = null;
@@ -795,7 +853,7 @@ index 659dd08..ce1a213 100644
  
          _netGuidCache.Cleanup();
      }
-@@ -515,6 +539,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -515,6 +546,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          _cmdReader.EngineNetworkVersion = header.EngineNetworkVersion;
          _cmdReader.NetworkVersion = header.NetworkVersion;
          _cmdReader.ReplayHeaderFlags = header.Flags;
@@ -803,7 +861,16 @@ index 659dd08..ce1a213 100644
      }
  
  
-@@ -815,6 +840,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -732,7 +764,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         for (var i = 0; i < numGuids; i++)
+         {
+             var size = archive.ReadInt32();
+-            _exportReader.FillBuffer(archive.ReadBytes(size));
++            FillInternalReader(_exportReader, archive.ReadBytes(size));
+             InternalLoadObject(_exportReader, true);
+         }
+     }
+@@ -815,6 +847,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
          }
  
          var timeSeconds = archive.ReadSingle();
@@ -811,7 +878,7 @@ index 659dd08..ce1a213 100644
          _logger?.LogDebug("ReadDemoFrameIntoPlaybackPackets at {}", timeSeconds);
  
          if (archive.NetworkVersion >= NetworkVersionHistory.HISTORY_LEVEL_STREAMING_FIXES)
-@@ -1374,6 +1400,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1374,6 +1407,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
                      continue;
                  }
  
@@ -823,7 +890,16 @@ index 659dd08..ce1a213 100644
                  if (fieldCache.Incompatible)
                  {
                      // We've already warned about this property once, so no need to continue to do so
-@@ -1630,7 +1661,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1518,7 +1556,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         if (export != null)
+         {
+             var numBits = reader.GetBitsLeft();
+-            _cmdReader.FillBuffer(reader.ReadBits(numBits), numBits);
++            FillInternalReader(_cmdReader, reader.ReadBits(numBits), numBits);
+             export.Serialize(_cmdReader);
+ 
+             if (_cmdReader.IsError)
+@@ -1630,7 +1668,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
      ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L2971
      ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L3022
      /// </summary>
@@ -832,7 +908,7 @@ index 659dd08..ce1a213 100644
      {
          exportGroup = default;
  
-@@ -1673,13 +1704,8 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1673,13 +1711,8 @@ public abstract class ReplayReader<T> where T : Replay, new()
          }
  
          _logger?.LogDebug("ReceiveProperties: group {}", group.PathName);
@@ -848,7 +924,7 @@ index 659dd08..ce1a213 100644
  
          var hasdata = false;
  
-@@ -1710,6 +1736,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1710,6 +1743,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  continue;
              }
  
@@ -863,7 +939,7 @@ index 659dd08..ce1a213 100644
              if (export is null)
              {
                  _logger?.LogWarning("Couldnt find handle {handle} for group {pathname}, numbits is {numBits}", handle, group.PathName, numBits);
-@@ -1725,6 +1759,20 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1725,10 +1766,24 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  continue;
              }
  
@@ -884,7 +960,12 @@ index 659dd08..ce1a213 100644
              hasdata = true;
              try
              {
-@@ -1770,6 +1818,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
+-                _cmdReader.FillBuffer(archive.ReadBits(numBits), (int)numBits);
++                FillInternalReader(_cmdReader, archive.ReadBits(numBits), (int)numBits);
+                 if (!_netFieldParser.ReadField(exportGroup, export, handle, group, _cmdReader))
+                 {
+                     // Set field incompatible since we couldnt (or didnt want to) parse it.
+@@ -1770,6 +1825,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
              }
          }
  
@@ -903,7 +984,47 @@ index 659dd08..ce1a213 100644
          if (!netDeltaUpdate && hasdata)
          {
              OnExportRead(channelIndex, exportGroup);
-@@ -2091,6 +2151,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1921,6 +1988,30 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     /// <summary>
+     /// see https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/NetConnection.cpp#L1007
+     /// </summary>
++    private void FillInternalReader(NetBitReader reader, ReadOnlySpan<byte> input)
++    {
++        if (UseReusableBuffers)
++        {
++            reader.FillBufferReusable(input);
++        }
++        else
++        {
++            reader.FillBuffer(input);
++        }
++    }
++
++    private void FillInternalReader(NetBitReader reader, ReadOnlySpan<byte> input, int bitCount)
++    {
++        if (UseReusableBuffers)
++        {
++            reader.FillBufferReusable(input, bitCount);
++        }
++        else
++        {
++            reader.FillBuffer(input, bitCount);
++        }
++    }
++
+     public virtual void ReceivedRawPacket(ReadOnlySpan<byte> packet)
+     {
+         var lastByte = packet[^1];
+@@ -1936,7 +2027,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 bitSize--;
+             }
+ 
+-            _packetReader.FillBuffer(packet, bitSize);
++            FillInternalReader(_packetReader, packet, bitSize);
+             try
+             {
+                 ReceivedPacket(_packetReader);
+@@ -2091,6 +2182,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  bunch.Archive = bitReader;
              }
  

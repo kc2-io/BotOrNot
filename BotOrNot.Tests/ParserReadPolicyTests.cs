@@ -211,6 +211,97 @@ public sealed class ParserReadPolicyTests
         });
     }
 
+    [Test]
+    public void ReusablePropertyBufferResetsAfterLargerCustomPayload()
+    {
+        const string gameStatePath = "/Game/Athena/Athena_GameState.Athena_GameState_C";
+        const string classCachePath = "Athena_GameState_C_ClassNetCache";
+        const string playlistPath = "/Game/Athena/Playlists/Playlist_DefaultSolo.Playlist_DefaultSolo";
+        const uint actorGuid = 42;
+        const uint playlistGuid = 7;
+        var reader = new FilteringReplayReader(readGroup: true, rejectedField: null);
+        reader.ConfigureCustomPlaylist(
+            actorGuid, playlistGuid, playlistPath, gameStatePath, classCachePath);
+
+        Assert.That(reader.ReceivedReplicatorBunch(
+            new DataBunch { Archive = CreateCustomPlaylistArchive(playlistGuid), ChIndex = 1 },
+            CreateCustomPlaylistArchive(playlistGuid), actorGuid, bHasRepLayout: false), Is.True);
+
+        var group = CreateGroup(PlayerStatePath, "bIsABot");
+        var result = reader.ReceiveProperties(
+            CreatePropertiesArchive(1), group, 1, out var exportGroup,
+            enablePropertyChecksum: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            Assert.That(exportGroup, Is.TypeOf<FortPlayerState>());
+            Assert.That(((FortPlayerState)exportGroup!).bIsABot, Is.True);
+        });
+    }
+
+    [Test]
+    public void ReusablePacketBufferOwnsInputAndResetsReaderState()
+    {
+        var reader = new PacketProbeReader(useReusableBuffers: true, dirtyFirstRead: true);
+        var firstPacket = CreateRawPacket([true, false, true, false, false, true, false, true]);
+        var originalFirstByte = firstPacket[0];
+
+        reader.ReceivedRawPacket(firstPacket);
+        firstPacket[0] ^= 0xff;
+        Assert.That(reader.ReadCapturedByte(), Is.EqualTo(originalFirstByte));
+
+        reader.ReceivedRawPacket(CreateRawPacket([false, true, false]));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reader.StartStates, Has.Count.EqualTo(2));
+            Assert.That(reader.StartStates[1].Position, Is.Zero);
+            Assert.That(reader.StartStates[1].MarkPosition, Is.Zero);
+            Assert.That(reader.StartStates[1].LastBit, Is.EqualTo(3));
+            Assert.That(reader.StartStates[1].IsError, Is.False);
+        });
+    }
+
+    [Test]
+    public void ReusablePacketBufferDoesNotInvalidateRetainedPartialBunch()
+    {
+        var reader = new PartialBunchProbeReader();
+        bool[] initial = [true, false, true, true, false, false, true, false];
+        bool[] final = [false, true, true, false, true];
+
+        reader.ReceivedRawPacket(CreatePartialPacket(initial, initial: true, final: false));
+        reader.ReceivedRawPacket(CreatePartialPacket(final, initial: false, final: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reader.CompletedBits, Is.EqualTo(initial.Concat(final)));
+            Assert.That(reader.CompletedArchiveError, Is.False);
+        });
+    }
+
+    [Test]
+    public void ReusablePacketBufferAvoidsPerFillAllocation()
+    {
+        var packet = CreateRawPacket([true, false, true, false, true, false, true, false]);
+        var reusable = new PacketProbeReader(useReusableBuffers: true);
+        var copying = new PacketProbeReader(useReusableBuffers: false);
+        reusable.ReceivedRawPacket(packet);
+        copying.ReceivedRawPacket(packet);
+
+        var beforeReusable = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+            reusable.ReceivedRawPacket(packet);
+        var reusableBytes = GC.GetAllocatedBytesForCurrentThread() - beforeReusable;
+
+        var beforeCopying = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+            copying.ReceivedRawPacket(packet);
+        var copyingBytes = GC.GetAllocatedBytesForCurrentThread() - beforeCopying;
+
+        Assert.That(reusableBytes, Is.LessThan(copyingBytes));
+    }
+
     private static NetFieldExportGroup CreateGroup() => new()
     {
         PathName = PlayerStatePath,
@@ -306,6 +397,57 @@ public sealed class ParserReadPolicyTests
         };
     }
 
+    private static byte[] CreateRawPacket(IEnumerable<bool> payload)
+    {
+        var bits = payload.ToList();
+        bits.Add(true); // Packet termination marker.
+        return PackBits(bits);
+    }
+
+    private static byte[] CreatePartialPacket(bool[] payload, bool initial, bool final)
+    {
+        var bits = new List<bool>
+        {
+            false, // Legacy ack dummy.
+            false, // bControl.
+            false, // bIsReplicationPaused.
+            false, // bReliable.
+        };
+        WriteSerializedInt(bits, 1, 10_240); // Channel index.
+        bits.Add(false); // bHasPackageMapExports.
+        bits.Add(false); // bHasMustBeMappedGUIDs.
+        bits.Add(true);  // bPartial.
+        bits.Add(initial);
+        bits.Add(final);
+        WriteSerializedInt(bits, 0, (uint)ChannelType.MAX);
+        WriteSerializedInt(bits, (uint)payload.Length, 16_384);
+        bits.AddRange(payload);
+        return CreateRawPacket(bits);
+    }
+
+    private static byte[] PackBits(IReadOnlyList<bool> bits)
+    {
+        var bytes = new byte[(bits.Count + 7) / 8];
+        for (var index = 0; index < bits.Count; index++)
+        {
+            if (bits[index])
+                bytes[index / 8] |= (byte)(1 << (index & 7));
+        }
+        return bytes;
+    }
+
+    private static void WriteSerializedInt(List<bool> bits, uint value, uint maxValue)
+    {
+        uint encoded = 0;
+        for (uint mask = 1; encoded + mask < maxValue; mask *= 2)
+        {
+            var set = (value & mask) != 0;
+            bits.Add(set);
+            if (set)
+                encoded |= mask;
+        }
+    }
+
     private static void WritePacked(List<bool> bits, uint value)
     {
         do
@@ -367,6 +509,8 @@ public sealed class ParserReadPolicyTests
         protected override bool ShouldReadField(NetFieldExportGroup group, NetFieldExport field) =>
             !string.Equals(field.Name, rejectedField, StringComparison.Ordinal);
 
+        protected override bool UseReusableBuffers => true;
+
         protected override void OnExportRead(uint channelIndex, INetFieldExportGroup? exportGroup) =>
             LastExport = exportGroup;
 
@@ -384,6 +528,59 @@ public sealed class ParserReadPolicyTests
             InitializeChannel();
             return base.ReceiveProperties(
                 archive, group, channelIndex, out exportGroup, enablePropertyChecksum, netDeltaUpdate);
+        }
+    }
+
+    private sealed class PacketProbeReader(bool useReusableBuffers, bool dirtyFirstRead = false)
+        : FortniteReplayReader.ReplayReader(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FortniteReplayReader.ReplayReader>.Instance,
+            ParseMode.Minimal)
+    {
+        private FBitArchive? _captured;
+
+        public List<(int Position, int MarkPosition, int LastBit, bool IsError)> StartStates { get; } = [];
+
+        protected override bool UseReusableBuffers => useReusableBuffers;
+
+        public override void ReceivedPacket(FBitArchive bitReader)
+        {
+            StartStates.Add((bitReader.Position, bitReader.MarkPosition,
+                bitReader.Position + bitReader.GetBitsLeft(), bitReader.IsError));
+            _captured = bitReader;
+            if (dirtyFirstRead && StartStates.Count == 1)
+            {
+                bitReader.ReadBit();
+                bitReader.Mark();
+                bitReader.SetTempEnd(1, FBitArchiveEndIndex.BUNCH);
+                bitReader.SetError();
+            }
+        }
+
+        public byte ReadCapturedByte()
+        {
+            _captured!.Reset();
+            return _captured.ReadByte();
+        }
+    }
+
+    private sealed class PartialBunchProbeReader()
+        : FortniteReplayReader.ReplayReader(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FortniteReplayReader.ReplayReader>.Instance,
+            ParseMode.Minimal)
+    {
+        public bool[]? CompletedBits { get; private set; }
+        public bool CompletedArchiveError { get; private set; }
+
+        protected override bool UseReusableBuffers => true;
+
+        public override bool ReceivedSequencedBunch(DataBunch bunch)
+        {
+            var bits = new List<bool>();
+            while (!bunch.Archive.AtEnd())
+                bits.Add(bunch.Archive.ReadBit());
+            CompletedBits = bits.ToArray();
+            CompletedArchiveError = bunch.Archive.IsError;
+            return false;
         }
     }
 }
