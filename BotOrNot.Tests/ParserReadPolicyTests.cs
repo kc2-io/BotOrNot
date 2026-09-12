@@ -387,6 +387,117 @@ public sealed class ParserReadPolicyTests
         Assert.That(reusableBytes, Is.LessThan(copyingBytes));
     }
 
+    [Test]
+    public void FastSerializedIntegerMatchesOriginalForEveryPowerAndBitOffset()
+    {
+        var slow = new SerializedIntProbeReader(useFastSerializedIntegers: false);
+        var fast = new SerializedIntProbeReader(useFastSerializedIntegers: true);
+        var random = new Random(0x5e71a1);
+
+        for (var bitCount = 0; bitCount <= 30; bitCount++)
+        {
+            var maxValue = 1 << bitCount;
+            var maxResult = (uint)maxValue - 1;
+            uint[] values =
+            [
+                0,
+                maxResult,
+                maxResult == 0 ? 0u : 1u,
+                maxResult == 0 ? 0u : (uint)random.NextInt64(maxValue),
+            ];
+
+            for (var offset = 0; offset <= 7; offset++)
+            {
+                foreach (var value in values.Distinct())
+                {
+                    foreach (var trailingBits in new[] { 0, 5 })
+                    {
+                        var bits = Enumerable.Range(0, offset)
+                            .Select(index => (index & 1) == 0)
+                            .ToList();
+                        for (var bit = 0; bit < bitCount; bit++)
+                            bits.Add((value & (1u << bit)) != 0);
+                        bits.AddRange(Enumerable.Repeat(true, trailingBits));
+
+                        AssertSerializedIntegerParity(
+                            slow, fast, CreateRawPacket(bits), offset, maxValue,
+                            startInError: false,
+                            $"power={maxValue}, offset={offset}, value={value}, trailing={trailingBits}");
+                    }
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void FastSerializedIntegerFallsBackForTruncationErrorAndNonPowerRanges()
+    {
+        var slow = new SerializedIntProbeReader(useFastSerializedIntegers: false);
+        var fast = new SerializedIntProbeReader(useFastSerializedIntegers: true);
+
+        for (var bitCount = 1; bitCount <= 30; bitCount++)
+        {
+            var maxValue = 1 << bitCount;
+            for (var offset = 0; offset <= 7; offset++)
+            {
+                var truncated = Enumerable.Range(0, offset + bitCount - 1)
+                    .Select(index => (index & 1) == 0);
+                AssertSerializedIntegerParity(
+                    slow, fast, CreateRawPacket(truncated), offset, maxValue,
+                    startInError: false, $"truncated power={maxValue}, offset={offset}");
+
+                var complete = Enumerable.Range(0, offset + bitCount)
+                    .Select(index => (index & 1) != 0);
+                AssertSerializedIntegerParity(
+                    slow, fast, CreateRawPacket(complete), offset, maxValue,
+                    startInError: true, $"pre-error power={maxValue}, offset={offset}");
+            }
+        }
+
+        int[] nonPowers = [0, -1, 3, 5, 7, 10, 255, 16_383, 16_385, 1_000_000];
+        foreach (var maxValue in nonPowers)
+        {
+            for (var offset = 0; offset <= 7; offset++)
+            {
+                var bits = Enumerable.Range(0, offset + 40)
+                    .Select(index => index % 3 == 0);
+                AssertSerializedIntegerParity(
+                    slow, fast, CreateRawPacket(bits), offset, maxValue,
+                    startInError: false, $"nonpower={maxValue}, offset={offset}");
+            }
+        }
+    }
+
+    [Test]
+    public void FastSerializedIntegerDoesNotAllocateAfterWarmup()
+    {
+        var reader = new SerializedIntProbeReader(useFastSerializedIntegers: true);
+        var packet = CreateRawPacket(Enumerable.Range(0, 19).Select(index => index % 3 == 0));
+        for (var i = 0; i < 100; i++)
+            reader.Read(packet, offset: 5, maxValue: 16_384, startInError: false);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1_000; i++)
+            reader.Read(packet, offset: 5, maxValue: 16_384, startInError: false);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.That(allocated, Is.Zero);
+    }
+
+    private static void AssertSerializedIntegerParity(
+        SerializedIntProbeReader slow,
+        SerializedIntProbeReader fast,
+        byte[] packet,
+        int offset,
+        int maxValue,
+        bool startInError,
+        string context)
+    {
+        var expected = slow.Read(packet, offset, maxValue, startInError);
+        var actual = fast.Read(packet, offset, maxValue, startInError);
+        Assert.That(actual, Is.EqualTo(expected), context);
+    }
+
     private static NetFieldExportGroup CreateGroup() => new()
     {
         PathName = PlayerStatePath,
@@ -769,4 +880,47 @@ public sealed class ParserReadPolicyTests
         public ChannelCloseReason CloseReason { get; }
         public bool AllOptionalFlagsClear { get; }
     }
+
+    private sealed class SerializedIntProbeReader(bool useFastSerializedIntegers)
+        : FortniteReplayReader.ReplayReader(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<FortniteReplayReader.ReplayReader>.Instance,
+            ParseMode.Minimal)
+    {
+        private int _offset;
+        private int _maxValue;
+        private bool _startInError;
+        private bool _completed;
+        private SerializedIntResult _result;
+
+        protected override bool UseReusableBuffers => true;
+        protected override bool UseFastSerializedIntegers => useFastSerializedIntegers;
+
+        public SerializedIntResult Read(
+            byte[] packet, int offset, int maxValue, bool startInError)
+        {
+            _offset = offset;
+            _maxValue = maxValue;
+            _startInError = startInError;
+            _completed = false;
+            ReceivedRawPacket(packet);
+            if (!_completed)
+                throw new InvalidOperationException("Serialized integer probe did not complete.");
+            return _result;
+        }
+
+        public override void ReceivedPacket(FBitArchive bitReader)
+        {
+            bitReader.SkipBits(_offset);
+            if (_startInError)
+                bitReader.SetError();
+            var value = bitReader.ReadSerializedInt(_maxValue);
+            _result = new SerializedIntResult(
+                value, bitReader.Position, bitReader.GetBitsLeft(),
+                bitReader.IsError, bitReader.AtEnd());
+            _completed = true;
+        }
+    }
+
+    private readonly record struct SerializedIntResult(
+        uint Value, int Position, int BitsLeft, bool IsError, bool AtEnd);
 }

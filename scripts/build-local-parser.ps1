@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$packageVersion = '3.0.9-botornot'
+$packageVersion = '3.0.10-botornot'
 $pinnedCommit = '2fc699e99cf8f6654f13fcc5272ea1de57d89fd7'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $upstreamRoot = (Resolve-Path $UpstreamPath).Path
