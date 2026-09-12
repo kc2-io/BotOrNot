@@ -124,7 +124,8 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
         var render = CaptureRenderedFrame(window, arguments.Width, arguments.Height, arguments.RenderPngPath);
         var finalFrameAt = Stopwatch.GetTimestamp();
         await WaitForScanDrainedAsync(observer, arguments.Timeout);
-        var drainedAt = Stopwatch.GetTimestamp();
+        if (!observer.TryGet(LibraryScanMilestone.ScanDrained, out var drainedAt))
+            throw new InvalidOperationException("The library scan did not report its disposal boundary.");
         var expectedCount = arguments.SelfTest ? 2 : Math.Min(manifest!.Entries.Count, arguments.Limit);
         if (viewModel.IsScanning || viewModel.FailedReplayCount != 0 ||
             viewModel.Replays.Count != expectedCount || viewModel.TotalMatches != expectedCount ||

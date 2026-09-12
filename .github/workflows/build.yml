@@ -87,6 +87,9 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build --verbosity normal
 
+      - name: Smoke test offscreen library benchmark
+        run: dotnet run --project BotOrNot.LibraryUiBenchmark --configuration Release --no-build -- --self-test
+
       - name: Publish Windows x64
         run: |
           dotnet publish BotOrNot.Avalonia/BotOrNot.Avalonia.csproj `
