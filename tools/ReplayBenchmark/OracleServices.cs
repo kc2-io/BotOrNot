@@ -187,11 +187,6 @@ public static class ReplayOracleService
                 .ToDictionary(name => name, name => AssemblySha256(Assembly.Load(name)), StringComparer.Ordinal));
     }
 
-    public static ReplayOracleRun RefreshEnvironment(ReplayOracleRun run) => run with
-    {
-        Environment = CaptureEnvironment()
-    };
-
     private static string InformationalVersion(Assembly assembly) => assembly
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
 

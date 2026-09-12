@@ -16,7 +16,6 @@ internal static class ReplayBenchmarkProgram
                 "validate" => await ValidateAsync(args),
                 "run" => await RunProfileAsync(args),
                 "compare" => await CompareAsync(args),
-                "refresh-environment" => await RefreshEnvironmentAsync(args),
                 "diagnose" => await DiagnoseAsync(args),
                 _ => Usage()
             };
@@ -35,7 +34,6 @@ internal static class ReplayBenchmarkProgram
         Console.Error.WriteLine("  ReplayBenchmark validate <manifest.json> <replay-dir> [--allow-extra-replay-files]");
         Console.Error.WriteLine("  ReplayBenchmark run <normal|summary> <manifest.json> <replay-dir> <output.json> [concurrency] [--allow-extra-replay-files]");
         Console.Error.WriteLine("  ReplayBenchmark compare <normal.json> <summary.json> <deltas.json>");
-        Console.Error.WriteLine("  ReplayBenchmark refresh-environment <run.json>");
         Console.Error.WriteLine("  ReplayBenchmark diagnose <replay-path> <diagnostic.json>");
         return 1;
     }
@@ -99,14 +97,6 @@ internal static class ReplayBenchmarkProgram
             ? "Exact summary match."
             : $"Summary mismatch: {comparison.Deltas.Count} delta(s).");
         return comparison.IsExactMatch ? 0 : 5;
-    }
-
-    private static async Task<int> RefreshEnvironmentAsync(string[] args)
-    {
-        if (args.Length != 2) return Usage();
-        var run = await OracleJson.ReadAsync<ReplayOracleRun>(args[1]);
-        await OracleJson.WriteAsync(args[1], ReplayOracleService.RefreshEnvironment(run));
-        return 0;
     }
 
     private static async Task<int> DiagnoseAsync(string[] args)

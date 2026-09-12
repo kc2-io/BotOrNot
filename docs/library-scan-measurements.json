@@ -1,0 +1,52 @@
+[
+  {
+    "Case": "ui-final-normal-79",
+    "FrameMs": 19034.12,
+    "LaunchFrameMs": 21775.646,
+    "DrainMs": 18962.121,
+    "CpuMs": 47203.125,
+    "Allocated": 22578764080,
+    "WorkingMiB": 561.8,
+    "PrivateMiB": 1488.2
+  },
+  {
+    "Case": "ui-final-summary-79",
+    "FrameMs": 11794.513,
+    "LaunchFrameMs": 14255.68,
+    "DrainMs": 11724.198,
+    "CpuMs": 31000,
+    "Allocated": 10165891464,
+    "WorkingMiB": 578.9,
+    "PrivateMiB": 1633.5
+  },
+  {
+    "Case": "ui-final-warm-79",
+    "FrameMs": 754.892,
+    "LaunchFrameMs": 2495.288,
+    "DrainMs": 39.628,
+    "CpuMs": 1171.875,
+    "Allocated": 46372824,
+    "WorkingMiB": 126.8,
+    "PrivateMiB": 70.8
+  },
+  {
+    "Case": "ui-final-normal-50",
+    "FrameMs": 14587.49,
+    "LaunchFrameMs": 16833.702,
+    "DrainMs": 14516.762,
+    "CpuMs": 36671.875,
+    "Allocated": 17874286464,
+    "WorkingMiB": 566.1,
+    "PrivateMiB": 1515.8
+  },
+  {
+    "Case": "ui-final-summary-50",
+    "FrameMs": 9138.564,
+    "LaunchFrameMs": 11296.733,
+    "DrainMs": 9069.905,
+    "CpuMs": 23953.125,
+    "Allocated": 8001211536,
+    "WorkingMiB": 571.4,
+    "PrivateMiB": 1642.8
+  }
+]
