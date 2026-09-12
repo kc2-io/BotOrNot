@@ -1,5 +1,5 @@
 diff --git a/src/FortniteReplayReader/FortniteReplayBuilder.cs b/src/FortniteReplayReader/FortniteReplayBuilder.cs
-index ac80328..5e9224f 100644
+index ac80328..9214b22 100644
 --- a/src/FortniteReplayReader/FortniteReplayBuilder.cs
 +++ b/src/FortniteReplayReader/FortniteReplayBuilder.cs
 @@ -1,4 +1,4 @@
@@ -203,7 +203,7 @@ index ac80328..5e9224f 100644
  
          KillFeed.Add(entry);
      }
-@@ -472,14 +541,58 @@ public class FortniteReplayBuilder
+@@ -472,14 +541,62 @@ public class FortniteReplayBuilder
          newWeapon.WeaponName ??= weapon.WeaponData?.Name;
      }
  
@@ -227,9 +227,13 @@ index ac80328..5e9224f 100644
          }
  
 -        MapData.SafeZones.Add(new SafeZone(safeZone));
++        uint? actorGuid = _channelToActor.TryGetValue(channelIndex, out var mappedActorGuid)
++            ? mappedActorGuid
++            : null;
 +        var observation = new SafeZone(safeZone)
 +        {
 +            ChannelIndex = channelIndex,
++            ActorGuid = actorGuid,
 +            ReplayTimeSeconds = replayTimeSeconds,
 +            ReplicatedWorldTimeSeconds = ReplicatedWorldTimeSeconds,
 +            ReplicatedWorldTimeSecondsDouble = ReplicatedWorldTimeSecondsDouble,
@@ -505,7 +509,7 @@ index f78d19f..1b1e05b 100644
  
      public int? Id { get; set; }
 diff --git a/src/FortniteReplayReader/Models/SafeZone.cs b/src/FortniteReplayReader/Models/SafeZone.cs
-index ef54a6d..dee4cb0 100644
+index ef54a6d..128ee00 100644
 --- a/src/FortniteReplayReader/Models/SafeZone.cs
 +++ b/src/FortniteReplayReader/Models/SafeZone.cs
 @@ -15,6 +15,8 @@ public class SafeZone
@@ -517,13 +521,14 @@ index ef54a6d..dee4cb0 100644
          LastRadius = safeZone.LastRadius;
          LastCenter = safeZone.LastCenter;
          NextRadius = safeZone.NextRadius;
-@@ -24,8 +26,18 @@ public class SafeZone
+@@ -24,8 +26,19 @@ public class SafeZone
      }
  
      public float Radius { get; set; }
 -    public float StartShrinkTime { get; set; }
 -    public float FinishShrinkTime { get; set; }
 +    public uint ChannelIndex { get; set; }
++    public uint? ActorGuid { get; set; }
 +    public float? ReplayTimeSeconds { get; set; }
 +    public float? ReplicatedWorldTimeSeconds { get; set; }
 +    public double? ReplicatedWorldTimeSecondsDouble { get; set; }

@@ -39,6 +39,66 @@ public static class ReflectionUtils
         return null;
     }
 
+    public static float? GetFloat(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var v = pi.GetValue(obj);
+        if (v is float f) return f;
+        if (v is double d) return (float)d;
+        if (float.TryParse(v?.ToString(),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
+    public static double? GetDouble(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var value = pi.GetValue(obj);
+        if (value is double doubleValue) return doubleValue;
+        if (value is float floatValue) return floatValue;
+        if (double.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
+    public static int? GetInt(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var value = pi.GetValue(obj);
+        if (value is int intValue) return intValue;
+        if (value is uint uintValue && uintValue <= int.MaxValue) return (int)uintValue;
+        if (int.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
+    public static uint? GetUInt(object? obj, string name)
+    {
+        if (obj is null) return null;
+        var pi = FindProp(obj.GetType(), name);
+        if (pi == null) return null;
+        var value = pi.GetValue(obj);
+        if (value is uint uintValue) return uintValue;
+        if (value is int intValue && intValue >= 0) return (uint)intValue;
+        if (uint.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
     public static bool GetBool(object? obj, string name)
     {
         if (obj is null) return false;
