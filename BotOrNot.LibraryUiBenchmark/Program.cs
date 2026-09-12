@@ -26,7 +26,10 @@ try
 {
     parsedArguments = BenchmarkArguments.Parse(args);
     ConfigureHeadlessSkia();
-    var result = await RunAsync(parsedArguments, startedAt);
+    // SetupWithoutStarting installs the Avalonia synchronization context, but it does not
+    // start the dispatcher loop. Pump while the asynchronous harness runs so continuations
+    // from manifest/cache/resource work and the view-model scan can return to this UI thread.
+    var result = RunWithDispatcherPump(() => RunAsync(parsedArguments, startedAt));
     WriteResult(parsedArguments.OutputPath, result);
     Console.WriteLine(JsonSerializer.Serialize(result, BenchmarkJson.Options));
 }
@@ -46,6 +49,19 @@ static void ConfigureHeadlessSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
         .SetupWithoutStarting();
     Application.Current!.RequestedThemeVariant = ThemeVariant.Dark;
+}
+
+static T RunWithDispatcherPump<T>(Func<Task<T>> operation)
+{
+    var task = operation();
+    while (!task.IsCompleted)
+    {
+        Dispatcher.UIThread.RunJobs();
+        Thread.Sleep(1);
+    }
+
+    Dispatcher.UIThread.RunJobs();
+    return task.GetAwaiter().GetResult();
 }
 
 static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long processStartedAt)

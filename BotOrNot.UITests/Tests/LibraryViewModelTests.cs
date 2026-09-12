@@ -342,6 +342,15 @@ public sealed class LibraryViewModelTests
     {
         public ReplayScanOptions? Options { get; private set; }
         public bool WasDisposed { get; private set; }
+
+        // This fake models the streaming contract explicitly. Failing the legacy path keeps
+        // the observer test sensitive to an accidental change in scan ownership.
+        public Task<IReadOnlyList<ReplaySummary>> GetSummariesAsync(
+            string directory,
+            IProgress<int>? progress = null,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public async IAsyncEnumerable<ReplayScanUpdate> ScanAsync(string directory, ReplayScanOptions? options = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
