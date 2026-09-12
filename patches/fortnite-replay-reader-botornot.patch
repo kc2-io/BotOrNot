@@ -741,7 +741,7 @@ index a31b22c..46c49b4 100644
          };
  
 diff --git a/src/Unreal.Core/ReplayReader.cs b/src/Unreal.Core/ReplayReader.cs
-index 659dd08..108318a 100644
+index 659dd08..ce1a213 100644
 --- a/src/Unreal.Core/ReplayReader.cs
 +++ b/src/Unreal.Core/ReplayReader.cs
 @@ -1,4 +1,4 @@
@@ -848,7 +848,22 @@ index 659dd08..108318a 100644
  
          var hasdata = false;
  
-@@ -1725,6 +1751,20 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1710,6 +1736,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 continue;
+             }
+ 
++            if (numBits > int.MaxValue || !archive.CanRead((int)numBits))
++            {
++                _logger?.LogWarning(
++                    "Property payload for group {pathName} exceeds the remaining archive bits: {numBits}",
++                    group.PathName, numBits);
++                return false;
++            }
++
+             if (export is null)
+             {
+                 _logger?.LogWarning("Couldnt find handle {handle} for group {pathname}, numbits is {numBits}", handle, group.PathName, numBits);
+@@ -1725,6 +1759,20 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  continue;
              }
  
@@ -869,7 +884,7 @@ index 659dd08..108318a 100644
              hasdata = true;
              try
              {
-@@ -1770,6 +1810,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -1770,6 +1818,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
              }
          }
  
@@ -888,7 +903,7 @@ index 659dd08..108318a 100644
          if (!netDeltaUpdate && hasdata)
          {
              OnExportRead(channelIndex, exportGroup);
-@@ -2091,6 +2143,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
+@@ -2091,6 +2151,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
                  bunch.Archive = bitReader;
              }
  

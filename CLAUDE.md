@@ -9,7 +9,7 @@ BotOrNot is a cross-platform desktop application that analyzes Fortnite replay f
 - **Language**: C# / .NET 10.0 (nullable enabled, implicit usings)
 - **UI Framework**: Avalonia UI 11.2.2 (cross-platform desktop)
 - **MVVM**: ReactiveUI
-- **Replay Parsing**: FortniteReplayReader 3.0.6-botornot (patched local build from pinned upstream `2fc699e`, including replay-frame timestamps, safe-zone phase projection, recorder reconciliation, Fortnite 41.00 decoder fixes, and selective summary-read hooks)
+- **Replay Parsing**: FortniteReplayReader 3.0.7-botornot (patched local build from pinned upstream `2fc699e`, including replay-frame timestamps, safe-zone phase projection, recorder reconciliation, Fortnite 41.00 decoder fixes, and selective summary-read hooks)
 - **Testing**: NUnit 4.2.2 with coverlet
 - **CI/CD**: GitHub Actions (build on push/PR, release on tag push)
 
