@@ -5,22 +5,23 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$packageVersion = '3.0.5-botornot'
+$packageVersion = '3.0.6-botornot'
 $pinnedCommit = '2fc699e99cf8f6654f13fcc5272ea1de57d89fd7'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $upstreamRoot = (Resolve-Path $UpstreamPath).Path
+$upstreamGitDirectory = Join-Path $upstreamRoot '.git'
 $packageOutput = [System.IO.Path]::GetFullPath($OutputPath)
 $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('botornot-parser-' + [guid]::NewGuid().ToString('N'))
 
 New-Item -ItemType Directory -Force -Path $packageOutput | Out-Null
 
 try {
-    $actualCommit = (& git -C $upstreamRoot rev-parse HEAD).Trim()
+    $actualCommit = (& git -c "safe.directory=$upstreamRoot" -C $upstreamRoot rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or $actualCommit -ne $pinnedCommit) {
         throw "Expected upstream commit $pinnedCommit, found $actualCommit"
     }
 
-    & git clone --quiet --no-hardlinks $upstreamRoot $temporaryRoot
+    & git -c "safe.directory=$upstreamGitDirectory" clone --quiet --no-hardlinks $upstreamRoot $temporaryRoot
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated upstream checkout' }
     & git -C $temporaryRoot checkout --quiet --detach $pinnedCommit
     if ($LASTEXITCODE -ne 0) { throw 'Could not check out pinned upstream commit' }

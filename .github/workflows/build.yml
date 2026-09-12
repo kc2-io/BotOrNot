@@ -25,7 +25,7 @@ jobs:
       - name: Build patched FortniteReplayReader
         shell: pwsh
         run: |
-          $VER = "3.0.5-botornot"
+          $VER = "3.0.6-botornot"
           $FRD = Join-Path $env:RUNNER_TEMP "FRD"
           $OUT = Join-Path "${{ github.workspace }}" "local-packages"
           New-Item -ItemType Directory -Force -Path $OUT | Out-Null
