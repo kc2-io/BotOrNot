@@ -108,7 +108,9 @@ public sealed record ReplayEnvironment(
     string CoreAssemblyInformationalVersion,
     string ParserAssemblyVersion,
     string ParserAssemblyInformationalVersion,
-    string ParserAssemblySha256);
+    string ParserAssemblySha256,
+    bool ServerGarbageCollection = false,
+    IReadOnlyDictionary<string, string>? ParserBinaryHashes = null);
 
 public sealed record DiagnosticMetric(double Milliseconds, long AllocatedBytes);
 

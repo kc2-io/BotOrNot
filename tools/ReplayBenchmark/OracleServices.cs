@@ -181,7 +181,10 @@ public static class ReplayOracleService
             InformationalVersion(coreAssembly),
             parserAssembly.GetName().Version?.ToString() ?? "unknown",
             InformationalVersion(parserAssembly),
-            AssemblySha256(parserAssembly));
+            AssemblySha256(parserAssembly),
+            System.Runtime.GCSettings.IsServerGC,
+            new[] { "FortniteReplayReader", "Unreal.Core", "Unreal.Encryption", "OozSharp" }
+                .ToDictionary(name => name, name => AssemblySha256(Assembly.Load(name)), StringComparer.Ordinal));
     }
 
     public static ReplayOracleRun RefreshEnvironment(ReplayOracleRun run) => run with
