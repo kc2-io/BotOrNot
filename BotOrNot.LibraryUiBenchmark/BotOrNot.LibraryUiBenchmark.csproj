@@ -13,5 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BotOrNot.Avalonia\BotOrNot.Avalonia.csproj" />
+    <ProjectReference Include="..\tools\ReplayBenchmark\ReplayBenchmark.csproj" />
   </ItemGroup>
 </Project>

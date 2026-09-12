@@ -9,13 +9,17 @@ Run a production fixture in a fresh process:
 ```powershell
 dotnet run -c Release --project BotOrNot.LibraryUiBenchmark -- `
   --fixture-dir C:\replays --manifest C:\benchmark\current79.json `
-  --cache-dir C:\benchmark\cold-cache `
+  --cache-dir C:\benchmark\cold-cache --cache-mode cold `
   --concurrency 2 --limit 79 --mode auto --output C:\benchmark\library-ui.json
 ```
 
-`--mode auto` measures the persisted-directory `LibraryViewModel` constructor autoscan. `--mode manual` creates the same model without a saved directory and invokes `ScanCommand`. Neither mode runs production `Program` or `MainWindow` startup; the JSON calls that timing `benchmarkProcessLaunch` and states the hosted-view boundary. The output records which mode ran, the exact options observed by `IReplayCacheService.ScanAsync`, the final scan labels/counts, and a Skia `RenderTargetBitmap` PNG-content check.
+`--mode auto` measures the persisted-directory `LibraryViewModel` constructor autoscan. `--mode manual` first renders the empty `LibraryView`, then invokes `ScanCommand`; its scan timer therefore begins after the simulated interactive frame. Neither mode runs production `Program` or `MainWindow` startup. The JSON calls the boundary `benchmarkManagedEntry` and states the hosted-view limitation.
 
-`--manifest` is a non-empty JSON array, or an object with a `files`/`entries` array. Each entry needs `relativePath`, `file`, `name`, or `Name`; optional `length`, `Length`, or `size` values are verified. The fixture directory is checked against the frozen manifest before scanning. Use an absent file in `--cache-dir` (or an explicit `--cache-path`) for an app-cold cache run; the harness never deletes existing cache data.
+`--manifest` is the strict `tools/ReplayBenchmark freeze` artifact. Before every run the harness verifies every relative path, length, UTC mtime and SHA-256 and rejects unexpected replay files. The result fingerprints displayed row and frequent-opponent order, records aggregate text/grid proof and the cache update mix, and can reject a summary result against a Normal reference with `--expected-result normal-ui.json`.
+
+Specify cache state explicitly. `--cache-mode cold` rejects an existing cache file; `--cache-mode warm` rejects an absent one and requires every selected replay to emit a cached update. The harness never deletes or populates cache data. It records the cache file’s before/after hashes and marks the OS file-cache state as `uncontrolled`; an absent app cache is not an OS-cold claim.
+
+The renderer remains **Skia offscreen headless**. Its final-frame timestamp and pixel/grid checks establish a deterministic headless boundary only. Native desktop compositor timing is collected by the separate native harness.
 
 For a small renderer smoke check that does not parse replay files:
 
