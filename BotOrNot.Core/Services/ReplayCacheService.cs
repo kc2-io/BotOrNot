@@ -81,7 +81,7 @@ public sealed class ReplayCacheService : IReplayCacheService
     /// Bump when a parser or summary interpretation changes. It is deliberately part of the
     /// key so prior cache entries cannot masquerade as current analysis.
     /// </summary>
-    public const string AnalysisRevision = "2026-09-12.3";
+    public const string AnalysisRevision = "2026-09-12.4";
 
     private static readonly string DefaultCacheDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BotOrNot");
@@ -302,8 +302,13 @@ public sealed class ReplayCacheService : IReplayCacheService
     {
         try
         {
-            var data = await _replayService.LoadReplayAsync(file.FullPath, cancellationToken)
-                .ConfigureAwait(false);
+            // Explicit summary readers avoid full-match detail decoding during a library scan.
+            // Legacy implementations and test doubles keep the full-reader adapter.
+            var summary = _replayService is IReplaySummaryService summaryService
+                ? await summaryService.LoadSummaryAsync(file.FullPath, cancellationToken).ConfigureAwait(false)
+                : ReplaySummaryFactory.Create(
+                    await _replayService.LoadReplayAsync(file.FullPath, cancellationToken).ConfigureAwait(false),
+                    new FileInfo(file.FullPath));
             var currentIdentity = TryCreateIdentity(file.FullPath);
             if (currentIdentity is null || currentIdentity.Length != file.Length ||
                 currentIdentity.LastWriteTimeUtc != file.LastWriteTimeUtc)
@@ -311,7 +316,7 @@ public sealed class ReplayCacheService : IReplayCacheService
                 return ParseOutcome.Failure(file, "Replay file changed while it was being analyzed.");
             }
 
-            return ParseOutcome.Success(file, ReplaySummaryFactory.Create(data, new FileInfo(file.FullPath)));
+            return ParseOutcome.Success(file, summary);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

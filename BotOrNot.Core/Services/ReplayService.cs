@@ -11,7 +11,12 @@ public interface IReplayService
     Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default);
 }
 
-public sealed class ReplayService : IReplayService
+public interface IReplaySummaryService
+{
+    Task<ReplaySummary> LoadSummaryAsync(string path, CancellationToken cancellationToken = default);
+}
+
+public sealed class ReplayService : IReplayService, IReplaySummaryService
 {
     private sealed record ReplayEliminationRecord(EliminationEventEvidence Evidence, object? RawTime);
 
@@ -32,13 +37,26 @@ public sealed class ReplayService : IReplayService
         _logger = logger ?? NullLogger<ReplayService>.Instance;
     }
 
-    public async Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+    public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+        => LoadReplayCoreAsync(path, summaryOnly: false, cancellationToken);
+
+    public async Task<ReplaySummary> LoadSummaryAsync(string path, CancellationToken cancellationToken = default)
+    {
+        var data = await LoadReplayCoreAsync(path, summaryOnly: true, cancellationToken).ConfigureAwait(false);
+        return ReplaySummaryFactory.Create(data, new FileInfo(path));
+    }
+
+    // Both profiles use the same physical decoder limit and the same identity/credit rules.
+    private async Task<ReplayData> LoadReplayCoreAsync(
+        string path, bool summaryOnly, CancellationToken cancellationToken)
     {
         await PhysicalDecoderSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
         Task<FortniteReplayReader.Models.FortniteReplay> replayTask;
         try
         {
-            var reader = new ReplayReader(ReaderLogger, ParseMode.Normal);
+            ReplayReader reader = summaryOnly
+                ? new SummaryReplayReader(ReaderLogger)
+                : new ReplayReader(ReaderLogger, ParseMode.Normal);
             replayTask = Task.Run(() => reader.ReadReplay(path), CancellationToken.None);
         }
         catch
