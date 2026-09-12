@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -45,6 +46,9 @@ static void ConfigureHeadlessSkia()
 
 static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long processStartedAt)
 {
+    var process = Process.GetCurrentProcess();
+    var initialCpu = process.TotalProcessorTime;
+    var initialAllocations = GC.GetTotalAllocatedBytes(true);
     var manifest = arguments.ManifestPath is null ? null : CorpusManifest.Load(arguments.ManifestPath);
     manifest?.ValidateFixtureDirectory(arguments.FixtureDirectory!);
     var settings = new MemorySettingsService(new AppSettings
@@ -56,7 +60,8 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
     var observer = new TimingObserver();
     var cache = arguments.SelfTest
         ? new RecordingReplayCacheService(new SyntheticReplayCacheService())
-        : new RecordingReplayCacheService(new ReplayCacheService(cachePath: arguments.CachePath));
+        : new RecordingReplayCacheService(new ReplayCacheService(
+            arguments.Profile == "normal" ? new FullOnlyReplayService() : null, cachePath: arguments.CachePath));
 
     using var viewModel = new LibraryViewModel(
         _ => { }, cache, settings,
@@ -89,6 +94,11 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
         var finalFrameAt = Stopwatch.GetTimestamp();
         await WaitForScanDrainedAsync(observer, arguments.Timeout);
         var drainedAt = Stopwatch.GetTimestamp();
+        var expectedCount = arguments.SelfTest ? 2 : Math.Min(manifest!.Entries.Count, arguments.Limit);
+        if (viewModel.IsScanning || viewModel.FailedReplayCount != 0 ||
+            viewModel.Replays.Count != expectedCount || viewModel.TotalMatches != expectedCount ||
+            viewModel.ProcessedReplayCount != expectedCount || viewModel.LoadedReplayCount != expectedCount)
+            throw new InvalidOperationException("Final library state does not contain every selected replay without failures.");
 
         if (!render.HasVisibleContent)
             throw new InvalidOperationException("The Skia-rendered LibraryView bitmap contains no visible content.");
@@ -108,8 +118,9 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
             NativeDesktopRenderer = false,
             NativeEvidenceNote = "This measures Avalonia's offscreen Skia headless renderer. It is not native desktop viewport-latency evidence.",
             Host = "LibraryView hosted in a headless Window after App XAML setup",
-            StartupEvidenceNote = "benchmarkProcessLaunch begins before manifest validation and App XAML setup. The harness does not run the production Program or MainWindow startup path.",
+            StartupEvidenceNote = "benchmarkManagedEntry begins at the first managed statement, before manifest validation and App XAML setup. Runtime/process creation and production Program/MainWindow startup are not measured.",
             ScanMode = arguments.Mode.ToString().ToLowerInvariant(),
+            Profile = arguments.Profile,
             SelfTest = arguments.SelfTest,
             ManifestEntryCount = manifest?.Entries.Count,
             Configuration = new BenchmarkConfiguration(arguments.Limit, arguments.Concurrency, arguments.Width, arguments.Height),
@@ -134,7 +145,16 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
                 viewModel.FailedReplayCount,
                 cache.ObservedScanOptions.Limit,
                 cache.ObservedScanOptions.MaxConcurrency),
-            Render = render
+            Render = render,
+            Projection = new BenchmarkProjection(
+                Fingerprint(viewModel.Replays.OrderBy(row => row.FilePath, StringComparer.Ordinal).ToArray()),
+                Fingerprint(viewModel.FrequentOpponents.OrderBy(row => row.StableId, StringComparer.Ordinal).ToArray()),
+                viewModel.WinRate, viewModel.AvgKills, viewModel.AvgKillsDisplay,
+                viewModel.AvgBotPercent, viewModel.IncompleteOpponentMatchCount, viewModel.OpponentDataIncompleteText),
+            Resources = new BenchmarkResources(
+                (process.TotalProcessorTime - initialCpu).TotalMilliseconds,
+                GC.GetTotalAllocatedBytes(true) - initialAllocations, process.PeakWorkingSet64,
+                GC.GetGCMemoryInfo().TotalAvailableMemoryBytes, Environment.ProcessorCount)
         };
     }
     finally
@@ -142,6 +162,8 @@ static async Task<BenchmarkResult> RunAsync(BenchmarkArguments arguments, long p
         window.Close();
     }
 }
+
+static string Fingerprint<T>(T value) => Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
 
 static Task WaitForScanDrainedAsync(TimingObserver observer, TimeSpan timeout)
 {
@@ -228,7 +250,8 @@ internal sealed record BenchmarkArguments(
     int Width,
     int Height,
     TimeSpan Timeout,
-    bool SelfTest)
+    bool SelfTest,
+    string Profile = "summary")
 {
     public static BenchmarkArguments Parse(string[] args)
     {
@@ -266,6 +289,9 @@ internal sealed record BenchmarkArguments(
         var concurrency = ParsePositive(values, "--concurrency", ReplayScanOptions.DefaultMaxConcurrency);
         if (concurrency is not (1 or 2 or 4))
             throw new ArgumentException("--concurrency must be 1, 2, or 4.\n" + Usage);
+        var profile = Get(values, "--profile", required: false) ?? "summary";
+        if (profile is not ("summary" or "normal"))
+            throw new ArgumentException("--profile must be summary or normal.");
 
         var fixture = Get(values, "--fixture-dir", required: true)!;
         if (!Directory.Exists(fixture))
@@ -283,7 +309,7 @@ internal sealed record BenchmarkArguments(
             ParsePositive(values, "--limit", ReplayScanOptions.DefaultLimit), mode,
             Get(values, "--output", required: true), Get(values, "--render-png", required: false),
             ParsePositive(values, "--width", 1000), ParsePositive(values, "--height", 700),
-            TimeSpan.FromSeconds(ParsePositive(values, "--timeout-seconds", 120)), false);
+            TimeSpan.FromSeconds(ParsePositive(values, "--timeout-seconds", 120)), false, profile);
     }
 
     private static string? Get(IReadOnlyDictionary<string, string> values, string key, bool required)
@@ -407,6 +433,14 @@ internal sealed class MemorySettingsService(AppSettings initial) : ISettingsServ
     public void Update(Action<AppSettings> update) => update(_settings);
 }
 
+// Omitting IReplaySummaryService deliberately exercises the full Normal oracle through
+// the same cache, streaming, view-model and rendering pipeline.
+internal sealed class FullOnlyReplayService : IReplayService
+{
+    public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+        => new ReplayService().LoadReplayAsync(path, cancellationToken);
+}
+
 internal sealed class RecordingReplayCacheService(IReplayCacheService inner) : IReplayCacheService
 {
     public ReplayScanOptions? ObservedScanOptions { get; private set; }
@@ -478,18 +512,23 @@ internal sealed record BenchmarkResult
     public required string Host { get; init; }
     public required string StartupEvidenceNote { get; init; }
     public required string ScanMode { get; init; }
+    public required string Profile { get; init; }
     public required bool SelfTest { get; init; }
     public required int? ManifestEntryCount { get; init; }
     public required BenchmarkConfiguration Configuration { get; init; }
     public required BenchmarkTiming TimingMs { get; init; }
     public required BenchmarkFinalState FinalState { get; init; }
     public required BenchmarkRender Render { get; init; }
+    public required BenchmarkProjection Projection { get; init; }
+    public required BenchmarkResources Resources { get; init; }
 }
 
 internal sealed record BenchmarkConfiguration(int Limit, int Concurrency, int Width, int Height);
-internal sealed record BenchmarkTiming(double BenchmarkProcessLaunchToScanInvocation, double? ScanInvocationToFirstModelRow, double ScanInvocationToFinalModelState, double ScanInvocationToFinalRenderedFrame, double ScanInvocationToScanDrained, double BenchmarkProcessLaunchToFinalRenderedFrame);
+internal sealed record BenchmarkTiming(double BenchmarkManagedEntryToScanInvocation, double? ScanInvocationToFirstModelRow, double ScanInvocationToFinalModelState, double ScanInvocationToFinalRenderedFrame, double ScanInvocationToScanDrained, double BenchmarkManagedEntryToFinalRenderedFrame);
 internal sealed record BenchmarkFinalState(bool IsScanning, int ReplayRows, int TotalMatches, int TotalWins, string ScanStatus, string ScanOutcome, int AvailableReplayCount, int SelectedReplayCount, int ProcessedReplayCount, int LoadedReplayCount, int FailedReplayCount, int ObservedLimit, int ObservedConcurrency);
 internal sealed record BenchmarkRender(bool CapturedFrame, int PngByteLength, bool HasVisibleContent);
+internal sealed record BenchmarkProjection(string ReplayRowsSha256, string FrequentOpponentsSha256, double WinRate, double? AvgKills, string AvgKillsDisplay, double AvgBotPercent, int IncompleteOpponentMatchCount, string OpponentDataIncompleteText);
+internal sealed record BenchmarkResources(double CpuMilliseconds, long AllocatedBytes, long PeakWorkingSetBytes, long AvailableMemoryBytes, int LogicalProcessors);
 internal sealed record BenchmarkFailure(int SchemaVersion, string ErrorType, string Message)
 {
     public static BenchmarkFailure From(Exception exception) => new(1, exception.GetType().Name, exception.Message);
