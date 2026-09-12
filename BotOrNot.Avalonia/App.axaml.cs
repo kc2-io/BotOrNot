@@ -29,7 +29,7 @@ public partial class App : Application
             var viewModel = benchmark is null
                 ? new AppViewModel(settingsService, themeService)
                 : new AppViewModel(settingsService, themeService,
-                    new ReplayCacheService(cachePath: benchmark.Config.CachePath),
+                    NativeBenchmarkCacheFactory.Create(benchmark.Config),
                     () => new ReplayScanOptions { MaxConcurrency = benchmark.Config.MaxConcurrency }, benchmark);
             var window = new MainWindow(viewModel);
             if (benchmark is not null)

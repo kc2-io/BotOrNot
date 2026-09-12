@@ -34,6 +34,8 @@ BotOrNot.Avalonia\bin\Release\net10.0\BotOrNot.exe --benchmark-config C:\private
 
 The route opens a visible native window with `ShowActivated=false` at the supplied placement. Run it only after native-window approval. A watchdog writes a failed result and shuts down if the scan never drains.
 
-The result verifies selected manifest identities, all rows loaded with no errors, real `DataGrid` binding/realized rows, rendered scan/aggregate labels, and a deterministic summary-projection fingerprint. It records configured worker policy and reports observed worker concurrency as unavailable until the streaming service exposes a worker-count diagnostic.
+`scanProfile` may be `summary` or `normal`. The latter deliberately wraps the production replay reader as `IReplayService` only, which makes the existing cache service take its normal-reader branch. Run both profiles against the same manifest and worker configuration before comparing the resulting count and projection fingerprints.
+
+The result verifies selected manifest identities, all rows loaded with no errors, real `DataGrid` binding/realized rows, rendered scan/aggregate labels including an incomplete-opponent notice when applicable, and a deterministic summary-projection fingerprint. It records configured worker policy and reports observed worker concurrency as unavailable until the streaming service exposes a worker-count diagnostic.
 
 It waits for an animation frame, a composition update, and a rendered composition batch before calling `DwmFlush`. It writes two captures: a Win32 `PrintWindow(PW_CLIENTONLY)` client BMP and a separately labelled Avalonia `RenderTargetBitmap` diagnostic PNG. `DwmFlush` establishes compositor handoff; neither it nor either capture proves physical display scanout.

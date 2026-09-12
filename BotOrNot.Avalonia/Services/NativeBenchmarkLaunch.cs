@@ -15,6 +15,7 @@ using Avalonia.VisualTree;
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Views;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
 
 namespace BotOrNot.Avalonia.Services;
 
@@ -225,6 +226,8 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
     // and fails the run if that implementation detail changes; product code never uses this.
     private async Task RequestCompositionRenderAsync(Window window)
     {
+        if (NativeCompositionContract.ValidationError is { } contractError)
+            throw new InvalidOperationException(contractError);
         var updateAcknowledged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var rendered = await Dispatcher.UIThread.InvokeAsync<Task>(() =>
         {
@@ -285,7 +288,7 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
         if (!countersValid)
             errors.Add("Final scan counters, errors, or selected replay identities did not match the frozen manifest.");
 
-        var grid = window.FindControl<DataGrid>("ReplayGrid");
+        var grid = NativeLibraryVisuals.FindReplayGrid(window);
         var gridBound = grid?.ItemsSource is not null && grid.ItemsSource.Cast<object>().Count() == library.Replays.Count;
         var realizedRows = grid?.GetVisualDescendants().OfType<DataGridRow>().Count() ?? 0;
         if (!gridBound)
@@ -296,8 +299,15 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text ?? string.Empty).ToArray();
         var scanStatusRendered = texts.Contains(library.ScanStatusText, StringComparer.Ordinal);
         var scanOutcomeRendered = texts.Contains(library.ScanOutcomeText, StringComparer.Ordinal);
-        var totalMatchesRendered = HasLabelValuePair(window, "Matches:", library.TotalMatches.ToString(CultureInfo.InvariantCulture));
-        if (!scanStatusRendered || !scanOutcomeRendered || !totalMatchesRendered)
+        var aggregateLabelsRendered = NativeLibraryVisuals.HasLabelValuePair(window, "Matches:", library.TotalMatches.ToString(CultureInfo.CurrentCulture)) &&
+            NativeLibraryVisuals.HasLabelValuePair(window, "Wins:", library.TotalWins.ToString(CultureInfo.CurrentCulture)) &&
+            NativeLibraryVisuals.HasLabelValuePair(window, "Win Rate:", library.WinRate.ToString("F1", CultureInfo.CurrentCulture) + "%") &&
+            NativeLibraryVisuals.HasLabelValuePair(window, "Avg Kills:", library.AvgKillsDisplay) &&
+            NativeLibraryVisuals.HasLabelValuePair(window, "Avg Bot%:", library.AvgBotPercent.ToString("F1", CultureInfo.CurrentCulture) + "%");
+        var incompleteNoticeRendered = library.HasIncompleteOpponentData
+            ? texts.Contains(library.OpponentDataIncompleteText, StringComparer.Ordinal)
+            : true;
+        if (!scanStatusRendered || !scanOutcomeRendered || !aggregateLabelsRendered || !incompleteNoticeRendered)
             errors.Add("Final scan or aggregate labels were not bound into the native visual tree.");
 
         var projection = new NativeSummaryProjection(
@@ -308,16 +318,10 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
             library.IncompleteOpponentMatchCount,
             library.FrequentOpponents.Select(opponent => new NativeOpponentProjection(opponent.StableId, opponent.Name, opponent.Appearances)).ToArray());
         return new NativeBenchmarkVerification(true, NativeManifestValidator.Fingerprint(_config.Manifest), _config.Manifest.Entries.Count,
-            expectedSelected, countersValid, gridBound, realizedRows, scanStatusRendered, scanOutcomeRendered, totalMatchesRendered,
+            expectedSelected, countersValid, gridBound, realizedRows, scanStatusRendered, scanOutcomeRendered, aggregateLabelsRendered,
+            incompleteNoticeRendered,
             NativeBenchmarkJson.Fingerprint(projection), errors);
     }
-
-    private static bool HasLabelValuePair(Window window, string label, string value) =>
-        window.GetVisualDescendants().OfType<StackPanel>().Any(panel =>
-        {
-            var values = panel.Children.OfType<TextBlock>().Select(block => block.Text ?? string.Empty).ToArray();
-            return values.Contains(label, StringComparer.Ordinal) && values.Contains(value, StringComparer.Ordinal);
-        });
 
     private NativeBenchmarkResult CreateResult(bool succeeded, string? error, bool dwmSucceeded, string? dwmError,
         NativeSoftwareViewportCapture? softwareCapture, NativeClientViewportCapture? nativeCapture,
@@ -427,8 +431,9 @@ internal sealed record NativeBenchmarkConfig(
             throw new InvalidDataException("scanLimit must be positive.");
         if (MaxConcurrency is not (1 or 2 or 4))
             throw new InvalidDataException("maxConcurrency must be 1, 2, or 4.");
-        if (!string.Equals(ScanProfile, "summary", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("scanProfile must be summary for the current native benchmark route.");
+        if (!string.Equals(ScanProfile, "summary", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(ScanProfile, "normal", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("scanProfile must be summary or normal.");
         if (!RequireColdCache)
             throw new InvalidDataException("requireColdCache must be true; warm runs require a separate route.");
         if (File.Exists(CachePath) || Directory.Exists(CachePath))
@@ -446,6 +451,57 @@ internal sealed record NativeBenchmarkConfig(
         if (new[] { SettingsPath, CachePath, OutputPath, ViewportPngPath, NativeClientCapturePath }
             .Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 5)
             throw new InvalidDataException("settings, cache, result, software PNG, and native capture paths must be distinct.");
+    }
+}
+
+internal static class NativeLibraryVisuals
+{
+    // LibraryView owns ReplayGrid's XAML name scope; a Window cannot resolve that name directly.
+    public static DataGrid? FindReplayGrid(Window window) => window.GetVisualDescendants()
+        .OfType<LibraryView>()
+        .Select(view => view.FindControl<DataGrid>("ReplayGrid"))
+        .FirstOrDefault(grid => grid is not null);
+
+    public static bool HasLabelValuePair(Window window, string label, string value) =>
+        window.GetVisualDescendants().OfType<StackPanel>().Any(panel =>
+        {
+            var values = panel.Children.OfType<TextBlock>().Select(block => block.Text ?? string.Empty).ToArray();
+            return values.Contains(label, StringComparer.Ordinal) && values.Contains(value, StringComparer.Ordinal);
+        });
+}
+
+internal static class NativeCompositionContract
+{
+    public static string? ValidationError
+    {
+        get
+        {
+            var compositor = typeof(AvaloniaObject).Assembly.GetType("Avalonia.Rendering.Composition.Compositor");
+            if (compositor is null)
+                return "Avalonia compositor type is unavailable.";
+            var update = compositor.GetMethod("RequestCompositionUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var commit = compositor.GetMethod("RequestCompositionBatchCommitAsync", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (update?.ReturnType != typeof(void) || commit is null || commit.ReturnType.FullName != "Avalonia.Rendering.Composition.Transport.CompositionBatch")
+                return "Avalonia composition acknowledgement contract has changed.";
+            var rendered = commit.ReturnType.GetProperty("Rendered", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return rendered?.PropertyType == typeof(Task) ? null : "Avalonia composition batch has no rendered acknowledgement.";
+        }
+    }
+}
+
+internal static class NativeBenchmarkCacheFactory
+{
+    public static IReplayCacheService Create(NativeBenchmarkConfig config) =>
+        string.Equals(config.ScanProfile, "normal", StringComparison.OrdinalIgnoreCase)
+            ? new ReplayCacheService(new NativeFullReplayService(new ReplayService()), cachePath: config.CachePath)
+            : new ReplayCacheService(cachePath: config.CachePath);
+
+    // Deliberately implements only IReplayService, so ReplayCacheService uses the normal reader
+    // branch rather than recognizing the wrapped ReplayService as an IReplaySummaryService.
+    private sealed class NativeFullReplayService(ReplayService inner) : IReplayService
+    {
+        public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default) =>
+            inner.LoadReplayAsync(path, cancellationToken);
     }
 }
 
@@ -555,7 +611,8 @@ internal sealed record NativeSoftwareViewportCapture(bool Succeeded, string? Err
 internal sealed record NativeClientViewportCapture(bool Succeeded, string? Error, string Method, int PixelWidth, int PixelHeight, long Bytes);
 internal sealed record NativeBenchmarkVerification(bool ManifestValidated, string ManifestFingerprint, int ManifestReplayCount,
     int ExpectedSelectedReplayCount, bool ScanFinalStateValid, bool DataGridItemsSourceBound, int RealizedDataGridRows,
-    bool ScanStatusRendered, bool ScanOutcomeRendered, bool TotalMatchesRendered, string SummaryProjectionFingerprint,
+    bool ScanStatusRendered, bool ScanOutcomeRendered, bool AllAggregateLabelsRendered, bool IncompleteNoticeRendered,
+    string SummaryProjectionFingerprint,
     IReadOnlyList<string> Errors);
 internal sealed record NativeBenchmarkTimings(double? ProcessStartToManagedEntry, double ConfigValidation,
     double? ManagedEntryToWindowOpened, double? ManagedEntryToScanInvoked,
@@ -686,6 +743,8 @@ internal static class NativeClientCapture
             var byteCount = checked(width * height * 4);
             var pixels = new byte[byteCount];
             Marshal.Copy(bits, pixels, 0, byteCount);
+            if (!NativePixelInspector.HasMeaningfulDiversity(pixels))
+                throw new InvalidOperationException("PrintWindow returned a uniform or black client surface.");
             var fullOutput = Path.GetFullPath(outputPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullOutput)!);
             WriteBmp(fullOutput, width, height, pixels);
@@ -735,4 +794,23 @@ internal static class NativeClientCapture
     [DllImport("gdi32.dll", SetLastError = true)] private static extern bool DeleteObject(IntPtr obj);
     [DllImport("gdi32.dll", SetLastError = true)] private static extern IntPtr CreateDIBSection(IntPtr dc, ref BitmapInfo info, uint usage,
         out IntPtr bits, IntPtr section, uint offset);
+}
+
+internal static class NativePixelInspector
+{
+    // Sample up to 4K BGRA pixels. A capture with one opaque color, including all black, is not
+    // evidence of a final native viewport even when PrintWindow returned success.
+    public static bool HasMeaningfulDiversity(byte[] pixels)
+    {
+        if (pixels.Length < 8)
+            return false;
+        var step = Math.Max(4, (pixels.Length / 4096 / 4) * 4);
+        var first = (pixels[0], pixels[1], pixels[2]);
+        for (var offset = step; offset + 2 < pixels.Length; offset += step)
+        {
+            if (pixels[offset] != first.Item1 || pixels[offset + 1] != first.Item2 || pixels[offset + 2] != first.Item3)
+                return true;
+        }
+        return false;
+    }
 }
