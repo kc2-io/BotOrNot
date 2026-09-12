@@ -206,6 +206,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
                             <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       Margin="12,0,8,0" VerticalAlignment="Center"
                                        ToolTip.Tip="{Binding StormPhaseTooltip}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -331,6 +332,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="models:PlayerRow">
                             <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       Margin="12,0,8,0" VerticalAlignment="Center"
                                        ToolTip.Tip="{Binding StormPhaseTooltip}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

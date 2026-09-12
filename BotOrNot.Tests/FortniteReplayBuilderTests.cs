@@ -134,12 +134,15 @@ public sealed class FortniteReplayBuilderTests
         });
     }
 
-    [Test]
-    public void SafeZoneChannelReuse_DoesNotCarryPreviousActorPhase()
+    [TestCase(false)]
+    [TestCase(true)]
+    public void SafeZoneChannelReuse_DoesNotCarryPreviousActorPhase(bool movePreviousActor)
     {
         var builder = new FortniteReplayBuilder();
         builder.AddActorChannel(7, 101);
         builder.UpdateSafeZones(7, new SafeZoneIndicator { CurrentPhase = 6, PhaseCount = 13 }, 100);
+        if (movePreviousActor)
+            builder.AddActorChannel(8, 101);
         builder.AddActorChannel(7, 202);
         builder.UpdateSafeZones(7, new SafeZoneIndicator
         {

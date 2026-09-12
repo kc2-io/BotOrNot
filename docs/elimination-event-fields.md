@@ -1,6 +1,6 @@
 # Elimination Event Fields
 
-Investigation of what data is available for each elimination and how BotOrNot associates it with recorded storm state using `FortniteReplayReader 3.0.4-botornot`.
+Investigation of what data is available for each elimination and how BotOrNot associates it with recorded storm state using `FortniteReplayReader 3.0.5-botornot`.
 
 ## Event Type
 
@@ -50,11 +50,11 @@ An elimination's event clock is `Info.StartTime / 1000`. The resolver selects th
 
 Before the first replicated phase observation, the result is `Unknown`. A recorded `CurrentPhase` of `0` explicitly means `Before phase 1`. Missing phase exports remain nullable and do not masquerade as phase zero. An invalid latest phase or conflicting same-frame phases produce `Unknown` until a later valid observation. If the replay contains observations from multiple identified safe-zone actors, the resolver treats the whole association as ambiguous and returns `Unknown`.
 
-The formatted elimination `Time` and the safe-zone world-clock fields (`SafeZoneStartTime` and `SafeZoneFinishTime`) use different clock domains and must not be compared for this association.
+The formatted elimination `Time` and the safe-zone world-clock fields (`StartShrinkTime` and `FinishShrinkTime`) use different clock domains and must not be compared for this association.
 
 ## Currently Used by BotOrNot
 
-- `Time` — 60-second knock/finish credit window
+- `Time` — elimination time display and the existing 60-second knock/finish credit window
 - `Info.StartTime` — precise elimination clock used to associate recorded storm observations
 - `Knocked` — distinguish knocks from finishes
 - `EliminatedInfo.Id` / `EliminatorInfo.Id` — player identification
@@ -67,4 +67,3 @@ The formatted elimination `Time` and the safe-zone world-clock fields (`SafeZone
 - `Distance` — engagement distance
 - `Location` — map position (could enable heatmaps)
 - `EliminatedInfo.IsBot` / `EliminatorInfo.IsBot` — alternative bot detection source
-- `Time` as a display column — show when each elimination happened
