@@ -1,5 +1,5 @@
 diff --git a/src/FortniteReplayReader/FortniteReplayBuilder.cs b/src/FortniteReplayReader/FortniteReplayBuilder.cs
-index ac80328..9214b22 100644
+index ac80328..37a3a04 100644
 --- a/src/FortniteReplayReader/FortniteReplayBuilder.cs
 +++ b/src/FortniteReplayReader/FortniteReplayBuilder.cs
 @@ -1,4 +1,4 @@
@@ -16,7 +16,7 @@ index ac80328..9214b22 100644
      private readonly Dictionary<int?, TeamData> _teams = new();
      private readonly Dictionary<uint, Llama> _llamas = new();
      private readonly Dictionary<int, RebootVan> _rebootVans = new();
-@@ -36,19 +37,57 @@ public class FortniteReplayBuilder
+@@ -36,19 +37,58 @@ public class FortniteReplayBuilder
      private readonly Dictionary<uint, WeaponData> _weapons = new();
      private readonly Dictionary<uint, WeaponData> _unknownWeapons = new();
  
@@ -44,6 +44,7 @@ index ac80328..9214b22 100644
 +            previousChannelActor == guid)
 +        {
 +            _channelToActor.Remove(previousChannel);
++            _safeZoneStates.Remove(previousChannel);
 +        }
 +
          _actorToChannel[guid] = channelIndex;
@@ -74,7 +75,7 @@ index ac80328..9214b22 100644
      }
  
      /// <summary>
-@@ -58,12 +97,13 @@ public class FortniteReplayBuilder
+@@ -58,12 +98,13 @@ public class FortniteReplayBuilder
      /// <returns>FortniteReplay</returns>
      public FortniteReplay Build(FortniteReplay replay)
      {
@@ -89,7 +90,7 @@ index ac80328..9214b22 100644
          return replay;
      }
  
-@@ -119,6 +159,7 @@ public class FortniteReplayBuilder
+@@ -119,6 +160,7 @@ public class FortniteReplayBuilder
          GameData.MaxPlayers ??= state.TeamCount;
          GameData.TeamSize ??= state.TeamSize;
          GameData.TeamSize ??= state.ActiveTeamNums?.Length;
@@ -97,7 +98,7 @@ index ac80328..9214b22 100644
          GameData.TotalBots = state.PlayerBotsLeft > GameData.TotalBots ? state.PlayerBotsLeft : GameData.TotalBots;
  
          GameData.TotalPlayerStructures ??= state.TotalPlayerStructures;
-@@ -141,6 +182,7 @@ public class FortniteReplayBuilder
+@@ -141,6 +183,7 @@ public class FortniteReplayBuilder
          GameData.WinningPlayerIds ??= state.WinningPlayerList;
          GameData.WinningTeam ??= state.WinningTeam;
          GameData.RecorderId ??= state.RecorderPlayerState?.Value;
@@ -105,7 +106,7 @@ index ac80328..9214b22 100644
      }
  
      public void UpdatePrivateName(uint channelIndex, PlayerNameData playerNameData)
-@@ -157,7 +199,7 @@ public class FortniteReplayBuilder
+@@ -157,7 +200,7 @@ public class FortniteReplayBuilder
  
      public void UpdateTeamData()
      {
@@ -114,7 +115,7 @@ index ac80328..9214b22 100644
          {
              if (playerData?.TeamIndex == null)
              {
-@@ -190,7 +232,7 @@ public class FortniteReplayBuilder
+@@ -190,7 +233,7 @@ public class FortniteReplayBuilder
          }
      }
  
@@ -123,7 +124,7 @@ index ac80328..9214b22 100644
      {
          if (state.bOnlySpectator == true)
          {
-@@ -208,14 +250,14 @@ public class FortniteReplayBuilder
+@@ -208,14 +251,14 @@ public class FortniteReplayBuilder
          if (isNewPlayer)
          {
              playerData = new PlayerData(state);
@@ -144,7 +145,7 @@ index ac80328..9214b22 100644
  
          if (state.RebootCounter > 0 && state.RebootCounter > playerData.RebootCounter)
          {
-@@ -224,7 +266,7 @@ public class FortniteReplayBuilder
+@@ -224,7 +267,7 @@ public class FortniteReplayBuilder
  
          if (state.RebootCounter > 0 || state.bDBNO != null || state.DeathCause != null || state.DeathLocation != null)
          {
@@ -153,7 +154,7 @@ index ac80328..9214b22 100644
          }
  
          if (state.TeamIndex > 0)
-@@ -259,12 +301,37 @@ public class FortniteReplayBuilder
+@@ -259,12 +302,37 @@ public class FortniteReplayBuilder
          }
      }
  
@@ -192,7 +193,7 @@ index ac80328..9214b22 100644
          };
  
          if (state.RebootCounter != null)
-@@ -295,7 +362,9 @@ public class FortniteReplayBuilder
+@@ -295,7 +363,9 @@ public class FortniteReplayBuilder
          entry.DeathCause ??= state.DeathCause;
          entry.DeathLocation ??= state.DeathLocation;
          entry.DeathCircumstance ??= state.DeathCircumstance;
@@ -203,7 +204,7 @@ index ac80328..9214b22 100644
  
          KillFeed.Add(entry);
      }
-@@ -472,14 +541,62 @@ public class FortniteReplayBuilder
+@@ -472,14 +542,62 @@ public class FortniteReplayBuilder
          newWeapon.WeaponName ??= weapon.WeaponData?.Name;
      }
  
