@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reactive;
@@ -16,6 +17,7 @@ public sealed class FrequentOpponent
     public string StableId { get; init; } = "";
     public string Name { get; init; } = "";
     public int Appearances { get; init; }
+    public bool IsSelected { get; init; }
 }
 
 public enum LibraryScanMilestone
@@ -74,6 +76,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     private double _avgBotPercent;
     private bool _hasReplays;
     private int _incompleteOpponentMatchCount;
+    private string? _selectedOpponentStableId;
+    private string? _selectedOpponentName;
+    private bool _hasVisibleReplays;
 
     public LibraryViewModel(
         Action<ReplaySummary> onOpenReplay,
@@ -99,6 +104,8 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         _autoRefreshMinutesText = _autoRefreshMinutes.ToString(CultureInfo.InvariantCulture);
 
         Replays = new ObservableCollection<ReplaySummary>();
+        VisibleReplays = new ObservableCollection<ReplaySummary>();
+        Replays.CollectionChanged += OnReplaysCollectionChanged;
         FrequentOpponents = Array.Empty<FrequentOpponent>();
 
         var canScan = this.WhenAnyValue(x => x.DirectoryPath,
@@ -111,6 +118,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         ApplyAutoRefreshMinutesCommand = ReactiveCommand.Create(ApplyAutoRefreshMinutes);
         IncreaseAutoRefreshMinutesCommand = ReactiveCommand.Create(() => ChangeAutoRefreshMinutes(1));
         DecreaseAutoRefreshMinutesCommand = ReactiveCommand.Create(() => ChangeAutoRefreshMinutes(-1));
+        ClearOpponentFilterCommand = ReactiveCommand.Create(ClearOpponentFilter);
         OpenReplayCommand = ReactiveCommand.Create<ReplaySummary>(summary => _onOpenReplay(summary));
 
         SetDirectoryCommand = ReactiveCommand.Create<string>(path =>
@@ -125,7 +133,45 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     }
 
     public ObservableCollection<ReplaySummary> Replays { get; }
+    public ObservableCollection<ReplaySummary> VisibleReplays { get; }
     public IReadOnlyList<FrequentOpponent> FrequentOpponents { get; private set; }
+
+    public string? SelectedOpponentStableId
+    {
+        get => _selectedOpponentStableId;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedOpponentStableId, value);
+            this.RaisePropertyChanged(nameof(HasOpponentFilter));
+            this.RaisePropertyChanged(nameof(HasNoFilteredMatches));
+            this.RaisePropertyChanged(nameof(FilterSummaryText));
+        }
+    }
+
+    public string? SelectedOpponentName
+    {
+        get => _selectedOpponentName;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _selectedOpponentName, value);
+            this.RaisePropertyChanged(nameof(FilterSummaryText));
+        }
+    }
+
+    public bool HasOpponentFilter => SelectedOpponentStableId is not null;
+    public bool HasNoFilteredMatches => HasOpponentFilter && !HasVisibleReplays;
+    public string FilterSummaryText =>
+        $"Showing {VisibleReplays.Count} of {Replays.Count} matches with {SelectedOpponentName}";
+
+    public bool HasVisibleReplays
+    {
+        get => _hasVisibleReplays;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _hasVisibleReplays, value);
+            this.RaisePropertyChanged(nameof(HasNoFilteredMatches));
+        }
+    }
 
     public string? DirectoryPath
     {
@@ -135,6 +181,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             if (string.Equals(_directoryPath, value, StringComparison.Ordinal))
                 return;
 
+            ClearOpponentFilter();
             this.RaiseAndSetIfChanged(ref _directoryPath, value);
             var generation = CancelActiveScan();
             ClearDisplayedResultsOnUi(generation);
@@ -290,8 +337,71 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> ApplyAutoRefreshMinutesCommand { get; }
     public ReactiveCommand<Unit, Unit> IncreaseAutoRefreshMinutesCommand { get; }
     public ReactiveCommand<Unit, Unit> DecreaseAutoRefreshMinutesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ClearOpponentFilterCommand { get; }
     public ReactiveCommand<ReplaySummary, Unit> OpenReplayCommand { get; }
     public ReactiveCommand<string, Unit> SetDirectoryCommand { get; }
+
+    public void ToggleOpponentFilter(FrequentOpponent opponent)
+    {
+        ArgumentNullException.ThrowIfNull(opponent);
+        if (string.IsNullOrWhiteSpace(opponent.StableId))
+            return;
+
+        if (string.Equals(SelectedOpponentStableId, opponent.StableId, StringComparison.OrdinalIgnoreCase))
+        {
+            ClearOpponentFilter();
+            return;
+        }
+
+        SelectedOpponentStableId = opponent.StableId;
+        SelectedOpponentName = opponent.Name;
+        RebuildVisibleReplays();
+        UpdateStats();
+    }
+
+    private void ClearOpponentFilter()
+    {
+        if (!HasOpponentFilter)
+            return;
+        SelectedOpponentStableId = null;
+        SelectedOpponentName = null;
+        RebuildVisibleReplays();
+        UpdateStats();
+    }
+
+    private bool MatchesSelectedOpponent(ReplaySummary replay) =>
+        SelectedOpponentStableId is null || replay.Opponents.Any(opponent =>
+            string.Equals(opponent.StableId, SelectedOpponentStableId, StringComparison.OrdinalIgnoreCase));
+
+    private void OnReplaysCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems is not null)
+        {
+            for (var offset = 0; offset < e.NewItems.Count; offset++)
+            {
+                var replay = (ReplaySummary)e.NewItems[offset]!;
+                if (!MatchesSelectedOpponent(replay))
+                    continue;
+                var sourceIndex = e.NewStartingIndex + offset;
+                var visibleIndex = Replays.Take(sourceIndex).Count(MatchesSelectedOpponent);
+                VisibleReplays.Insert(visibleIndex, replay);
+            }
+        }
+        else if (e.Action == NotifyCollectionChangedAction.Reset)
+            VisibleReplays.Clear();
+        else
+            RebuildVisibleReplays();
+
+        this.RaisePropertyChanged(nameof(FilterSummaryText));
+    }
+
+    private void RebuildVisibleReplays()
+    {
+        VisibleReplays.Clear();
+        foreach (var replay in Replays.Where(MatchesSelectedOpponent))
+            VisibleReplays.Add(replay);
+        this.RaisePropertyChanged(nameof(FilterSummaryText));
+    }
 
     private void ApplyScanLimitAndStart()
     {
@@ -720,17 +830,19 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
     private void UpdateStats()
     {
-        TotalMatches = Replays.Count;
+        TotalMatches = VisibleReplays.Count;
         HasReplays = Replays.Count > 0;
-        TotalWins = Replays.Count(replay => replay.IsWin);
-        IncompleteOpponentMatchCount = Replays.Count(replay => !replay.OpponentAnalysisComplete);
+        HasVisibleReplays = VisibleReplays.Count > 0;
+        this.RaisePropertyChanged(nameof(FilterSummaryText));
+        TotalWins = VisibleReplays.Count(replay => replay.IsWin);
+        IncompleteOpponentMatchCount = VisibleReplays.Count(replay => !replay.OpponentAnalysisComplete);
         this.RaisePropertyChanged(nameof(HasIncompleteOpponentData));
         this.RaisePropertyChanged(nameof(OpponentDataIncompleteText));
         WinRate = TotalMatches > 0 ? (double)TotalWins / TotalMatches * 100 : 0;
-        var knownKillCounts = Replays.Select(replay => replay.Kills).OfType<int>().ToList();
+        var knownKillCounts = VisibleReplays.Select(replay => replay.Kills).OfType<int>().ToList();
         AvgKills = knownKillCounts.Count > 0 ? knownKillCounts.Average() : null;
         this.RaisePropertyChanged(nameof(AvgKillsDisplay));
-        AvgBotPercent = TotalMatches > 0 ? Replays.Average(replay => replay.BotPercent) : 0;
+        AvgBotPercent = TotalMatches > 0 ? VisibleReplays.Average(replay => replay.BotPercent) : 0;
 
         FrequentOpponents = Replays
             .SelectMany((replay, matchIndex) => replay.Opponents
@@ -753,7 +865,8 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                     .ThenBy(entry => entry.Opponent.Name, StringComparer.Ordinal)
                     .Select(entry => entry.Opponent.Name)
                     .FirstOrDefault() ?? "Unknown player",
-                Appearances = group.Select(entry => entry.MatchIndex).Distinct().Count()
+                Appearances = group.Select(entry => entry.MatchIndex).Distinct().Count(),
+                IsSelected = string.Equals(group.Key, SelectedOpponentStableId, StringComparison.OrdinalIgnoreCase)
             })
             .OrderByDescending(opponent => opponent.Appearances)
             .ThenBy(opponent => opponent.Name, StringComparer.OrdinalIgnoreCase)
@@ -762,6 +875,21 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             .ThenBy(opponent => opponent.StableId, StringComparer.Ordinal)
             .Take(10)
             .ToList();
+        if (SelectedOpponentStableId is not null)
+        {
+            var latestSelectedName = Replays
+                .SelectMany(replay => replay.Opponents
+                    .Where(opponent => string.Equals(opponent.StableId, SelectedOpponentStableId,
+                        StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(opponent.Name))
+                    .Select(opponent => new { opponent.Name, replay.FileDate }))
+                .OrderByDescending(entry => entry.FileDate)
+                .ThenBy(entry => entry.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(entry => entry.Name, StringComparer.Ordinal)
+                .Select(entry => entry.Name)
+                .FirstOrDefault();
+            if (latestSelectedName is not null && SelectedOpponentName != latestSelectedName)
+                SelectedOpponentName = latestSelectedName;
+        }
         this.RaisePropertyChanged(nameof(FrequentOpponents));
     }
 
@@ -771,6 +899,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
 
         _disposed = true;
+        Replays.CollectionChanged -= OnReplaysCollectionChanged;
         ResetRefreshSchedule();
         CancelActiveScan();
     }

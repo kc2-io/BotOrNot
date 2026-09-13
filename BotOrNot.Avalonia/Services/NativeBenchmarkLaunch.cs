@@ -289,11 +289,12 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
             errors.Add("Final scan counters, errors, or selected replay identities did not match the frozen manifest.");
 
         var grid = NativeLibraryVisuals.FindReplayGrid(window);
-        var gridBound = grid?.ItemsSource is not null && grid.ItemsSource.Cast<object>().Count() == library.Replays.Count;
+        var gridBound = grid?.ItemsSource is not null &&
+            grid.ItemsSource.Cast<object>().Count() == library.VisibleReplays.Count;
         var realizedRows = grid?.GetVisualDescendants().OfType<DataGridRow>().Count() ?? 0;
         if (!gridBound)
             errors.Add("Library DataGrid ItemsSource is not populated with final replay rows.");
-        if (realizedRows == 0 && library.Replays.Count > 0)
+        if (realizedRows == 0 && library.VisibleReplays.Count > 0)
             errors.Add("Library DataGrid did not realize a replay row after final layout.");
 
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text ?? string.Empty).ToArray();
