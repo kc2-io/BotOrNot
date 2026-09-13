@@ -253,17 +253,37 @@
                   IsVisible="{Binding HasSquadMembers}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Binding="{Binding StableId}" Width="220" IsVisible="False" />
-                <DataGridTemplateColumn Header="Name" Width="2*" CanUserSort="True">
+                <DataGridTemplateColumn Header="Name" Width="195" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate x:DataType="services:SquadMemberSummary">
-                            <TextBlock Text="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
-                                       TextTrimming="CharacterEllipsis"
-                                       ToolTip.Tip="{Binding Name}" />
+                            <Panel>
+                                <Button Content="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
+                                        Click="OpenFortniteTracker_Click"
+                                        IsVisible="{Binding CanOpenFortniteTracker}"
+                                        Padding="4,2"
+                                        FontSize="12"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{DynamicResource LinkForeground}"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Click to check if this player has a Fortnite Tracker page">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover">
+                                            <Setter Property="Foreground" Value="{DynamicResource LinkHoverForeground}" />
+                                        </Style>
+                                    </Button.Styles>
+                                </Button>
+                                <TextBlock Text="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
+                                           IsVisible="{Binding !CanOpenFortniteTracker}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding Name}"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0" />
+                            </Panel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80" />
-                <DataGridTextColumn Header="Bot" Binding="{Binding IsBot}" Width="65" />
                 <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="120" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="75" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="75" />

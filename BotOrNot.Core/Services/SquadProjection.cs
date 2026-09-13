@@ -21,6 +21,7 @@ public sealed class SquadMemberSummary
     public int? Placement { get; init; }
     public int? ObservedSquadSize { get; init; }
     public bool? IsBot { get; init; }
+    public bool CanOpenFortniteTracker => IsBot is not true && !string.IsNullOrWhiteSpace(Name);
 }
 
 /// <summary>A conservative, display-ready view of the recorder's observed squad.</summary>
