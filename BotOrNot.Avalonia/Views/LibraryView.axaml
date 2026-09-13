@@ -148,6 +148,11 @@
                   GridLinesVisibility="Horizontal"
                   Margin="8,4,8,4"
                   DoubleTapped="ReplayGrid_DoubleTapped">
+            <DataGrid.Styles>
+                <Style Selector="DataGridRow">
+                    <Setter Property="ToolTip.Tip" Value="Double-click to view match details" />
+                </Style>
+            </DataGrid.Styles>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Date"
                                     Binding="{Binding FileDate, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
