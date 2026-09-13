@@ -320,16 +320,26 @@ public partial class MatchView : UserControl
 
     private void OpenFortniteTracker_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button { DataContext: PlayerRow player } && !string.IsNullOrEmpty(player.Name))
+        var url = sender is Button button ? GetFortniteTrackerUrl(button.DataContext) : null;
+        if (url != null)
         {
-            var encodedName = Uri.EscapeDataString(player.Name);
             Process.Start(new ProcessStartInfo
             {
-                FileName = $"https://fortnitetracker.com/profile/all/{encodedName}",
+                FileName = url,
                 UseShellExecute = true
             });
         }
     }
+
+    internal static string? GetFortniteTrackerUrl(object? player) =>
+        player switch
+        {
+            PlayerRow { IsBot: false, Name: { Length: > 0 } name } =>
+                $"https://fortnitetracker.com/profile/all/{Uri.EscapeDataString(name)}",
+            SquadMemberSummary member when member.CanOpenFortniteTracker =>
+                $"https://fortnitetracker.com/profile/all/{Uri.EscapeDataString(member.Name!)}",
+            _ => null
+        };
 
     private async void ExportCsv_Click(object? sender, RoutedEventArgs e)
     {

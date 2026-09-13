@@ -1,6 +1,10 @@
 using System.Reactive.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless.NUnit;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using BotOrNot.Avalonia.Services;
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Views;
@@ -113,6 +117,75 @@ public sealed class SquadSectionTests
             grid!.CollectionView!.Cast<SquadMemberSummary>().Select(member => member.Kills),
             Is.EqualTo(new int?[] { 0, 2, 10, null }));
         window.Close();
+    }
+
+    [TestCase(1000)]
+    [TestCase(1400)]
+    [AvaloniaTest]
+    public async Task SquadTable_RemovesBotColumn_AlignsWithOwnerGrid_AndLinksHumanNames(double windowWidth)
+    {
+        var viewModel = CreateViewModel(TeamReplay());
+        await viewModel.LoadReplayCommand.Execute("team").FirstAsync();
+        var view = new MatchView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = windowWidth, Height = 800 };
+        window.Show();
+        Render(window);
+
+        viewModel.Teammates.Add(new SquadMemberSummary { Name = "Known Bot", IsBot = true });
+        viewModel.Teammates.Add(new SquadMemberSummary { IsBot = false });
+        Render(window);
+
+        var ownerGrid = view.FindControl<DataGrid>("OwnerEliminationsGrid")!;
+        var squadGrid = view.FindControl<DataGrid>("SquadGrid")!;
+        var squadNameHeader = GetColumnHeader(squadGrid, "Name");
+        var ownerNameHeader = GetColumnHeader(ownerGrid, "Name");
+        var squadLevelHeader = GetColumnHeader(squadGrid, "Level");
+        var ownerLevelHeader = GetColumnHeader(ownerGrid, "Level");
+        var teammateLink = squadGrid.GetVisualDescendants()
+            .OfType<Button>()
+            .Single(button => button.DataContext is SquadMemberSummary { Name: "Teammate" });
+        var botNames = squadGrid.GetVisualDescendants()
+            .OfType<TextBlock>()
+            .Where(textBlock => textBlock.DataContext is SquadMemberSummary { Name: "Known Bot" })
+            .ToArray();
+        var missingNames = squadGrid.GetVisualDescendants()
+            .OfType<TextBlock>()
+            .Where(textBlock => textBlock.DataContext is SquadMemberSummary { Name: null })
+            .ToArray();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(squadGrid.Columns.Select(column => column.Header), Does.Not.Contain("Bot"));
+            Assert.That(squadGrid.Columns.Single(column => Equals(column.Header, "Name")).ActualWidth,
+                Is.EqualTo(ownerGrid.Columns.Single(column => Equals(column.Header, "Name")).ActualWidth));
+            Assert.That(squadNameHeader.TranslatePoint(default, window)!.Value.X,
+                Is.EqualTo(ownerNameHeader.TranslatePoint(default, window)!.Value.X).Within(0.1));
+            Assert.That(squadLevelHeader.TranslatePoint(default, window)!.Value.X,
+                Is.EqualTo(ownerLevelHeader.TranslatePoint(default, window)!.Value.X).Within(0.1));
+            Assert.That(teammateLink.IsVisible, Is.True);
+            Assert.That(botNames.Any(textBlock => textBlock.IsVisible), Is.True);
+            Assert.That(missingNames.Any(textBlock => textBlock.IsVisible), Is.True);
+            Assert.That(ToolTip.GetTip(teammateLink), Is.EqualTo("Click to check if this player has a Fortnite Tracker page"));
+            Assert.That(MatchView.GetFortniteTrackerUrl(teammateLink.DataContext),
+                Is.EqualTo("https://fortnitetracker.com/profile/all/Teammate"));
+            Assert.That(MatchView.GetFortniteTrackerUrl(new SquadMemberSummary { Name = "Name With Space" }),
+                Is.EqualTo("https://fortnitetracker.com/profile/all/Name%20With%20Space"));
+            Assert.That(MatchView.GetFortniteTrackerUrl(new SquadMemberSummary { Name = "Bot", IsBot = true }), Is.Null);
+            Assert.That(MatchView.GetFortniteTrackerUrl(new SquadMemberSummary { IsBot = false }), Is.Null);
+        });
+        window.Close();
+    }
+
+    private static DataGridColumnHeader GetColumnHeader(DataGrid grid, string header) =>
+        grid.GetVisualDescendants()
+            .OfType<DataGridColumnHeader>()
+            .Single(columnHeader => Equals(columnHeader.Content, header));
+
+    private static void Render(Window window)
+    {
+        window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
     }
 
     private MainWindowViewModel CreateViewModel(params ReplayData[] replays) => new(
