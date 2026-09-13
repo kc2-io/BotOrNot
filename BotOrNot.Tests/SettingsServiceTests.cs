@@ -32,6 +32,8 @@ public sealed class SettingsServiceTests
         {
             Assert.That(missing.Theme, Is.EqualTo(ThemePreference.System));
             Assert.That(missing.ReplayScanLimit, Is.EqualTo(AppSettings.DefaultReplayScanLimit));
+            Assert.That(missing.LibraryAutoRefreshEnabled, Is.True);
+            Assert.That(missing.LibraryAutoRefreshMinutes, Is.EqualTo(10));
         });
 
         Directory.CreateDirectory(_directory);
@@ -42,6 +44,8 @@ public sealed class SettingsServiceTests
         {
             Assert.That(corrupt.Theme, Is.EqualTo(ThemePreference.System));
             Assert.That(corrupt.ReplayScanLimit, Is.EqualTo(AppSettings.DefaultReplayScanLimit));
+            Assert.That(corrupt.LibraryAutoRefreshEnabled, Is.True);
+            Assert.That(corrupt.LibraryAutoRefreshMinutes, Is.EqualTo(10));
         });
     }
 
@@ -106,5 +110,31 @@ public sealed class SettingsServiceTests
             Assert.That(persisted.ReplayDirectory, Is.EqualTo("C:\\replays"));
             Assert.That(persisted.ReplayScanLimit, Is.EqualTo(100));
         });
+    }
+
+    [Test]
+    public void AutoRefreshPreferences_RoundTripAndNormalizeInvalidIntervals()
+    {
+        var service = new SettingsService(_settingsPath);
+        service.Update(settings =>
+        {
+            settings.LibraryAutoRefreshEnabled = false;
+            settings.LibraryAutoRefreshMinutes = 27;
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(service.Load().LibraryAutoRefreshEnabled, Is.False);
+            Assert.That(service.Load().LibraryAutoRefreshMinutes, Is.EqualTo(27));
+        });
+
+        foreach (var invalid in new[] { 0, -1, 1441, int.MaxValue })
+        {
+            File.WriteAllText(_settingsPath,
+                $$"""{ "LibraryAutoRefreshEnabled": false, "LibraryAutoRefreshMinutes": {{invalid}} }""");
+            var loaded = service.Load();
+            Assert.That(loaded.LibraryAutoRefreshEnabled, Is.False);
+            Assert.That(loaded.LibraryAutoRefreshMinutes, Is.EqualTo(10));
+        }
     }
 }

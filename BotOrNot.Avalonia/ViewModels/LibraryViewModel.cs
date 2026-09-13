@@ -41,11 +41,17 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     private readonly ISettingsService _settingsService;
     private readonly Func<ReplayScanOptions>? _scanOptionsFactory;
     private readonly ILibraryScanObserver? _scanObserver;
+    private readonly TimeProvider _timeProvider;
     private readonly object _scanLock = new();
     private readonly HashSet<string> _displayedReplayPaths = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _activeScanCancellation;
+    private int _inFlightScans;
     private long _scanGeneration;
     private bool _disposed;
+    private bool _isActive = true;
+    private bool _preserveRowsUntilRefreshResult;
+    private ITimer? _refreshTimer;
+    private long _refreshScheduleGeneration;
 
     private string? _directoryPath;
     private bool _isScanning;
@@ -53,6 +59,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     private string? _errorMessage;
     private int _replayScanLimit;
     private string _replayScanLimitText;
+    private bool _autoRefreshEnabled;
+    private int _autoRefreshMinutes;
+    private string _autoRefreshMinutesText;
     private int _availableReplayCount;
     private int _selectedReplayCount;
     private int _processedReplayCount;
@@ -71,18 +80,23 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         IReplayCacheService? cacheService = null,
         ISettingsService? settingsService = null,
         Func<ReplayScanOptions>? scanOptionsFactory = null,
-        ILibraryScanObserver? scanObserver = null)
+        ILibraryScanObserver? scanObserver = null,
+        TimeProvider? timeProvider = null)
     {
         _onOpenReplay = onOpenReplay;
         _cacheService = cacheService ?? new ReplayCacheService();
         _settingsService = settingsService ?? new SettingsService();
         _scanOptionsFactory = scanOptionsFactory;
         _scanObserver = scanObserver;
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         var settings = _settingsService.Load();
         _directoryPath = settings.ReplayDirectory;
         _replayScanLimit = NormalizeScanLimit(settings.ReplayScanLimit);
         _replayScanLimitText = _replayScanLimit.ToString(CultureInfo.InvariantCulture);
+        _autoRefreshEnabled = settings.LibraryAutoRefreshEnabled;
+        _autoRefreshMinutes = NormalizeRefreshMinutes(settings.LibraryAutoRefreshMinutes);
+        _autoRefreshMinutesText = _autoRefreshMinutes.ToString(CultureInfo.InvariantCulture);
 
         Replays = new ObservableCollection<ReplaySummary>();
         FrequentOpponents = Array.Empty<FrequentOpponent>();
@@ -94,6 +108,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         // its duration. Every press makes a new generation and cancels the one before it.
         ScanCommand = ReactiveCommand.Create(StartScanInBackground, canScan);
         ApplyScanLimitCommand = ReactiveCommand.Create(ApplyScanLimitAndStart, canScan);
+        ApplyAutoRefreshMinutesCommand = ReactiveCommand.Create(ApplyAutoRefreshMinutes);
+        IncreaseAutoRefreshMinutesCommand = ReactiveCommand.Create(() => ChangeAutoRefreshMinutes(1));
+        DecreaseAutoRefreshMinutesCommand = ReactiveCommand.Create(() => ChangeAutoRefreshMinutes(-1));
         OpenReplayCommand = ReactiveCommand.Create<ReplaySummary>(summary => _onOpenReplay(summary));
 
         SetDirectoryCommand = ReactiveCommand.Create<string>(path =>
@@ -104,6 +121,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
         if (!string.IsNullOrWhiteSpace(_directoryPath))
             StartScanInBackground();
+        ResetRefreshSchedule();
     }
 
     public ObservableCollection<ReplaySummary> Replays { get; }
@@ -120,6 +138,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             this.RaiseAndSetIfChanged(ref _directoryPath, value);
             var generation = CancelActiveScan();
             ClearDisplayedResultsOnUi(generation);
+            ResetRefreshSchedule();
         }
     }
 
@@ -153,6 +172,32 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     {
         get => _replayScanLimitText;
         set => this.RaiseAndSetIfChanged(ref _replayScanLimitText, value);
+    }
+
+    public bool AutoRefreshEnabled
+    {
+        get => _autoRefreshEnabled;
+        set
+        {
+            if (_autoRefreshEnabled == value || _disposed)
+                return;
+            this.RaiseAndSetIfChanged(ref _autoRefreshEnabled, value);
+            _settingsService.Update(settings => settings.LibraryAutoRefreshEnabled = value);
+            ResetRefreshSchedule();
+        }
+    }
+
+    public int AutoRefreshMinutes
+    {
+        get => _autoRefreshMinutes;
+        private set => this.RaiseAndSetIfChanged(ref _autoRefreshMinutes, value);
+    }
+
+    // Invalid edits stay in the text box without replacing the last valid saved interval.
+    public string AutoRefreshMinutesText
+    {
+        get => _autoRefreshMinutesText;
+        set => this.RaiseAndSetIfChanged(ref _autoRefreshMinutesText, value);
     }
 
     public int AvailableReplayCount
@@ -242,6 +287,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
     public ReactiveCommand<Unit, Unit> ScanCommand { get; }
     public ReactiveCommand<Unit, Unit> ApplyScanLimitCommand { get; }
+    public ReactiveCommand<Unit, Unit> ApplyAutoRefreshMinutesCommand { get; }
+    public ReactiveCommand<Unit, Unit> IncreaseAutoRefreshMinutesCommand { get; }
+    public ReactiveCommand<Unit, Unit> DecreaseAutoRefreshMinutesCommand { get; }
     public ReactiveCommand<ReplaySummary, Unit> OpenReplayCommand { get; }
     public ReactiveCommand<string, Unit> SetDirectoryCommand { get; }
 
@@ -257,6 +305,68 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         ReplayScanLimitText = limit.ToString(CultureInfo.InvariantCulture);
         _settingsService.Update(settings => settings.ReplayScanLimit = limit);
         StartScanInBackground();
+    }
+
+    private void ApplyAutoRefreshMinutes()
+    {
+        if (!int.TryParse(AutoRefreshMinutesText, NumberStyles.None, CultureInfo.InvariantCulture, out var minutes) ||
+            minutes is < 1 or > AppSettings.MaxLibraryAutoRefreshMinutes)
+        {
+            ErrorMessage = $"Auto refresh interval must be a whole number from 1 to {AppSettings.MaxLibraryAutoRefreshMinutes} minutes.";
+            return;
+        }
+
+        SetAutoRefreshMinutes(minutes);
+        ErrorMessage = null;
+    }
+
+    private void ChangeAutoRefreshMinutes(int delta) =>
+        SetAutoRefreshMinutes(Math.Clamp(AutoRefreshMinutes + delta, 1, AppSettings.MaxLibraryAutoRefreshMinutes));
+
+    private void SetAutoRefreshMinutes(int minutes)
+    {
+        if (_disposed)
+            return;
+        AutoRefreshMinutesText = minutes.ToString(CultureInfo.InvariantCulture);
+        if (AutoRefreshMinutes == minutes)
+            return;
+        AutoRefreshMinutes = minutes;
+        _settingsService.Update(settings => settings.LibraryAutoRefreshMinutes = minutes);
+        ResetRefreshSchedule();
+    }
+
+    public void SetActive(bool active)
+    {
+        if (_disposed || _isActive == active)
+            return;
+        _isActive = active;
+        ResetRefreshSchedule();
+    }
+
+    private void ResetRefreshSchedule()
+    {
+        var generation = Interlocked.Increment(ref _refreshScheduleGeneration);
+        _refreshTimer?.Dispose();
+        _refreshTimer = null;
+        if (_disposed || !_isActive || !AutoRefreshEnabled || string.IsNullOrWhiteSpace(DirectoryPath))
+            return;
+
+        _refreshTimer = _timeProvider.CreateTimer(_ =>
+            Dispatcher.UIThread.Post(() => OnRefreshDue(generation)), null,
+            TimeSpan.FromMinutes(AutoRefreshMinutes), Timeout.InfiniteTimeSpan);
+    }
+
+    private void OnRefreshDue(long generation)
+    {
+        if (_disposed || generation != Volatile.Read(ref _refreshScheduleGeneration))
+            return;
+
+        // The cadence is measured from each due tick. If a scan is still running at the
+        // next tick, that tick is skipped and no second scan waits behind it.
+        ResetRefreshSchedule();
+        // Automatic scans reserve the idle scan slot atomically. Manual scans retain their
+        // existing cancel-and-replace behavior.
+        _ = ObserveScanAsync(StartScanAsync(automatic: true));
     }
 
     private void StartScanInBackground() => _ = ObserveScanAsync(StartScanAsync());
@@ -276,13 +386,16 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         }
     }
 
-    private async Task StartScanAsync()
+    private async Task StartScanAsync(bool automatic = false)
     {
         var directory = DirectoryPath;
         if (string.IsNullOrWhiteSpace(directory) || _disposed)
             return;
 
-        var (generation, cancellation) = BeginScan();
+        var scan = automatic ? TryBeginAutomaticScan() : BeginScan();
+        if (scan is null)
+            return;
+        var (generation, cancellation) = scan.Value;
         MarkScanMilestone(LibraryScanMilestone.Invoked);
         var pendingUpdates = new List<ReplayScanUpdate>(25);
         var batchStopwatch = Stopwatch.StartNew();
@@ -292,7 +405,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
         try
         {
-            await OnUiThreadAsync(() => BeginDisplayedScan(generation));
+            await OnUiThreadAsync(() => BeginDisplayedScan(generation, automatic));
             var scanOptions = (_scanOptionsFactory?.Invoke() ?? new ReplayScanOptions()) with
             {
                 Limit = ReplayScanLimit
@@ -362,27 +475,33 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         }
         finally
         {
-            if (enumerator is not null)
+            try
             {
-                try
+                if (enumerator is not null)
                 {
-                    await enumerator.DisposeAsync();
+                    try
+                    {
+                        await enumerator.DisposeAsync();
+                    }
+                    catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
                 }
-                catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
-            }
 
-            await OnUiThreadAsync(() =>
-            {
-                if (generation == Volatile.Read(ref _scanGeneration))
-                    IsScanning = false;
-            });
-
-            lock (_scanLock)
-            {
-                if (generation == _scanGeneration && ReferenceEquals(_activeScanCancellation, cancellation))
-                    _activeScanCancellation = null;
+                await OnUiThreadAsync(() =>
+                {
+                    if (generation == Volatile.Read(ref _scanGeneration))
+                        IsScanning = false;
+                });
             }
-            cancellation.Dispose();
+            finally
+            {
+                lock (_scanLock)
+                {
+                    _inFlightScans--;
+                    if (generation == _scanGeneration && ReferenceEquals(_activeScanCancellation, cancellation))
+                        _activeScanCancellation = null;
+                }
+                cancellation.Dispose();
+            }
 
             if (completedUpdateSeen && generation == Volatile.Read(ref _scanGeneration) && !_disposed)
                 MarkScanMilestone(LibraryScanMilestone.ScanDrained);
@@ -396,6 +515,20 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             _activeScanCancellation?.Cancel();
             var cancellation = new CancellationTokenSource();
             _activeScanCancellation = cancellation;
+            _inFlightScans++;
+            return (Interlocked.Increment(ref _scanGeneration), cancellation);
+        }
+    }
+
+    private (long Generation, CancellationTokenSource Cancellation)? TryBeginAutomaticScan()
+    {
+        lock (_scanLock)
+        {
+            if (_disposed || !_isActive || !_autoRefreshEnabled || _inFlightScans != 0)
+                return null;
+            var cancellation = new CancellationTokenSource();
+            _activeScanCancellation = cancellation;
+            _inFlightScans++;
             return (Interlocked.Increment(ref _scanGeneration), cancellation);
         }
     }
@@ -425,27 +558,32 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             Dispatcher.UIThread.Post(ClearIfCurrent);
     }
 
-    private void BeginDisplayedScan(long generation)
+    private void BeginDisplayedScan(long generation, bool automatic)
     {
         if (generation != Volatile.Read(ref _scanGeneration))
             return;
 
-        Replays.Clear();
-        _displayedReplayPaths.Clear();
-        UpdateStats();
-        AvailableReplayCount = 0;
-        SelectedReplayCount = 0;
-        ProcessedReplayCount = 0;
-        LoadedReplayCount = 0;
-        FailedReplayCount = 0;
-        ScanProgress = 0;
+        _preserveRowsUntilRefreshResult = automatic;
+        if (!automatic)
+        {
+            Replays.Clear();
+            _displayedReplayPaths.Clear();
+            UpdateStats();
+            AvailableReplayCount = 0;
+            SelectedReplayCount = 0;
+            ProcessedReplayCount = 0;
+            LoadedReplayCount = 0;
+            FailedReplayCount = 0;
+            ScanProgress = 0;
+            RaiseScanCountProperties();
+        }
         ErrorMessage = null;
         IsScanning = true;
-        RaiseScanCountProperties();
     }
 
     private void ClearDisplayedResults()
     {
+        _preserveRowsUntilRefreshResult = false;
         Replays.Clear();
         _displayedReplayPaths.Clear();
         UpdateStats();
@@ -478,6 +616,16 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         var completed = false;
         foreach (var update in updates)
         {
+            if (_preserveRowsUntilRefreshResult && update.Status == ReplayScanStatus.Started)
+                continue;
+            if (_preserveRowsUntilRefreshResult &&
+                (update.Status is ReplayScanStatus.Cached or ReplayScanStatus.Loaded or ReplayScanStatus.Completed))
+            {
+                Replays.Clear();
+                _displayedReplayPaths.Clear();
+                UpdateStats();
+                _preserveRowsUntilRefreshResult = false;
+            }
             AvailableReplayCount = update.AvailableCount;
             SelectedReplayCount = update.SelectedCount;
             ProcessedReplayCount = update.ProcessedCount;
@@ -559,6 +707,10 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     }
 
     private static int NormalizeScanLimit(int value) => value > 0 ? value : AppSettings.DefaultReplayScanLimit;
+    private static int NormalizeRefreshMinutes(int value) =>
+        value is >= 1 and <= AppSettings.MaxLibraryAutoRefreshMinutes
+            ? value
+            : AppSettings.DefaultLibraryAutoRefreshMinutes;
 
     private void MarkScanMilestone(LibraryScanMilestone milestone)
     {
@@ -619,6 +771,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
 
         _disposed = true;
+        ResetRefreshSchedule();
         CancelActiveScan();
     }
 }
