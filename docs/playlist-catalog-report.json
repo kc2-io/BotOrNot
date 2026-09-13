@@ -1,7 +1,9 @@
 {
   "schemaVersion": 1,
   "observedDate": "2026-09-11",
-  "added": [],
+  "added": [
+    "Playlist_FigmentSquad"
+  ],
   "changed": [],
   "preserved": [
     "Playlist_Blitz_Duos",
@@ -946,10 +948,6 @@
     },
     {
       "playlist_name": "Playlist_FigmentSolo",
-      "reason": "unsupported-or-insufficient-evidence"
-    },
-    {
-      "playlist_name": "Playlist_FigmentSquad",
       "reason": "unsupported-or-insufficient-evidence"
     },
     {

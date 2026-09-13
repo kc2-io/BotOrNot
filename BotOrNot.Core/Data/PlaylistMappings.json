@@ -160,6 +160,21 @@
       "display_name": "BR Build - Trios"
     },
     {
+      "playlist_name": "Playlist_FigmentSquad",
+      "display_name": "OG Build - Squads",
+      "family": "BR",
+      "buildMode": "Build",
+      "teamSize": 4,
+      "rankedState": "unknown",
+      "variant": "OG",
+      "sources": [
+        "maintainer confirmation, 2026-09-12"
+      ],
+      "observedDate": "2026-09-12",
+      "confidence": "curated-override",
+      "_source": "curated-override"
+    },
+    {
       "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
       "display_name": "Blitz Starfall Island - Duos",
       "_source": "manual"
