@@ -26,13 +26,15 @@ public class AppViewModel : ReactiveObject, IDisposable
         IThemeService? themeService = null,
         IReplayCacheService? cacheService = null,
         Func<ReplayScanOptions>? scanOptionsFactory = null,
-        ILibraryScanObserver? scanObserver = null)
+        ILibraryScanObserver? scanObserver = null,
+        TimeProvider? timeProvider = null)
     {
         settingsService ??= new SettingsService();
         _themeService = themeService ?? new ThemeService(settingsService);
         _themeService.ApplySavedTheme();
 
-        LibraryPage = new LibraryViewModel(NavigateToMatch, cacheService, settingsService, scanOptionsFactory, scanObserver);
+        LibraryPage = new LibraryViewModel(NavigateToMatch, cacheService, settingsService, scanOptionsFactory,
+            scanObserver, timeProvider);
         _currentPage = LibraryPage;
 
         // Keep window title in sync with the active page
@@ -49,7 +51,13 @@ public class AppViewModel : ReactiveObject, IDisposable
     public ReactiveObject CurrentPage
     {
         get => _currentPage;
-        private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
+        private set
+        {
+            if (ReferenceEquals(_currentPage, value))
+                return;
+            LibraryPage.SetActive(ReferenceEquals(value, LibraryPage));
+            this.RaiseAndSetIfChanged(ref _currentPage, value);
+        }
     }
 
     public string WindowTitle

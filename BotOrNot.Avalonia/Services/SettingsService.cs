@@ -17,11 +17,15 @@ public class AppSettings
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public string? ReplayDirectory { get; set; }
     public int ReplayScanLimit { get; set; } = DefaultReplayScanLimit;
+    public bool LibraryAutoRefreshEnabled { get; set; } = true;
+    public int LibraryAutoRefreshMinutes { get; set; } = DefaultLibraryAutoRefreshMinutes;
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? AdditionalSettings { get; set; }
 
     public const int DefaultReplayScanLimit = 50;
+    public const int DefaultLibraryAutoRefreshMinutes = 10;
+    public const int MaxLibraryAutoRefreshMinutes = 1440;
 }
 
 public interface ISettingsService
@@ -117,6 +121,9 @@ public sealed class SettingsService : ISettingsService
 
         if (settings.ReplayScanLimit <= 0)
             settings.ReplayScanLimit = AppSettings.DefaultReplayScanLimit;
+
+        if (settings.LibraryAutoRefreshMinutes is < 1 or > AppSettings.MaxLibraryAutoRefreshMinutes)
+            settings.LibraryAutoRefreshMinutes = AppSettings.DefaultLibraryAutoRefreshMinutes;
 
         return settings;
     }

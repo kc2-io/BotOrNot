@@ -56,4 +56,13 @@ public partial class LibraryView : UserControl
         e.Handled = true;
         viewModel.ApplyScanLimitCommand.Execute().Subscribe(_ => { }, _ => { });
     }
+
+    private void AutoRefreshMinutes_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || DataContext is not LibraryViewModel viewModel)
+            return;
+
+        e.Handled = true;
+        viewModel.ApplyAutoRefreshMinutesCommand.Execute().Subscribe(_ => { }, _ => { });
+    }
 }
