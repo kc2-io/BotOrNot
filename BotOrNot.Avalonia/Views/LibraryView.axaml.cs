@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -64,5 +65,12 @@ public partial class LibraryView : UserControl
 
         e.Handled = true;
         viewModel.ApplyAutoRefreshMinutesCommand.Execute().Subscribe(_ => { }, _ => { });
+    }
+
+    private void OpponentChip_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is LibraryViewModel viewModel &&
+            sender is ToggleButton { DataContext: FrequentOpponent opponent })
+            viewModel.ToggleOpponentFilter(opponent);
     }
 }

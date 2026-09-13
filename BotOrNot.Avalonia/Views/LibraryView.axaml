@@ -139,7 +139,7 @@
         <!-- Replay List -->
         <DataGrid Grid.Row="3"
                   x:Name="ReplayGrid"
-                  ItemsSource="{Binding Replays}"
+                  ItemsSource="{Binding VisibleReplays}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserReorderColumns="True"
@@ -172,20 +172,30 @@
                 BorderBrush="{DynamicResource SummaryBarBorder}"
                 BorderThickness="0,1,0,0"
                 Padding="8,6"
-                MaxHeight="160">
-            <Grid RowDefinitions="Auto,Auto,*">
+                MaxHeight="200">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <TextBlock Grid.Row="0"
                            Text="Frequent Opponents (top 10)"
                            FontWeight="SemiBold"
                            FontSize="12"
                            Margin="0,0,0,4"
                            Foreground="{DynamicResource SubtleTextBrush}" />
-                <TextBlock Grid.Row="1"
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto"
+                      IsVisible="{Binding HasOpponentFilter}" Margin="0,0,0,4">
+                    <TextBlock Text="{Binding FilterSummaryText}" FontSize="12"
+                               TextTrimming="CharacterEllipsis" Margin="0,0,8,0"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1" x:Name="ClearOpponentFilterButton" Content="Clear filter"
+                            Command="{Binding ClearOpponentFilterCommand}"
+                            Padding="6,2" />
+                </Grid>
+                <TextBlock Grid.Row="2"
                            Text="{Binding OpponentDataIncompleteText}"
                            Margin="0,0,0,4"
                            FontSize="12"
                            IsVisible="{Binding HasIncompleteOpponentData}" />
-                <ItemsControl Grid.Row="2" ItemsSource="{Binding FrequentOpponents}">
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FrequentOpponents}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
@@ -193,20 +203,41 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:FrequentOpponent">
-                            <Border Background="{DynamicResource PillBackground}"
-                                    CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                            <ToggleButton x:Name="OpponentFilterChip"
+                                          IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                          Click="OpponentChip_Click"
+                                          ToolTip.Tip="{Binding Name}"
+                                          Padding="8,3" Margin="0,2,6,2">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center"
+                                               MaxWidth="180" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Appearances, StringFormat=×{0}}"
                                                FontSize="11"
                                                Foreground="{DynamicResource SubtleTextBrush}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
-                            </Border>
+                            </ToggleButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                </ScrollViewer>
             </Grid>
+        </Border>
+
+        <!-- A selected opponent can have no matches after a library refresh. -->
+        <Border Grid.Row="3" Margin="8">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="!IsScanning" />
+                    <Binding Path="HasNoFilteredMatches" />
+                </MultiBinding>
+            </Border.IsVisible>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                <TextBlock Text="No matches with this opponent in the current library."
+                           FontSize="16" HorizontalAlignment="Center" />
+                <Button Content="Clear filter" Command="{Binding ClearOpponentFilterCommand}"
+                        HorizontalAlignment="Center" />
+            </StackPanel>
         </Border>
 
         <!-- Empty state when no replays loaded -->
@@ -216,6 +247,7 @@
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="!IsScanning" />
                     <Binding Path="!HasReplays" />
+                    <Binding Path="!HasOpponentFilter" />
                 </MultiBinding>
             </Border.IsVisible>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
