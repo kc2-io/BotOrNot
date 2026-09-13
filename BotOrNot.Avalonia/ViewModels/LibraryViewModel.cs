@@ -18,11 +18,29 @@ public sealed class FrequentOpponent
     public int Appearances { get; init; }
 }
 
+public enum LibraryScanMilestone
+{
+    Invoked,
+    FirstModelRow,
+    FinalModelState,
+    // Emitted only after a successful stream has been completely enumerated, disposed, and
+    // the owning scan state has been cleaned up. This is the benchmark's terminal boundary.
+    ScanDrained
+}
+
+/// <summary>Optional diagnostic hook for the benchmark harness; product callers need not provide one.</summary>
+public interface ILibraryScanObserver
+{
+    void OnMilestone(LibraryScanMilestone milestone);
+}
+
 public class LibraryViewModel : ReactiveObject, IDisposable
 {
     private readonly IReplayCacheService _cacheService;
     private readonly Action<ReplaySummary> _onOpenReplay;
     private readonly ISettingsService _settingsService;
+    private readonly Func<ReplayScanOptions>? _scanOptionsFactory;
+    private readonly ILibraryScanObserver? _scanObserver;
     private readonly object _scanLock = new();
     private readonly HashSet<string> _displayedReplayPaths = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _activeScanCancellation;
@@ -51,11 +69,15 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     public LibraryViewModel(
         Action<ReplaySummary> onOpenReplay,
         IReplayCacheService? cacheService = null,
-        ISettingsService? settingsService = null)
+        ISettingsService? settingsService = null,
+        Func<ReplayScanOptions>? scanOptionsFactory = null,
+        ILibraryScanObserver? scanObserver = null)
     {
         _onOpenReplay = onOpenReplay;
         _cacheService = cacheService ?? new ReplayCacheService();
         _settingsService = settingsService ?? new SettingsService();
+        _scanOptionsFactory = scanOptionsFactory;
+        _scanObserver = scanObserver;
 
         var settings = _settingsService.Load();
         _directoryPath = settings.ReplayDirectory;
@@ -261,15 +283,21 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
 
         var (generation, cancellation) = BeginScan();
+        MarkScanMilestone(LibraryScanMilestone.Invoked);
         var pendingUpdates = new List<ReplayScanUpdate>(25);
         var batchStopwatch = Stopwatch.StartNew();
         var firstReplayPublished = false;
+        var completedUpdateSeen = false;
+        IAsyncEnumerator<ReplayScanUpdate>? enumerator = null;
 
         try
         {
             await OnUiThreadAsync(() => BeginDisplayedScan(generation));
-            await using var enumerator = _cacheService.ScanAsync(directory,
-                new ReplayScanOptions { Limit = ReplayScanLimit }, cancellation.Token)
+            var scanOptions = (_scanOptionsFactory?.Invoke() ?? new ReplayScanOptions()) with
+            {
+                Limit = ReplayScanLimit
+            };
+            enumerator = _cacheService.ScanAsync(directory, scanOptions, cancellation.Token)
                 .GetAsyncEnumerator(cancellation.Token);
             Task<bool>? next = null;
             try
@@ -299,6 +327,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
                     var update = enumerator.Current;
                     pendingUpdates.Add(update);
+                    completedUpdateSeen |= update.IsComplete;
                     var firstReplay = !firstReplayPublished &&
                         (update.Status is ReplayScanStatus.Cached or ReplayScanStatus.Loaded);
                     if (update.Status == ReplayScanStatus.Started || firstReplay ||
@@ -333,6 +362,15 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         }
         finally
         {
+            if (enumerator is not null)
+            {
+                try
+                {
+                    await enumerator.DisposeAsync();
+                }
+                catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            }
+
             await OnUiThreadAsync(() =>
             {
                 if (generation == Volatile.Read(ref _scanGeneration))
@@ -345,6 +383,9 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                     _activeScanCancellation = null;
             }
             cancellation.Dispose();
+
+            if (completedUpdateSeen && generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+                MarkScanMilestone(LibraryScanMilestone.ScanDrained);
         }
     }
 
@@ -434,6 +475,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
 
         var statsChanged = false;
+        var completed = false;
         foreach (var update in updates)
         {
             AvailableReplayCount = update.AvailableCount;
@@ -444,18 +486,28 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             ScanProgress = update.ProgressPercentage;
 
             if (update.Status is ReplayScanStatus.Cached or ReplayScanStatus.Loaded)
-                statsChanged |= AddReplayIfNew(update.Summary!);
+            {
+                var added = AddReplayIfNew(update.Summary!);
+                statsChanged |= added;
+                if (added && Replays.Count == 1)
+                    MarkScanMilestone(LibraryScanMilestone.FirstModelRow);
+            }
 
             if (update.Status == ReplayScanStatus.Failed && !string.IsNullOrWhiteSpace(update.ErrorMessage))
             ErrorMessage = "Some replay files could not be loaded. See the loaded and failed counts above.";
 
             if (update.IsComplete)
+            {
                 IsScanning = false;
+                completed = true;
+            }
         }
 
         RaiseScanCountProperties();
         if (statsChanged)
             UpdateStats();
+        if (completed)
+            MarkScanMilestone(LibraryScanMilestone.FinalModelState);
     }
 
     private bool AddReplayIfNew(ReplaySummary summary)
@@ -507,6 +559,12 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     }
 
     private static int NormalizeScanLimit(int value) => value > 0 ? value : AppSettings.DefaultReplayScanLimit;
+
+    private void MarkScanMilestone(LibraryScanMilestone milestone)
+    {
+        try { _scanObserver?.OnMilestone(milestone); }
+        catch { /* Diagnostics must not affect scanning. */ }
+    }
 
     private void UpdateStats()
     {

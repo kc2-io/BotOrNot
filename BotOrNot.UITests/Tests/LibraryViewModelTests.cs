@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Headless.NUnit;
 using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Services;
@@ -10,6 +11,34 @@ namespace BotOrNot.UITests.Tests;
 [TestFixture]
 public sealed class LibraryViewModelTests
 {
+    [AvaloniaTest]
+    public async Task Scan_DiagnosticObserverSeesFinalStateAndConfiguredWorkers()
+    {
+        var cache = new OptionsRecordingCache();
+        var observer = new RecordingObserver();
+        using var viewModel = new LibraryViewModel(_ => { }, cache, CreateSettingsService(),
+            () => new ReplayScanOptions { MaxConcurrency = 4 }, observer)
+        {
+            DirectoryPath = Path.GetTempPath()
+        };
+
+        viewModel.ScanCommand.Execute().Subscribe();
+        await WaitForAsync(() => observer.Milestones.Contains(LibraryScanMilestone.ScanDrained));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(cache.Options?.MaxConcurrency, Is.EqualTo(4));
+            Assert.That(cache.WasDisposed, Is.True, "ScanDrained must follow enumerator disposal.");
+            Assert.That(observer.Milestones, Does.Contain(LibraryScanMilestone.Invoked)
+                .And.Contain(LibraryScanMilestone.FirstModelRow)
+                .And.Contain(LibraryScanMilestone.FinalModelState)
+                .And.Contain(LibraryScanMilestone.ScanDrained));
+            Assert.That(observer.Milestones.IndexOf(LibraryScanMilestone.FinalModelState),
+                Is.LessThan(observer.Milestones.IndexOf(LibraryScanMilestone.ScanDrained)));
+            Assert.That(viewModel.IsScanning, Is.False);
+            Assert.That(viewModel.TotalMatches, Is.EqualTo(1));
+        });
+    }
     [AvaloniaTest]
     public async Task Scan_FlushesCachedRowsWhileNextDecodeIsPending()
     {
@@ -302,6 +331,43 @@ public sealed class LibraryViewModelTests
             }
         ]
     };
+
+    private sealed class RecordingObserver : ILibraryScanObserver
+    {
+        public List<LibraryScanMilestone> Milestones { get; } = [];
+        public void OnMilestone(LibraryScanMilestone milestone) => Milestones.Add(milestone);
+    }
+
+    private sealed class OptionsRecordingCache : IReplayCacheService
+    {
+        public ReplayScanOptions? Options { get; private set; }
+        public bool WasDisposed { get; private set; }
+
+        // This fake models the streaming contract explicitly. Failing the legacy path keeps
+        // the observer test sensitive to an accidental change in scan ownership.
+        public Task<IReadOnlyList<ReplaySummary>> GetSummariesAsync(
+            string directory,
+            IProgress<int>? progress = null,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public async IAsyncEnumerable<ReplayScanUpdate> ScanAsync(string directory, ReplayScanOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            Options = options;
+            try
+            {
+                yield return Update(ReplayScanStatus.Started, 0, 0, 0, available: 1, selected: 1);
+                yield return Update(ReplayScanStatus.Loaded, 1, 1, 0, Summary("benchmark.replay"), available: 1, selected: 1);
+                yield return Update(ReplayScanStatus.Completed, 1, 1, 0, available: 1, selected: 1);
+                await Task.CompletedTask;
+            }
+            finally
+            {
+                WasDisposed = true;
+            }
+        }
+    }
 
     private sealed class StubReplayCacheService(IReadOnlyList<ReplaySummary> summaries) : IReplayCacheService
     {

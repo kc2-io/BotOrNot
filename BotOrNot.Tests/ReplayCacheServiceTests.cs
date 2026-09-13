@@ -27,6 +27,26 @@ public sealed class ReplayCacheServiceTests
     }
 
     [Test]
+    public async Task ScanAsync_UsesSummaryProfileAndReusesItsCacheEntry()
+    {
+        var path = CreateReplay("summary.replay");
+        var expected = ReplaySummaryFactory.Create(CompleteData(1, 7.5), new FileInfo(path));
+        var service = new SummaryOnlyReplayService(expected);
+        var cache = new ReplayCacheService(service, cachePath: _cachePath);
+
+        var first = await CollectAsync(cache.ScanAsync(_directory));
+        var second = await CollectAsync(cache.ScanAsync(_directory));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(service.CallCount, Is.EqualTo(1));
+            Assert.That(first.Single(update => update.Summary != null).Summary, Is.SameAs(expected));
+            Assert.That(second.Last().LoadedCount, Is.EqualTo(1));
+            Assert.That(second.Last().FailedCount, Is.Zero);
+        });
+    }
+
+    [Test]
     public async Task LegacyCacheEntry_IsReparsedAndCurrentEntryIsReused()
     {
         var replayPath = CreateReplay("match.replay");
@@ -561,6 +581,20 @@ public sealed class ReplayCacheServiceTests
         {
             CallCount++;
             return Task.FromResult(data);
+        }
+    }
+
+    private sealed class SummaryOnlyReplayService(ReplaySummary summary) : IReplayService, IReplaySummaryService
+    {
+        public int CallCount { get; private set; }
+
+        public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("Library scans must use the summary profile.");
+
+        public Task<ReplaySummary> LoadSummaryAsync(string path, CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(summary);
         }
     }
 
