@@ -711,18 +711,20 @@ internal static class NativeClientCapture
 {
     private const uint DibRgbColors = 0;
     private const uint PwClientOnly = 1;
+    // Windows 8.1+ SDK flag: include accelerated DirectComposition content.
+    private const uint PwRenderFullContent = 2;
 
     public static NativeClientViewportCapture Capture(Window window, string outputPath)
     {
         if (!OperatingSystem.IsWindows())
-            return new NativeClientViewportCapture(false, "PrintWindow is available only on Windows.", "Win32 PrintWindow(PW_CLIENTONLY)", 0, 0, 0);
+            return new NativeClientViewportCapture(false, "PrintWindow is available only on Windows.", "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT)", 0, 0, 0);
         var hwnd = window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
         if (hwnd == IntPtr.Zero || !GetClientRect(hwnd, out var rect))
-            return new NativeClientViewportCapture(false, "Native client handle or size was unavailable.", "Win32 PrintWindow(PW_CLIENTONLY)", 0, 0, 0);
+            return new NativeClientViewportCapture(false, "Native client handle or size was unavailable.", "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT)", 0, 0, 0);
         var width = rect.Right - rect.Left;
         var height = rect.Bottom - rect.Top;
         if (width <= 0 || height <= 0)
-            return new NativeClientViewportCapture(false, "Native client size was empty.", "Win32 PrintWindow(PW_CLIENTONLY)", width, height, 0);
+            return new NativeClientViewportCapture(false, "Native client size was empty.", "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT)", width, height, 0);
 
         var sourceDc = GetDC(hwnd);
         var memoryDc = sourceDc == IntPtr.Zero ? IntPtr.Zero : CreateCompatibleDC(sourceDc);
@@ -737,7 +739,7 @@ internal static class NativeClientCapture
             if (bitmap == IntPtr.Zero || bits == IntPtr.Zero)
                 throw new InvalidOperationException("Could not allocate a native client bitmap.");
             previous = SelectObject(memoryDc, bitmap);
-            if (!PrintWindow(hwnd, memoryDc, PwClientOnly))
+            if (!PrintWindow(hwnd, memoryDc, PwClientOnly | PwRenderFullContent))
                 throw new InvalidOperationException($"PrintWindow failed with Win32 error {Marshal.GetLastWin32Error()}.");
 
             var byteCount = checked(width * height * 4);
@@ -748,11 +750,11 @@ internal static class NativeClientCapture
             var fullOutput = Path.GetFullPath(outputPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullOutput)!);
             WriteBmp(fullOutput, width, height, pixels);
-            return new NativeClientViewportCapture(true, null, "Win32 PrintWindow(PW_CLIENTONLY) 32-bit client DIB", width, height, new FileInfo(fullOutput).Length);
+            return new NativeClientViewportCapture(true, null, "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB", width, height, new FileInfo(fullOutput).Length);
         }
         catch (Exception exception)
         {
-            return new NativeClientViewportCapture(false, exception.Message, "Win32 PrintWindow(PW_CLIENTONLY)", width, height, 0);
+            return new NativeClientViewportCapture(false, exception.Message, "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT)", width, height, 0);
         }
         finally
         {

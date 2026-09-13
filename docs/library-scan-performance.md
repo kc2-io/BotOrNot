@@ -87,6 +87,48 @@ service/offscreen results. Do not describe this work as meeting the SLA without
 that gate. A single run above five seconds is already a failure of the hard target;
 there is no reason to repeat a clearly losing configuration 20 times.
 
+## Native Windows validation
+
+Five serialized, fresh-process native runs on September 12, 2026 (Pacific) passed
+all scan, projection, visual-tree, composition, and client-capture checks. Each
+used the same self-contained Release binary, isolated settings, an absent cache,
+and the frozen manifest above. No concurrent builds or parser probes ran during
+these lanes. Normal here is this branch's full-reader path, not a main binary.
+
+| Profile | Files | Workers | Scan to rendered composition | Scan to client capture | Process start to capture | Peak working set |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Normal | 79 | 2 | 20.182 s | 20.255 s | 22.362 s | 608.0 MiB |
+| Summary | 79 | 2 | 12.968 s | 13.051 s | 15.123 s | 679.2 MiB |
+| Summary | 79 | 4 | 9.495 s | 9.582 s | 11.657 s | 745.2 MiB |
+| Normal | 50 | 2 | 15.479 s | 15.572 s | 17.491 s | 660.3 MiB |
+| Summary | 50 | 2 | 10.134 s | 10.212 s | 12.064 s | 628.2 MiB |
+
+Every selected replay loaded with zero failures. The three 79-file native
+projection fingerprints match exactly, as do the two 50-file fingerprints;
+these include ordered rows, aggregates, and frequent opponents. Native client
+BMPs were visually inspected and are byte-identical within each file-count
+group. The 50-file lanes correctly show "Scanned 50 out of 79 replay files".
+Allocated bytes for 79 files fell from 22.451 GB to 10.079 GB at two workers.
+
+The first Normal attempt passed data/composition checks but failed capture:
+`PrintWindow(PW_CLIENTONLY)` returned a uniform black surface. The harness now
+also requests `PW_RENDERFULLCONTENT`, defined in the
+[Microsoft Windows SDK header](https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/WinUser.h).
+Blank captures still fail verification. The table uses a new process and fresh
+cache after this correction; the failed attempt is excluded and retained locally.
+Three focused native-harness tests and the self-contained publish passed after
+the change.
+
+These are single samples, not a 20-run acceptance series. The five-second gate
+fails even with four configured workers; the shipping default stays two.
+Process-start timings include roughly 1.2 seconds of manifest validation, which
+warms the OS file cache before scanning. Composition acknowledgement, DwmFlush,
+and client capture establish native rendering evidence, not physical scanout.
+Observed worker concurrency and native private-memory peaks are not measured;
+the offscreen private-memory concern remains unresolved. Sanitized raw results
+and executable/capture hashes are in
+[`library-native-measurements.json`](library-native-measurements.json).
+
 ## Kept and rejected experiments
 
 - Kept: exact-group exclusions, null logging in the summary parser, owned reusable
