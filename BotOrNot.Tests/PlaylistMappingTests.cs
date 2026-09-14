@@ -97,6 +97,59 @@ public class PlaylistMappingTests
         Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "Playlist_UncataloguedSixStack"), Is.Null);
     }
 
+    [TestCase(6)]
+    [TestCase(5)]
+    public void ExplicitTeamSizeOverridesConflictingLegacyLabel(int teamSize)
+    {
+        var catalog = PlaylistCatalog.FromJson($$"""
+            { "playlists": [
+              { "playlist_name": "Playlist_Test", "display_name": "Legacy mode - Solo", "teamSize": {{teamSize}} }
+            ] }
+            """);
+
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "Playlist_Test"), Is.EqualTo(teamSize));
+    }
+
+    [TestCase("Legacy mode - Solo", 1)]
+    [TestCase("Legacy mode - Duo", 2)]
+    [TestCase("Legacy mode - Duos", 2)]
+    [TestCase("Legacy mode - Trio", 3)]
+    [TestCase("Legacy mode - Trios", 3)]
+    [TestCase("Legacy mode - Squad", 4)]
+    [TestCase("Legacy mode - Squads", 4)]
+    [TestCase("Legacy mode - Six-stack", 6)]
+    [TestCase("Legacy mode - sQuAdS", 4)]
+    [TestCase("Legacy mode - Six-STACK", 6)]
+    [TestCase("Non-canonical label", null)]
+    [TestCase("Legacy mode - Solo ", null)]
+    [TestCase("Legacy mode - Solo extra", null)]
+    [TestCase("Legacy mode Solo", null)]
+    public void LegacyTeamSizeRequiresSupportedDisplayNameSuffix(string displayName, int? expectedTeamSize)
+    {
+        var catalog = PlaylistCatalog.FromJson($$"""
+            { "playlists": [
+              { "playlist_name": "Playlist_Test", "display_name": "{{displayName}}" }
+            ] }
+            """);
+
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, "playlist_test"), Is.EqualTo(expectedTeamSize));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("Playlist_UncataloguedSolo")]
+    [TestCase("Unknown mode - Solo")]
+    public void TeamSizeRequiresKnownPlaylistId(string? playlistName)
+    {
+        var catalog = PlaylistCatalog.FromJson("""
+            { "playlists": [
+              { "playlist_name": "Playlist_Test", "display_name": "Legacy mode - Solo" }
+            ] }
+            """);
+
+        Assert.That(PlaylistHelper.GetKnownMaxTeamSize(catalog, playlistName), Is.Null);
+    }
+
     [TestCase("Playlist_ForbiddenFruitOldNoBuildBRSolo", "Blitz Zero Build - Solo")]
     [TestCase("Playlist_MatchMistSolo", "Reload Build - Solo")]
     [TestCase("Playlist_MatchMistDuo", "Reload Build - Duos")]
