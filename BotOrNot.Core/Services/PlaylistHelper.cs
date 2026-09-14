@@ -68,6 +68,11 @@ public static class PlaylistHelper
         if (displayName == null)
             return null;
 
+        return GetLegacyTeamSizeFromDisplayName(displayName);
+    }
+
+    private static int? GetLegacyTeamSizeFromDisplayName(string displayName)
+    {
         if (displayName.EndsWith(" - Solo", StringComparison.OrdinalIgnoreCase))
             return 1;
         if (displayName.EndsWith(" - Duo", StringComparison.OrdinalIgnoreCase) ||
