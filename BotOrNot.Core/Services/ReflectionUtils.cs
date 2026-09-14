@@ -41,10 +41,7 @@ public static class ReflectionUtils
 
     public static double? GetDouble(object? obj, string name)
     {
-        if (obj is null) return null;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return null;
-        var value = pi.GetValue(obj);
+        var value = GetObject(obj, name);
         if (value is double doubleValue) return doubleValue;
         if (value is float floatValue) return floatValue;
         if (double.TryParse(value?.ToString(),
@@ -56,10 +53,7 @@ public static class ReflectionUtils
 
     public static int? GetInt(object? obj, string name)
     {
-        if (obj is null) return null;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return null;
-        var value = pi.GetValue(obj);
+        var value = GetObject(obj, name);
         if (value is int intValue) return intValue;
         if (value is byte byteValue) return byteValue;
         if (value is short shortValue) return shortValue;
@@ -73,10 +67,7 @@ public static class ReflectionUtils
 
     public static uint? GetUInt(object? obj, string name)
     {
-        if (obj is null) return null;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return null;
-        var value = pi.GetValue(obj);
+        var value = GetObject(obj, name);
         if (value is uint uintValue) return uintValue;
         if (value is int intValue && intValue >= 0) return (uint)intValue;
         if (uint.TryParse(value?.ToString(),
@@ -88,10 +79,7 @@ public static class ReflectionUtils
 
     public static bool GetBool(object? obj, string name)
     {
-        if (obj is null) return false;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return false;
-        var v = pi.GetValue(obj);
+        var v = GetObject(obj, name);
         if (v is bool b) return b;
         if (v is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
         return false;
@@ -99,10 +87,7 @@ public static class ReflectionUtils
 
     public static bool? GetNullableBool(object? obj, string name)
     {
-        if (obj is null) return null;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return null;
-        var value = pi.GetValue(obj);
+        var value = GetObject(obj, name);
         if (value is bool boolValue) return boolValue;
         if (bool.TryParse(value?.ToString(), out var parsed)) return parsed;
         return null;
