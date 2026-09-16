@@ -6,15 +6,39 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-and-release:
     runs-on: windows-latest
+    environment: artifact-signing
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check signing configuration
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_SIGNING_ENDPOINT: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          AZURE_SIGNING_ACCOUNT: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          AZURE_SIGNING_PROFILE: ${{ vars.AZURE_SIGNING_PROFILE }}
+          AZURE_SIGNING_PUBLISHER: ${{ vars.AZURE_SIGNING_PUBLISHER }}
+        run: |
+          foreach ($name in @('AZURE_CLIENT_ID', 'AZURE_TENANT_ID', 'AZURE_SUBSCRIPTION_ID',
+              'AZURE_SIGNING_ENDPOINT', 'AZURE_SIGNING_ACCOUNT', 'AZURE_SIGNING_PROFILE', 'AZURE_SIGNING_PUBLISHER')) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+              throw "Missing artifact-signing environment variable: $name"
+            }
+          }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -88,6 +112,40 @@ jobs:
             -p:DebugType=none `
             -p:DebugSymbols=false
 
+      - name: Azure login for release signing
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign BotOrNot executable
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2
+        with:
+          endpoint: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_SIGNING_PROFILE }}
+          files: ${{ github.workspace }}\publish\win-x64\BotOrNot.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          exclude-environment-credential: true
+          exclude-workload-identity-credential: true
+          exclude-managed-identity-credential: true
+          exclude-shared-token-cache-credential: true
+          exclude-visual-studio-credential: true
+          exclude-visual-studio-code-credential: true
+          exclude-azure-cli-credential: false
+          exclude-azure-powershell-credential: true
+          exclude-azure-developer-cli-credential: true
+          exclude-interactive-browser-credential: true
+
+      - name: Verify release signature
+        shell: pwsh
+        env:
+          EXPECTED_PUBLISHER: ${{ vars.AZURE_SIGNING_PUBLISHER }}
+        run: ./scripts/verify-release-signature.ps1 -FilePath ./publish/win-x64/BotOrNot.exe -ExpectedPublisher $env:EXPECTED_PUBLISHER
+
       - name: Create ZIP
         run: |
           Remove-Item ./publish/win-x64/*.pdb -ErrorAction SilentlyContinue
@@ -110,6 +168,6 @@ jobs:
             2. Extract the zip file to a folder of your choice
             3. Run **BotOrNot.exe**
 
-            > **Note:** Windows SmartScreen may show a warning since the app is not code-signed. Click **More info** → **Run anyway** to proceed.
+            The included **BotOrNot.exe** is digitally signed. You can inspect its publisher in **Properties → Digital Signatures**. Windows SmartScreen may still show a reputation warning for a new release.
 
             ---
