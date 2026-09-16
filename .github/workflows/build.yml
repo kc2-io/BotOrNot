@@ -17,6 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Test release signature verification
+        shell: pwsh
+        run: ./scripts/test-release-signature.ps1
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
