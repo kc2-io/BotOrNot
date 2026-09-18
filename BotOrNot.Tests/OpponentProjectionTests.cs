@@ -127,6 +127,91 @@ public sealed class OpponentProjectionTests
         });
     }
 
+    [TestCase(5, true)]
+    [TestCase(null, false)]
+    public void FromReplay_AmbiguousDuplicateExcludesWholeIdentityButKeepsOtherOpponents(
+        int? duplicateTeam, bool hasConflict)
+    {
+        var duplicate = Player("REPEAT", "Duplicate", duplicateTeam);
+        duplicate.HasConflictingTeamIndex = hasConflict;
+        var replay = Replay(
+            Player("owner", "Recorder", 4, isOwner: true),
+            Player("repeat", "Original", 5),
+            duplicate,
+            Player("other", "Other opponent", 6));
+
+        var projection = OpponentProjection.FromReplay(replay);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(projection.IsComplete, Is.False);
+            Assert.That(projection.Opponents.Select(opponent => opponent.StableId), Is.EqualTo(new[] { "other" }));
+        });
+    }
+
+    [TestCase("Zulu", "Alpha", "Zulu")]
+    [TestCase("alpha", "Alpha", "alpha")]
+    public void FromReplay_DifferentOpposingTeamsRetainIdentityAndLexicallyLastName(
+        string firstName, string laterName, string expectedName)
+    {
+        var replay = Replay(
+            Player("owner", "Recorder", 4, isOwner: true),
+            Player("repeat", firstName, 5),
+            Player("REPEAT", laterName, 6));
+
+        var projection = OpponentProjection.FromReplay(replay);
+
+        Assert.That(projection.Opponents, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(projection.IsComplete, Is.True);
+            Assert.That(projection.Opponents[0].StableId, Is.EqualTo("repeat"));
+            Assert.That(projection.Opponents[0].Name, Is.EqualTo(expectedName));
+        });
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public void FromReplay_BotOrNpcDuplicateCannotMakeHumanIdentityAmbiguous(bool isBot)
+    {
+        var excluded = Player("REPEAT", isBot ? "Bot" : "REPEAT", 4, isBot: isBot);
+        excluded.HasConflictingTeamIndex = true;
+        var replay = Replay(
+            Player("owner", "Recorder", 4, isOwner: true),
+            Player("repeat", "Human opponent", 5),
+            excluded);
+
+        var projection = OpponentProjection.FromReplay(replay);
+
+        Assert.That(projection.Opponents, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(projection.IsComplete, Is.True);
+            Assert.That(projection.Opponents[0].StableId, Is.EqualTo("repeat"));
+            Assert.That(projection.Opponents[0].Name, Is.EqualTo("Human opponent"));
+        });
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("   ")]
+    public void FromReplay_NamelessOpponentRemainsPresentWithEmptyDisplayName(string? name)
+    {
+        var opponent = Player("enemy", "", 5);
+        opponent.Name = name;
+        var replay = Replay(Player("owner", "Recorder", 4, isOwner: true), opponent);
+
+        var projection = OpponentProjection.FromReplay(replay);
+
+        Assert.That(projection.Opponents, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(projection.IsComplete, Is.True);
+            Assert.That(projection.Opponents[0].StableId, Is.EqualTo("enemy"));
+            Assert.That(projection.Opponents[0].Name, Is.Empty);
+        });
+    }
+
     private static ReplayData Replay(params PlayerRow[] players)
     {
         var owner = players.Single(player => player.IsReplayOwner);
