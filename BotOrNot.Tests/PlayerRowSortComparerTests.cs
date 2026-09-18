@@ -285,6 +285,68 @@ public class PlayerRowSortComparerTests
         Assert.That(comparer.Compare((PlayerRow?)null, null), Is.EqualTo(0));
     }
 
+    [Test]
+    public void UnknownPairs_CompareEqualInEverySortMode(
+        [Values(null, "", "UnKnOwN")] string? left,
+        [Values(null, "", "UnKnOwN")] string? right,
+        [Values] bool descending,
+        [Values] bool unknownsFirst)
+    {
+        var comparer = new PlayerRowSortComparer(
+            p => p.Name, descending: descending, unknownsFirst: unknownsFirst);
+
+        Assert.That(comparer.Compare(Row(name: left), Row(name: right)), Is.Zero);
+    }
+
+    [Test]
+    public void UnknownPlacement_IsIndependentOfDirectionAndFieldType(
+        [Values("text", "numeric", "bot")] string fieldType,
+        [Values] bool descending,
+        [Values] bool unknownsFirst)
+    {
+        var comparer = new PlayerRowSortComparer(
+            p => p.Name, descending: descending, numeric: fieldType == "numeric",
+            isBotField: fieldType == "bot", unknownsFirst: unknownsFirst);
+        var known = Row(name: fieldType switch { "numeric" => "5", "bot" => "true", _ => "Alice" });
+        var expectedSign = unknownsFirst ? -1 : 1;
+
+        foreach (var value in new string?[] { null, "", "UnKnOwN" })
+        {
+            var unknown = Row(name: value);
+            Assert.Multiple(() =>
+            {
+                Assert.That(Math.Sign(comparer.Compare(unknown, known)), Is.EqualTo(expectedSign));
+                Assert.That(Math.Sign(comparer.Compare(known, unknown)), Is.EqualTo(-expectedSign));
+            });
+        }
+    }
+
+    [Test]
+    public void NullRows_AlwaysSortLastWithoutInvokingSelector(
+        [Values] bool descending,
+        [Values] bool unknownsFirst)
+    {
+        var comparer = new PlayerRowSortComparer(
+            _ => throw new InvalidOperationException("Null-row comparisons must not select values."),
+            descending: descending, unknownsFirst: unknownsFirst);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(comparer.Compare(null, Row(name: "Alice")), Is.GreaterThan(0));
+            Assert.That(comparer.Compare(Row(name: "Alice"), null), Is.LessThan(0));
+            Assert.That(comparer.Compare(null, Row(name: null)), Is.GreaterThan(0));
+            Assert.That(comparer.Compare(Row(name: null), null), Is.LessThan(0));
+            Assert.That(comparer.Compare(null, null), Is.Zero);
+        });
+    }
+
+    [TestCase("   ")]
+    [TestCase(" unknown ")]
+    public void WhitespaceAndPaddedUnknown_AreKnownValues(string value)
+    {
+        Assert.That(PlayerRowSortComparer.IsUnknownOrEmpty(value), Is.False);
+    }
+
     // --- IComparer (non-generic) interface ---
 
     [Test]
