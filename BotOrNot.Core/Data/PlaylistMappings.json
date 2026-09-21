@@ -2761,6 +2761,51 @@
       "_source": "source-derived"
     },
     {
+      "playlist_name": "Playlist_Showdown_BlastBerryNoBuildDuos_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_DashBerryNoBuildDuos_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_PiperBootNoBuildDuos_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_BlastBerry_Duos",
       "display_name": "Reload Build Duos Ranked",
       "family": "Reload",
@@ -2772,6 +2817,36 @@
         "fortnite-api.com/v1/playlists"
       ],
       "observedDate": "2026-09-13",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_BlastBerryNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_BlastBerrySolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
       "confidence": "source-derived",
       "_source": "source-derived"
     },
@@ -2911,6 +2986,36 @@
       "_source": "source-derived"
     },
     {
+      "playlist_name": "Playlist_Showdown_RE_DashBerryNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_DashBerrySolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_ForbiddenFruitNoBuildSolo",
       "display_name": "Reload Zero Build Solo",
       "family": "Reload",
@@ -2986,6 +3091,141 @@
       "_source": "source-derived"
     },
     {
+      "playlist_name": "Playlist_Showdown_RE_MatchMistNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_MatchMistSolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PiperBootNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PiperBootSolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerryNoBuildDuo_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerryNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerrySolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_RopeSmileNoBuildDuo_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_RopeSmileNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_RopeSmileSolo_CTS",
       "display_name": "Reload Build Solo Ranked",
       "family": "Reload",
@@ -2997,6 +3237,96 @@
         "fortnite-api.com/v1/playlists"
       ],
       "observedDate": "2026-09-13",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_SourSpawnNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_SourSpawnSolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_TimberStakeNoBuildSolo_CTS",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_TimberStakeSolo_CTS",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_SourSpawnNoBuildDuos_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_TimberStakeNoBuildDuo_CTS",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-09-21",
       "confidence": "source-derived",
       "_source": "source-derived"
     },
