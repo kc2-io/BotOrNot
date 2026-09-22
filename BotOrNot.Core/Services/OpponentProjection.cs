@@ -23,13 +23,7 @@ public sealed class OpponentProjection
                          !owner.HasConflictingTeamIndex;
         var opponents = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         var participants = replay.Players.Where(player => !player.IsBot && !player.IsNpc).ToList();
-        var ambiguousStableIds = participants
-            .Where(player => !string.IsNullOrWhiteSpace(player.StableId))
-            .GroupBy(player => player.StableId!, StringComparer.OrdinalIgnoreCase)
-            .Where(group => group.Any(player => player.HasConflictingTeamIndex) ||
-                            group.Select(player => ParticipantClassifier.Classify(replay, player)).Distinct().Count() > 1)
-            .Select(group => group.Key)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var ambiguousStableIds = FindAmbiguousStableIds(replay, participants);
 
         foreach (var participant in participants)
         {
@@ -75,5 +69,17 @@ public sealed class OpponentProjection
                 })
                 .ToList()
         };
+    }
+
+    private static HashSet<string> FindAmbiguousStableIds(ReplayData replay, IEnumerable<PlayerRow> participants)
+    {
+        // Different teams can still agree on an opponent relationship; explicit conflicts always exclude the identity.
+        return participants
+            .Where(player => !string.IsNullOrWhiteSpace(player.StableId))
+            .GroupBy(player => player.StableId!, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Any(player => player.HasConflictingTeamIndex) ||
+                            group.Select(player => ParticipantClassifier.Classify(replay, player)).Distinct().Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 }
