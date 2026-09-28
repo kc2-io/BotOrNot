@@ -21,10 +21,9 @@ public class MainWindowViewModel : ReactiveObject
 
     private static readonly string BaseTitle = $"Bot or Not? v{AppVersion}";
 
-    private ObservableCollection<PlayerRow> _players = new();
-    private ObservableCollection<PlayerRow> _ownerEliminations = new();
     private string _ownerKillsHeader = "Your Eliminations";
     private string _playersSeenHeader = "Players Seen";
+    private string _npcsSeenHeader = "NPCs Seen";
     private bool _isLoading;
     private string? _errorMessage;
     private string _filterText = "";
@@ -36,22 +35,30 @@ public class MainWindowViewModel : ReactiveObject
     private string? _playlistName;
     private bool _hasMetadata;
     private bool _hasData;
+    private bool _hasNpcs;
     private bool _isDropTargetActive;
     private string _themeIcon = "\u2699";
     private string _themeToggleTooltip = "Theme: System";
 
     private readonly List<PlayerRow> _allPlayers = new();
     private readonly List<PlayerRow> _allOwnerEliminations = new();
+    private readonly List<PlayerRow> _allNpcs = new();
 
-    private ObservableCollection<PlayerRow> _filteredPlayers = new();
-    private ObservableCollection<PlayerRow> _filteredOwnerEliminations = new();
+    private readonly ObservableCollection<PlayerRow> _filteredPlayers = new();
+    private readonly ObservableCollection<PlayerRow> _filteredOwnerEliminations = new();
+    private readonly ObservableCollection<PlayerRow> _filteredNpcs = new();
 
     private string? _eliminatorName;
 
     public MainWindowViewModel(Action? onBack = null)
+        : this(new ReplayService(), onBack)
+    {
+    }
+
+    public MainWindowViewModel(IReplayService replayService, Action? onBack = null)
     {
         _onBack = onBack;
-        _replayService = new ReplayService();
+        _replayService = replayService;
 
         // Load saved theme preference and apply before window renders
         var settings = SettingsService.Load();
@@ -78,6 +85,8 @@ public class MainWindowViewModel : ReactiveObject
 
     public ObservableCollection<PlayerRow> OwnerEliminations => _filteredOwnerEliminations;
 
+    public ObservableCollection<PlayerRow> Npcs => _filteredNpcs;
+
     public string OwnerKillsHeader
     {
         get => _ownerKillsHeader;
@@ -88,6 +97,12 @@ public class MainWindowViewModel : ReactiveObject
     {
         get => _playersSeenHeader;
         set => this.RaiseAndSetIfChanged(ref _playersSeenHeader, value);
+    }
+
+    public string NpcsSeenHeader
+    {
+        get => _npcsSeenHeader;
+        set => this.RaiseAndSetIfChanged(ref _npcsSeenHeader, value);
     }
 
     public string WindowTitle
@@ -175,6 +190,12 @@ public class MainWindowViewModel : ReactiveObject
 
     public ReactiveCommand<string, Unit> FilterByPlayerCommand { get; }
 
+    public bool HasNpcs
+    {
+        get => _hasNpcs;
+        private set => this.RaiseAndSetIfChanged(ref _hasNpcs, value);
+    }
+
     public ReactiveCommand<Unit, Unit> CycleThemeCommand { get; }
 
     public string ThemeIcon
@@ -225,28 +246,30 @@ public class MainWindowViewModel : ReactiveObject
 
     private void ApplyFilter()
     {
-        if (string.IsNullOrWhiteSpace(FilterText))
-        {
-            _filteredPlayers.Clear();
-            _filteredOwnerEliminations.Clear();
-            foreach (var p in _allPlayers) _filteredPlayers.Add(p);
-            foreach (var p in _allOwnerEliminations) _filteredOwnerEliminations.Add(p);
-        }
-        else
-        {
-            var searchTerm = FilterText.ToLowerInvariant();
-            var filteredPlayersList = _allPlayers.Where(p => MatchesFilter(p, searchTerm)).ToList();
-            var filteredOwnerElimList = _allOwnerEliminations.Where(p => MatchesFilter(p, searchTerm)).ToList();
-
-            _filteredPlayers.Clear();
-            _filteredOwnerEliminations.Clear();
-            foreach (var p in filteredPlayersList) _filteredPlayers.Add(p);
-            foreach (var p in filteredOwnerElimList) _filteredOwnerEliminations.Add(p);
-        }
+        var searchTerm = FilterText;
+        ReplaceContents(_filteredPlayers, _allPlayers.Where(p => MatchesFilter(p, searchTerm)));
+        ReplaceContents(_filteredOwnerEliminations, _allOwnerEliminations.Where(p => MatchesFilter(p, searchTerm)));
+        ReplaceContents(_filteredNpcs, _allNpcs.Where(p => MatchesNpcFilter(p, searchTerm)));
     }
 
-    private static bool MatchesFilter(PlayerRow player, string searchTerm)
+    private static void ReplaceContents(ObservableCollection<PlayerRow> target, IEnumerable<PlayerRow> source)
     {
+        target.Clear();
+        foreach (var item in source)
+            target.Add(item);
+    }
+
+    private static IEnumerable<PlayerRow> OrderByElimTime(IEnumerable<PlayerRow> rows)
+    {
+        return rows.OrderBy(p => string.IsNullOrEmpty(p.ElimTime) ? 1 : 0)
+                   .ThenBy(p => p.ElimTime, StringComparer.Ordinal);
+    }
+
+    internal static bool MatchesFilter(PlayerRow player, string? searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return true;
+
         return (player.Name?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.Level?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                PlatformHelper.GetFriendlyName(player.Platform).Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
@@ -255,6 +278,15 @@ public class MainWindowViewModel : ReactiveObject
                (player.Placement?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.DeathCause?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                (player.ElimTime?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
+
+    internal static bool MatchesNpcFilter(PlayerRow player, string? searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return true;
+
+        return (player.Name?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+               (player.DeathCause?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
     private async Task LoadReplayAsync(string path)
@@ -266,61 +298,51 @@ public class MainWindowViewModel : ReactiveObject
         {
             var data = await _replayService.LoadReplayAsync(path);
 
-            _allPlayers.Clear();
-            _allOwnerEliminations.Clear();
-            // Sort by ElimTime (chronological) by default; players without ElimTime go to the bottom
-            foreach (var p in data.Players.OrderBy(p => string.IsNullOrEmpty(p.ElimTime) ? 1 : 0).ThenBy(p => p.ElimTime, StringComparer.Ordinal))
-                _allPlayers.Add(p);
-            foreach (var p in data.OwnerEliminations.OrderBy(p => string.IsNullOrEmpty(p.ElimTime) ? 1 : 0).ThenBy(p => p.ElimTime, StringComparer.Ordinal))
-                _allOwnerEliminations.Add(p);
-
-            ApplyFilter();
+            var partitionedPlayers = data.Players.ToLookup(p => p.IsNpc);
+            var allPlayers = OrderByElimTime(partitionedPlayers[false]).ToList();
+            var allNpcs = partitionedPlayers[true].OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            var allOwnerEliminations = OrderByElimTime(data.OwnerEliminations.Where(p => !p.IsNpc)).ToList();
 
             var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Your";
-            // Use authoritative kill count from PlayerData, fall back to event-based count
-            var nonNpcEliminations = data.OwnerEliminations.Where(p => !p.IsNpc).ToList();
-            var totalKills = data.OwnerKills ?? nonNpcEliminations.Count;
-            var botKills = nonNpcEliminations.Count(p => p.IsBot);
+            var totalKills = data.OwnerKills ?? allOwnerEliminations.Count;
+            var botKills = allOwnerEliminations.Count(p => p.IsBot);
             var playerKills = totalKills - botKills;
-            OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
+            var ownerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
 
-            // Build Players Seen header with breakdown (excluding NPCs)
-            var npcCount = data.Players.Count(p => p.IsNpc);
-            var nonNpcPlayers = data.Players.Where(p => !p.IsNpc).ToList();
-            var totalPlayers = nonNpcPlayers.Count;
-            var botPlayers = nonNpcPlayers.Count(p => p.IsBot);
+            var totalPlayers = allPlayers.Count;
+            var botPlayers = allPlayers.Count(p => p.IsBot);
             var humanPlayers = totalPlayers - botPlayers;
-
-            // Group by platform (using friendly names) and build platform breakdown string (excluding NPCs)
-            var platformGroups = nonNpcPlayers
+            var platformGroups = allPlayers
                 .Where(p => !string.IsNullOrWhiteSpace(p.Platform))
                 .GroupBy(p => PlatformHelper.GetFriendlyName(p.Platform))
                 .OrderByDescending(g => g.Count())
                 .Select(g => $"{g.Count()} {g.Key}")
                 .ToList();
-
             var platformBreakdown = platformGroups.Count > 0 ? " | " + string.Join(", ", platformGroups) : "";
-            var npcPrefix = npcCount > 0 ? $"NPCs Seen ({npcCount}) | " : "";
-            PlayersSeenHeader = $"{npcPrefix}Players Seen ({totalPlayers}) - {humanPlayers} Players, {botPlayers} Bots{platformBreakdown}";
+            var playersSeenHeader = $"Players Seen ({totalPlayers}) - {humanPlayers} Players, {botPlayers} Bots{platformBreakdown}";
+            var npcsSeenHeader = $"NPCs Seen ({allNpcs.Count})";
 
-            // Find owner's placement
             var ownerPlayer = data.Players.FirstOrDefault(p =>
                 !string.IsNullOrEmpty(data.OwnerName) &&
                 p.Name?.Equals(data.OwnerName, StringComparison.OrdinalIgnoreCase) == true);
             var ownerPlacement = ownerPlayer?.Placement;
-            var placementText = !string.IsNullOrEmpty(ownerPlacement)
-                ? $"Placement: #{ownerPlacement}"
-                : "Placement: Unknown";
-
-            // Extract eliminator name for clickable link (only when we know they didn't win)
-            // Note: Only shows eliminator when owner placement is known (not null).
-            // Original behavior showed eliminator even when placement was unknown; this change
-            // is intentional to avoid showing misleading information when owner wasn't found.
-            EliminatorName = ownerPlacement is not null and not "1" && data.OwnerEliminatedBy != null
+            var eliminatorName = ownerPlacement is not null and not "1" && data.OwnerEliminatedBy != null
                 ? data.OwnerEliminatedBy
                 : null;
 
-            // Set individual header bar segments
+            // Commit all state atomically now that everything has been computed successfully.
+            _allPlayers.Clear();
+            _allPlayers.AddRange(allPlayers);
+            _allNpcs.Clear();
+            _allNpcs.AddRange(allNpcs);
+            _allOwnerEliminations.Clear();
+            _allOwnerEliminations.AddRange(allOwnerEliminations);
+            ApplyFilter();
+
+            OwnerKillsHeader = ownerKillsHeader;
+            PlayersSeenHeader = playersSeenHeader;
+            NpcsSeenHeader = npcsSeenHeader;
+            EliminatorName = eliminatorName;
             WindowTitle = $"{BaseTitle} - {data.Metadata.FileName}";
             GameMode = data.Metadata.GameMode;
             PlaylistName = data.Metadata.Playlist;
@@ -329,6 +351,7 @@ public class MainWindowViewModel : ReactiveObject
             ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
             HasMetadata = true;
             HasData = true;
+            HasNpcs = allNpcs.Count > 0;
         }
         catch (IOException ex)
         {

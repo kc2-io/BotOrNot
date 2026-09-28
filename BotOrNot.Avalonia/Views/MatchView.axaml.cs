@@ -24,6 +24,7 @@ public partial class MatchView : UserControl
     private readonly MenuFlyout _columnsFlyout;
     private readonly Dictionary<DataGridColumn, int> _columnSortMode = new();
     private DataGrid? _playersGrid;
+    private DataGrid? _npcsGrid;
     private Button? _columnsButton;
 
     public MatchView()
@@ -33,6 +34,7 @@ public partial class MatchView : UserControl
         _columnsFlyout = new MenuFlyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
 
         _playersGrid = this.FindControl<DataGrid>("PlayersGrid");
+        _npcsGrid = this.FindControl<DataGrid>("NpcsGrid");
         _columnsButton = this.FindControl<Button>("ColumnsButton");
 
         if (_columnsButton != null)
@@ -49,6 +51,11 @@ public partial class MatchView : UserControl
             _playersGrid.Sorting += OnDataGridSorting;
             _playersGrid.LoadingRow += OnDataGridLoadingRow;
         }
+        if (_npcsGrid != null)
+        {
+            _npcsGrid.Sorting += OnDataGridSorting;
+            _npcsGrid.LoadingRow += OnDataGridLoadingRow;
+        }
 
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
@@ -60,6 +67,7 @@ public partial class MatchView : UserControl
         {
             RefreshDataGridRows(ownerGrid);
             RefreshDataGridRows(_playersGrid);
+            RefreshDataGridRows(_npcsGrid);
         };
 
         DataContextChanged += (_, _) => _viewModel = DataContext as MainWindowViewModel;
@@ -109,7 +117,7 @@ public partial class MatchView : UserControl
             var app = global::Avalonia.Application.Current;
             var botBrush = app?.FindResource("BotRowBackground") as IBrush;
             var defaultBrush = app?.FindResource("DefaultRowBackground") as IBrush;
-            e.Row.Background = player.IsBot ? botBrush : defaultBrush;
+            e.Row.Background = player.IsBot && !player.IsNpc ? botBrush : defaultBrush;
         }
     }
 
@@ -170,6 +178,7 @@ public partial class MatchView : UserControl
             "Platform" => new(p => p.Platform, false, false, true),
             "Kills" => new(p => p.Kills, true, false, false),
             "Squad" => new(p => p.TeamIndex, true, false, false),
+            "Squad Size" => new(p => p.SquadSize.ToString(), true, false, false),
             "Place" => new(p => p.Placement, true, false, false),
             "Death Cause" => new(p => p.DeathCause, false, false, true),
             "Elim Time" => new(p => p.ElimTime, true, false, false),
@@ -276,44 +285,62 @@ public partial class MatchView : UserControl
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null) return;
 
-        var folder = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        try
         {
-            Title = "Select folder for CSV export",
-            AllowMultiple = false
-        });
+            var folder = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Select folder for CSV export",
+                AllowMultiple = false
+            });
 
-        if (folder.Count == 0) return;
+            if (folder.Count == 0) return;
 
-        var dirPath = folder[0].TryGetLocalPath();
-        if (string.IsNullOrEmpty(dirPath)) return;
+            var dirPath = folder[0].TryGetLocalPath();
+            if (string.IsNullOrEmpty(dirPath)) return;
 
-        var columns = GetVisibleCsvColumns();
-        if (columns.Count == 0) return;
+            // The Columns flyout only toggles the Players grid, so the export column set
+            // is driven by whatever is visible there.
+            var playerColumns = GetVisibleCsvColumns(_playersGrid);
+            if (playerColumns.Count == 0) return;
 
-        var baseName = _viewModel.WindowTitle.Contains(" - ")
-            ? _viewModel.WindowTitle.Split(" - ", 2)[1]
-            : "replay_export";
+            var baseName = _viewModel.WindowTitle.Contains(" - ")
+                ? _viewModel.WindowTitle.Split(" - ", 2)[1]
+                : "replay_export";
 
-        var ownerCsv = CsvExportService.GenerateCsv(_viewModel.OwnerEliminations, columns);
-        var playersCsv = CsvExportService.GenerateCsv(_viewModel.Players, columns);
+            var ownerCsv = CsvExportService.GenerateCsv(_viewModel.OwnerEliminations, playerColumns);
+            var playersCsv = CsvExportService.GenerateCsv(_viewModel.Players, playerColumns);
 
-        var elimPath = Path.Combine(dirPath, $"{baseName}_eliminations.csv");
-        var playersPath = Path.Combine(dirPath, $"{baseName}_players.csv");
+            var elimPath = Path.Combine(dirPath, $"{baseName}_eliminations.csv");
+            var playersPath = Path.Combine(dirPath, $"{baseName}_players.csv");
 
-        var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
-        await File.WriteAllTextAsync(elimPath, ownerCsv, utf8Bom);
-        await File.WriteAllTextAsync(playersPath, playersCsv, utf8Bom);
+            var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+            await File.WriteAllTextAsync(elimPath, ownerCsv, utf8Bom);
+            await File.WriteAllTextAsync(playersPath, playersCsv, utf8Bom);
+
+            if (_viewModel.HasNpcs)
+            {
+                var npcColumns = GetVisibleCsvColumns(_npcsGrid);
+                var npcsCsv = CsvExportService.GenerateCsv(_viewModel.Npcs, npcColumns);
+                var npcsPath = Path.Combine(dirPath, $"{baseName}_npcs.csv");
+                await File.WriteAllTextAsync(npcsPath, npcsCsv, utf8Bom);
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.ErrorMessage = $"Failed to export CSV: {ex.Message}";
+        }
     }
 
-    private List<CsvColumnDefinition> GetVisibleCsvColumns()
+    private static List<CsvColumnDefinition> GetVisibleCsvColumns(DataGrid? grid)
     {
-        if (_playersGrid == null) return new();
+        if (grid == null) return new();
 
-        return _playersGrid.Columns
+        return grid.Columns
             .Where(c => c.IsVisible)
+            .OrderBy(c => c.DisplayIndex)
             .Select(c => MapColumnToCsv(c.Header?.ToString()))
-            .Where(c => c != null)
-            .ToList()!;
+            .OfType<CsvColumnDefinition>()
+            .ToList();
     }
 
     private static CsvColumnDefinition? MapColumnToCsv(string? header)
@@ -327,6 +354,7 @@ public partial class MatchView : UserControl
             "Platform" => new(header, p => PlatformToText(p.Platform)),
             "Kills" => new(header, p => UnknownToDash(p.Kills)),
             "Squad" => new(header, p => SquadToText(p.TeamIndex)),
+            "Squad Size" => new(header, p => p.SquadSize.ToString()),
             "Place" => new(header, p => UnknownToDash(p.Placement)),
             "Death Cause" => new(header, p => p.DeathCause ?? ""),
             "Elim Time" => new(header, p => p.ElimTime ?? ""),

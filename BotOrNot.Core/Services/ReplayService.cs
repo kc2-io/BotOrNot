@@ -150,16 +150,16 @@ public sealed class ReplayService : IReplayService
                 ownerKills = kills;
         }
 
-        // === Compute squad sizes from TeamIndex grouping ===
+        // === Compute squad sizes from TeamIndex grouping (excluding NPCs) ===
         var squadSizeByTeamIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (!string.IsNullOrWhiteSpace(row.TeamIndex) && row.TeamIndex != "unknown")
             {
                 squadSizeByTeamIndex[row.TeamIndex] = squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndex) + 1;
             }
         }
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (!string.IsNullOrWhiteSpace(row.TeamIndex) && squadSizeByTeamIndex.TryGetValue(row.TeamIndex, out var sz))
                 row.SquadSize = sz;
