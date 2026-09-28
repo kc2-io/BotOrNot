@@ -47,7 +47,6 @@ public class MainWindowViewModelNpcSyntheticTests
     private static PlayerRow Npc(string name)
         => new()
         {
-            StableId = name,
             Id = name,
             Name = name,
             Bot = "true"
