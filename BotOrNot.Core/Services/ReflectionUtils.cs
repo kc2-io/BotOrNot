@@ -1,18 +1,19 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace BotOrNot.Core.Services;
 
 public static class ReflectionUtils
 {
-    private static readonly Dictionary<(Type, string), PropertyInfo?> Cache = new();
+    private static readonly ConcurrentDictionary<(Type, string), Lazy<PropertyInfo?>> Cache = new();
 
     private static PropertyInfo? FindProp(Type t, string name)
     {
-        var key = (t, name);
-        if (Cache.TryGetValue(key, out var pi)) return pi;
-        pi = t.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-        Cache[key] = pi;
-        return pi;
+        return Cache.GetOrAdd((t, name), static key => new Lazy<PropertyInfo?>(() =>
+            key.Item1.GetProperty(
+                key.Item2,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase),
+            LazyThreadSafetyMode.ExecutionAndPublication)).Value;
     }
 
     public static object? GetObject(object? obj, string prop)
@@ -38,14 +39,57 @@ public static class ReflectionUtils
         return null;
     }
 
+    public static double? GetDouble(object? obj, string name)
+    {
+        var value = GetObject(obj, name);
+        if (value is double doubleValue) return doubleValue;
+        if (value is float floatValue) return floatValue;
+        if (double.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
+    public static int? GetInt(object? obj, string name)
+    {
+        var value = GetObject(obj, name);
+        if (value is int intValue) return intValue;
+        if (value is byte byteValue) return byteValue;
+        if (value is short shortValue) return shortValue;
+        if (value is uint uintValue && uintValue <= int.MaxValue) return (int)uintValue;
+        if (int.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
+    public static uint? GetUInt(object? obj, string name)
+    {
+        var value = GetObject(obj, name);
+        if (value is uint uintValue) return uintValue;
+        if (value is int intValue && intValue >= 0) return (uint)intValue;
+        if (uint.TryParse(value?.ToString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var parsed)) return parsed;
+        return null;
+    }
+
     public static bool GetBool(object? obj, string name)
     {
-        if (obj is null) return false;
-        var pi = FindProp(obj.GetType(), name);
-        if (pi == null) return false;
-        var v = pi.GetValue(obj);
+        var v = GetObject(obj, name);
         if (v is bool b) return b;
         if (v is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
         return false;
+    }
+
+    public static bool? GetNullableBool(object? obj, string name)
+    {
+        var value = GetObject(obj, name);
+        if (value is bool boolValue) return boolValue;
+        if (bool.TryParse(value?.ToString(), out var parsed)) return parsed;
+        return null;
     }
 }

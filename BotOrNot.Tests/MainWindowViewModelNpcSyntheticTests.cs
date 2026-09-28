@@ -26,6 +26,7 @@ public class MainWindowViewModelNpcSyntheticTests
     private static PlayerRow Human(string name, string platform = "WIN", string? teamIndex = null)
         => new()
         {
+            StableId = $"id-{name}",
             Id = $"id-{name}",
             Name = name,
             Platform = platform,
@@ -36,6 +37,7 @@ public class MainWindowViewModelNpcSyntheticTests
     private static PlayerRow Bot(string name, string? teamIndex = null)
         => new()
         {
+            StableId = $"id-{name}",
             Id = $"id-{name}",
             Name = name,
             TeamIndex = teamIndex,
@@ -45,6 +47,7 @@ public class MainWindowViewModelNpcSyntheticTests
     private static PlayerRow Npc(string name)
         => new()
         {
+            StableId = name,
             Id = name,
             Name = name,
             Bot = "true"
@@ -56,6 +59,7 @@ public class MainWindowViewModelNpcSyntheticTests
             Players = players,
             OwnerEliminations = ownerEliminations ?? new(),
             OwnerName = "Owner",
+            OwnerKills = ownerEliminations?.Count(player => !player.IsNpc),
             Metadata = new ReplayMetadata { FileName = "test.replay" }
         };
 
@@ -70,7 +74,7 @@ public class MainWindowViewModelNpcSyntheticTests
             Npc("Boss")
         });
 
-        var viewModel = new MainWindowViewModel(new FakeReplayService(data));
+        var viewModel = new MainWindowViewModel(replayService: new FakeReplayService(data));
         await viewModel.LoadReplayCommand.Execute("test.replay").ToTask();
 
         Assert.That(viewModel.Players, Has.Count.EqualTo(2));
@@ -92,7 +96,7 @@ public class MainWindowViewModelNpcSyntheticTests
             Npc("Wolf")
         });
 
-        var viewModel = new MainWindowViewModel(new FakeReplayService(data));
+        var viewModel = new MainWindowViewModel(replayService: new FakeReplayService(data));
         await viewModel.LoadReplayCommand.Execute("test.replay").ToTask();
 
         Assert.That(viewModel.OwnerEliminations, Has.Count.EqualTo(1));
@@ -113,7 +117,7 @@ public class MainWindowViewModelNpcSyntheticTests
             Npc("Boss")
         });
 
-        var viewModel = new MainWindowViewModel(new FakeReplayService(data));
+        var viewModel = new MainWindowViewModel(replayService: new FakeReplayService(data));
         await viewModel.LoadReplayCommand.Execute("test.replay").ToTask();
 
         Assert.That(viewModel.PlayersSeenHeader, Is.EqualTo("Players Seen (3) - 2 Players, 1 Bots | 1 PC, 1 PlayStation"));
@@ -127,7 +131,7 @@ public class MainWindowViewModelNpcSyntheticTests
         var withoutNpcs = BuildData(new List<PlayerRow> { Human("Bob") });
 
         var service = new ToggleReplayService(withNpcs, withoutNpcs);
-        var viewModel = new MainWindowViewModel(service);
+        var viewModel = new MainWindowViewModel(replayService: service);
 
         await viewModel.LoadReplayCommand.Execute("with.replay").ToTask();
         Assert.That(viewModel.HasNpcs, Is.True);
@@ -139,26 +143,22 @@ public class MainWindowViewModelNpcSyntheticTests
     }
 
     [Test]
-    public async Task FailedReload_KeepsPreviousState()
+    public async Task FailedReload_ClearsPreviousState()
     {
         var withNpcs = BuildData(new List<PlayerRow> { Human("Alice"), Npc("Wolf") });
         var service = new ThrowingAfterFirstReplayService(withNpcs, new InvalidOperationException("parse failed"));
-        var viewModel = new MainWindowViewModel(service);
+        var viewModel = new MainWindowViewModel(replayService: service);
 
         await viewModel.LoadReplayCommand.Execute("good.replay").ToTask();
-        var previousPlayersSeenHeader = viewModel.PlayersSeenHeader;
-        var previousHasNpcs = viewModel.HasNpcs;
-        var previousNpcCount = viewModel.Npcs.Count;
-        var previousPlayerCount = viewModel.Players.Count;
-
         await viewModel.LoadReplayCommand.Execute("bad.replay").ToTask();
 
         Assert.That(viewModel.ErrorMessage, Is.Not.Null);
-        Assert.That(viewModel.HasData, Is.True);
-        Assert.That(viewModel.Players.Count, Is.EqualTo(previousPlayerCount));
-        Assert.That(viewModel.Npcs.Count, Is.EqualTo(previousNpcCount));
-        Assert.That(viewModel.HasNpcs, Is.EqualTo(previousHasNpcs));
-        Assert.That(viewModel.PlayersSeenHeader, Is.EqualTo(previousPlayersSeenHeader));
+        Assert.That(viewModel.HasData, Is.False);
+        Assert.That(viewModel.Players, Is.Empty);
+        Assert.That(viewModel.Npcs, Is.Empty);
+        Assert.That(viewModel.HasNpcs, Is.False);
+        Assert.That(viewModel.PlayersSeenHeader, Is.EqualTo("Players Seen"));
+        Assert.That(viewModel.NpcsSeenHeader, Is.EqualTo("NPCs Seen"));
     }
 
     private class ToggleReplayService : IReplayService

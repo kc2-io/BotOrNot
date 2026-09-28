@@ -13,7 +13,7 @@ public class MainWindowViewModel : ReactiveObject
 {
     private readonly IReplayService _replayService;
     private readonly Action? _onBack;
-    private ThemePreference _currentTheme;
+    private readonly IThemeService _themeService;
 
     private static readonly string AppVersion = (Assembly.GetExecutingAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0")
@@ -21,6 +21,7 @@ public class MainWindowViewModel : ReactiveObject
 
     private static readonly string BaseTitle = $"Bot or Not? v{AppVersion}";
 
+    private readonly ObservableCollection<SquadMemberSummary> _teammates = new();
     private string _ownerKillsHeader = "Your Eliminations";
     private string _playersSeenHeader = "Players Seen";
     private string _npcsSeenHeader = "NPCs Seen";
@@ -49,21 +50,22 @@ public class MainWindowViewModel : ReactiveObject
     private readonly ObservableCollection<PlayerRow> _filteredNpcs = new();
 
     private string? _eliminatorName;
+    private string? _eliminationCoverageNotice;
+    private string? _squadStatusText;
+    private bool _hasSquadSection;
+    private bool _hasSquadMembers;
 
-    public MainWindowViewModel(Action? onBack = null)
-        : this(new ReplayService(), onBack)
-    {
-    }
-
-    public MainWindowViewModel(IReplayService replayService, Action? onBack = null)
+    public MainWindowViewModel(
+        Action? onBack = null,
+        IReplayService? replayService = null,
+        IThemeService? themeService = null)
     {
         _onBack = onBack;
-        _replayService = replayService;
+        _replayService = replayService ?? new ReplayService();
+        _themeService = themeService ?? new ThemeService(new SettingsService());
 
-        // Load saved theme preference and apply before window renders
-        var settings = SettingsService.Load();
-        _currentTheme = settings.Theme;
-        ApplyTheme();
+        _themeService.ApplySavedTheme();
+        UpdateThemeDisplay();
 
         LoadReplayCommand = ReactiveCommand.CreateFromTask<string>(LoadReplayAsync);
         LoadReplayCommand.ThrownExceptions.Subscribe(ex =>
@@ -84,6 +86,28 @@ public class MainWindowViewModel : ReactiveObject
     public ObservableCollection<PlayerRow> Players => _filteredPlayers;
 
     public ObservableCollection<PlayerRow> OwnerEliminations => _filteredOwnerEliminations;
+
+    /// <summary>Observed teammates, kept separate from the opponent filter and grids.</summary>
+    public ObservableCollection<SquadMemberSummary> Teammates => _teammates;
+
+    public string? SquadStatusText
+    {
+        get => _squadStatusText;
+        private set => this.RaiseAndSetIfChanged(ref _squadStatusText, value);
+    }
+
+    /// <summary>Only a positively identified solo match hides the squad area.</summary>
+    public bool HasSquadSection
+    {
+        get => _hasSquadSection;
+        private set => this.RaiseAndSetIfChanged(ref _hasSquadSection, value);
+    }
+
+    public bool HasSquadMembers
+    {
+        get => _hasSquadMembers;
+        private set => this.RaiseAndSetIfChanged(ref _hasSquadMembers, value);
+    }
 
     public ObservableCollection<PlayerRow> Npcs => _filteredNpcs;
 
@@ -212,26 +236,26 @@ public class MainWindowViewModel : ReactiveObject
 
     private void CycleTheme()
     {
-        _currentTheme = _currentTheme switch
-        {
-            ThemePreference.System => ThemePreference.Light,
-            ThemePreference.Light => ThemePreference.Dark,
-            ThemePreference.Dark => ThemePreference.System,
-            _ => ThemePreference.System
-        };
-
-        ApplyTheme();
-        SettingsService.Save(new AppSettings { Theme = _currentTheme });
+        _themeService.CycleTheme();
+        UpdateThemeDisplay();
     }
 
-    private void ApplyTheme()
+    public string? EliminationCoverageNotice
     {
-        if (global::Avalonia.Application.Current != null)
+        get => _eliminationCoverageNotice;
+        private set
         {
-            global::Avalonia.Application.Current.RequestedThemeVariant = SettingsService.ToThemeVariant(_currentTheme);
+            if (_eliminationCoverageNotice == value) return;
+            this.RaiseAndSetIfChanged(ref _eliminationCoverageNotice, value);
+            this.RaisePropertyChanged(nameof(HasEliminationCoverageNotice));
         }
+    }
 
-        (ThemeIcon, ThemeToggleTooltip) = _currentTheme switch
+    public bool HasEliminationCoverageNotice => !string.IsNullOrEmpty(EliminationCoverageNotice);
+
+    private void UpdateThemeDisplay()
+    {
+        (ThemeIcon, ThemeToggleTooltip) = _themeService.CurrentTheme switch
         {
             ThemePreference.Light => ("\u2600", "Theme: Light"),
             ThemePreference.Dark => ("\uD83C\uDF19", "Theme: Dark"),
@@ -291,6 +315,7 @@ public class MainWindowViewModel : ReactiveObject
 
     private async Task LoadReplayAsync(string path)
     {
+        ResetReplayState();
         ErrorMessage = null;
         IsLoading = true;
 
@@ -303,11 +328,40 @@ public class MainWindowViewModel : ReactiveObject
             var allNpcs = partitionedPlayers[true].OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList();
             var allOwnerEliminations = OrderByElimTime(data.OwnerEliminations.Where(p => !p.IsNpc)).ToList();
 
-            var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Your";
-            var totalKills = data.OwnerKills ?? allOwnerEliminations.Count;
+            var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Owner";
+            // Event joins can be incomplete, so a missing authoritative owner count must remain unknown.
             var botKills = allOwnerEliminations.Count(p => p.IsBot);
-            var playerKills = totalKills - botKills;
-            var ownerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {playerKills} Players, {botKills} Bots";
+            var observedHumanKills = allOwnerEliminations.Count - botKills;
+            if (data.OwnerKills.HasValue)
+            {
+                var totalKills = data.OwnerKills.Value;
+                var incompleteCoverage = data.HasUncertainEliminationAttribution ||
+                                         allOwnerEliminations.Count != totalKills;
+                if (!incompleteCoverage)
+                {
+                    OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players, {botKills} Bots";
+                    EliminationCoverageNotice = null;
+                }
+                else
+                {
+                    OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players observed, {botKills} Bots observed";
+                    EliminationCoverageNotice = $"Replay records {totalKills} eliminations; {allOwnerEliminations.Count} credited events observed." +
+                                                (data.HasUncertainEliminationAttribution ? " Some attribution is uncertain." : "");
+                }
+                ElimsSummary = incompleteCoverage
+                    ? $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")} observed)"
+                    : $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
+            }
+            else
+            {
+                OwnerKillsHeader = string.IsNullOrEmpty(data.OwnerName)
+                    ? "Owner analysis incomplete"
+                    : $"{ownerDisplay}'s elimination count is unknown";
+                ElimsSummary = "Eliminations unknown";
+                EliminationCoverageNotice = data.HasUncertainEliminationAttribution
+                    ? $"Elimination attribution is uncertain; {allOwnerEliminations.Count} credited events observed."
+                    : null;
+            }
 
             var totalPlayers = allPlayers.Count;
             var botPlayers = allPlayers.Count(p => p.IsBot);
@@ -337,9 +391,9 @@ public class MainWindowViewModel : ReactiveObject
             _allNpcs.AddRange(allNpcs);
             _allOwnerEliminations.Clear();
             _allOwnerEliminations.AddRange(allOwnerEliminations);
+            ApplySquadProjection(SquadProjection.FromReplay(data));
             ApplyFilter();
 
-            OwnerKillsHeader = ownerKillsHeader;
             PlayersSeenHeader = playersSeenHeader;
             NpcsSeenHeader = npcsSeenHeader;
             EliminatorName = eliminatorName;
@@ -347,8 +401,7 @@ public class MainWindowViewModel : ReactiveObject
             GameMode = data.Metadata.GameMode;
             PlaylistName = data.Metadata.Playlist;
             PlacementText = !string.IsNullOrEmpty(ownerPlacement) ? $"#{ownerPlacement}" : "?";
-            DurationText = $"{data.Metadata.MatchDurationMinutes:F1}m";
-            ElimsSummary = $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
+            DurationText = $"{data.Metadata.RecordingDurationMinutes:F1}m";
             HasMetadata = true;
             HasData = true;
             HasNpcs = allNpcs.Count > 0;
@@ -373,5 +426,68 @@ public class MainWindowViewModel : ReactiveObject
         {
             IsLoading = false;
         }
+    }
+
+    private void ApplySquadProjection(SquadProjection projection)
+    {
+        HasSquadSection = projection.Status != SquadProjectionStatus.ConfirmedSolo;
+        _teammates.Clear();
+        foreach (var teammate in projection.Teammates)
+            _teammates.Add(teammate);
+        HasSquadMembers = _teammates.Count > 0;
+
+        SquadStatusText = projection.Status switch
+        {
+            SquadProjectionStatus.Complete => BuildSquadStatus("Squad confirmed", projection),
+            SquadProjectionStatus.Partial => BuildSquadStatus("Squad partially observed", projection),
+            SquadProjectionStatus.Unavailable => BuildSquadStatus("Squad data unavailable", projection),
+            _ => null
+        };
+    }
+
+    private static string BuildSquadStatus(string prefix, SquadProjection projection)
+    {
+        var membership = projection.ObservedTeamSize.HasValue
+            ? projection.ExpectedTeamSize.HasValue
+                ? $"{projection.ObservedTeamSize} of {projection.ExpectedTeamSize} observed"
+                : $"{projection.ObservedTeamSize} observed"
+            : projection.ExpectedTeamSize.HasValue
+                ? $"expected size {projection.ExpectedTeamSize}"
+                : "team size unknown";
+
+        var kills = projection.HasConflictingTeamKills
+            ? "team eliminations conflict"
+            : projection.TeamKills.HasValue
+                ? $"team eliminations {projection.TeamKills}"
+                : "team eliminations unknown";
+        return $"{prefix}: {membership}; {kills}.";
+    }
+
+    private void ResetReplayState()
+    {
+        _allPlayers.Clear();
+        _allOwnerEliminations.Clear();
+        _allNpcs.Clear();
+        _filteredPlayers.Clear();
+        _filteredOwnerEliminations.Clear();
+        _filteredNpcs.Clear();
+        _teammates.Clear();
+        OwnerKillsHeader = "Your Eliminations";
+        PlayersSeenHeader = "Players Seen";
+        NpcsSeenHeader = "NPCs Seen";
+        WindowTitle = BaseTitle;
+        GameMode = null;
+        PlaylistName = null;
+        PlacementText = null;
+        DurationText = null;
+        ElimsSummary = null;
+        EliminatorName = null;
+        EliminationCoverageNotice = null;
+        SquadStatusText = null;
+        HasSquadSection = false;
+        HasSquadMembers = false;
+        HasMetadata = false;
+        HasData = false;
+        HasNpcs = false;
     }
 }

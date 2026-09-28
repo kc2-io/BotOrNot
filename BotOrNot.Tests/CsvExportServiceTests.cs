@@ -97,4 +97,42 @@ public class CsvExportServiceTests
         Assert.That(lines[0], Is.EqualTo("Name"));
         Assert.That(lines[1], Is.EqualTo("Alice"));
     }
+
+    [Test]
+    public void GenerateCsv_StormPhasePreservesRecordedPreFirstAndUnknownMeanings()
+    {
+        var columns = new List<CsvColumnDefinition>
+        {
+            new("Storm Phase", player => player.StormPhaseCsvValue)
+        };
+        var rows = new[]
+        {
+            new PlayerRow { CircleStatus = StormCircleStatus.RecordedPhase, CircleNumber = 3 },
+            new PlayerRow { CircleStatus = StormCircleStatus.BeforeFirstCircle },
+            new PlayerRow { CircleStatus = StormCircleStatus.Unknown }
+        };
+
+        var lines = CsvExportService.GenerateCsv(rows, columns).TrimEnd().Split(Environment.NewLine);
+
+        Assert.That(lines, Is.EqualTo(new[]
+        {
+            "Storm Phase", "Phase 3", "Before phase 1", "Unknown"
+        }));
+    }
+
+    [Test]
+    public void GenerateCsv_DeathCauseUsesEachRowDisplayAndDoesNotExposeEvidence()
+    {
+        var columns = new[] { new CsvColumnDefinition("Death Cause", row => row.DeathCause ?? "") };
+        var rows = new[]
+        {
+            new PlayerRow { DeathCause = "Arc Gun", DeathCauseInfo = new() { RawEventCode = 4, RawTags = ["Item.Weapon.Area51Gun"] } },
+            new PlayerRow { DeathCause = "Unknown (222)", DeathCauseInfo = new() { RawEventCode = 222, RawTags = ["Gameplay.Damage.Future"] } },
+            new PlayerRow { DeathCause = "SMG (5)" }
+        };
+
+        var lines = CsvExportService.GenerateCsv(rows, columns).TrimEnd().Split(Environment.NewLine);
+
+        Assert.That(lines, Is.EqualTo(new[] { "Death Cause", "Arc Gun", "Unknown (222)", "SMG (5)" }));
+    }
 }

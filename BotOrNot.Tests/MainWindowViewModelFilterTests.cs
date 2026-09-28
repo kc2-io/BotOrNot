@@ -1,11 +1,31 @@
 using BotOrNot.Avalonia.ViewModels;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
+using System.Reactive.Linq;
 
 namespace BotOrNot.Tests;
 
 [TestFixture]
 public class MainWindowViewModelFilterTests
 {
+    private MainWindowViewModel _viewModel = null!;
+    private string _settingsPath = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _settingsPath = Path.Combine(Path.GetTempPath(), $"botornot-{Guid.NewGuid():N}.json");
+        _viewModel = new MainWindowViewModel(
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        File.Delete(_settingsPath);
+    }
+
     private static PlayerRow Row(string? name = null, string? level = null, string? platform = null,
                                  string? kills = null, string? teamIndex = null, string? placement = null,
                                  string? deathCause = null, string? elimTime = null)
@@ -138,5 +158,93 @@ public class MainWindowViewModelFilterTests
         Assert.That(MainWindowViewModel.MatchesNpcFilter(npc, "PC"), Is.False, "NPC filter should not match hidden Platform");
         Assert.That(MainWindowViewModel.MatchesNpcFilter(npc, "0"), Is.False, "NPC filter should not match hidden Kills");
         Assert.That(MainWindowViewModel.MatchesNpcFilter(npc, "02:00"), Is.False, "NPC filter should not match hidden Elim Time");
+    }
+
+    [Test]
+    public async Task IncompleteOwnerEvents_ShowObservedCoverageWithoutInventingHumanKills()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 1 };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Bot", Bot = "true" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("first").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.EliminationCoverageNotice,
+                Is.EqualTo("Replay records 1 eliminations; 2 credited events observed."));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("1 Players observed, 1 Bots observed"));
+        });
+        viewModel.FilterText = "no-match";
+        Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("2 credited events observed"));
+        await viewModel.LoadReplayCommand.Execute("reset-after-failure").FirstAsync();
+        Assert.That(viewModel.EliminationCoverageNotice, Is.Null);
+    }
+
+    [Test]
+    public async Task MissingCreditedEvents_ShowCoverageNotice()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 3 };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "One", Bot = "false" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Two", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("first").FirstAsync();
+
+        Assert.That(viewModel.EliminationCoverageNotice,
+            Is.EqualTo("Replay records 3 eliminations; 2 credited events observed."));
+        Assert.That(viewModel.OwnerKillsHeader, Does.Contain("2 Players observed, 0 Bots observed"));
+    }
+
+    [Test]
+    public async Task UncertainAttribution_WithMatchingCountStillMarksObservedBreakdown()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", OwnerKills = 2, HasUncertainEliminationAttribution = true };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Bot", Bot = "true" });
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("uncertain").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("2 credited events observed").And.Contain("attribution is uncertain"));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("Players observed").And.Contain("Bots observed"));
+            Assert.That(viewModel.ElimsSummary, Is.EqualTo("2 Elims (1 Bot observed)"));
+        });
+    }
+
+    [Test]
+    public async Task UncertainAttribution_WithoutAuthoritativeTotalKeepsSummaryUnknown()
+    {
+        var replay = new ReplayData { OwnerName = "Owner", HasUncertainEliminationAttribution = true };
+        replay.OwnerEliminations.Add(new PlayerRow { Name = "Player", Bot = "false" });
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("uncertain-no-total").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(viewModel.ElimsSummary, Is.EqualTo("Eliminations unknown"));
+            Assert.That(viewModel.OwnerKillsHeader, Does.Contain("elimination count is unknown"));
+            Assert.That(viewModel.EliminationCoverageNotice, Does.Contain("attribution is uncertain").And.Contain("1 credited events observed"));
+        });
+    }
+
+    private sealed class SequenceReplayService(params ReplayData[] replays) : IReplayService
+    {
+        private readonly Queue<ReplayData> _replays = new(replays);
+
+        public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+            => Task.FromResult(_replays.Dequeue());
     }
 }

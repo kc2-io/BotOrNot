@@ -1,11 +1,13 @@
 using System.Reactive.Linq;
 using System.Reflection;
+using BotOrNot.Avalonia.Services;
 using BotOrNot.Core.Models;
+using BotOrNot.Core.Services;
 using ReactiveUI;
 
 namespace BotOrNot.Avalonia.ViewModels;
 
-public class AppViewModel : ReactiveObject
+public class AppViewModel : ReactiveObject, IDisposable
 {
     private static readonly string AppVersion = (Assembly.GetExecutingAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0")
@@ -16,13 +18,27 @@ public class AppViewModel : ReactiveObject
     private ReactiveObject _currentPage;
     private string _windowTitle = BaseTitle;
 
-    public AppViewModel()
+    private readonly IThemeService _themeService;
+    private readonly IDisposable _windowTitleSubscription;
+
+    public AppViewModel(
+        ISettingsService? settingsService = null,
+        IThemeService? themeService = null,
+        IReplayCacheService? cacheService = null,
+        Func<ReplayScanOptions>? scanOptionsFactory = null,
+        ILibraryScanObserver? scanObserver = null,
+        TimeProvider? timeProvider = null)
     {
-        LibraryPage = new LibraryViewModel(NavigateToMatch);
+        settingsService ??= new SettingsService();
+        _themeService = themeService ?? new ThemeService(settingsService);
+        _themeService.ApplySavedTheme();
+
+        LibraryPage = new LibraryViewModel(NavigateToMatch, cacheService, settingsService, scanOptionsFactory,
+            scanObserver, timeProvider);
         _currentPage = LibraryPage;
 
         // Keep window title in sync with the active page
-        this.WhenAnyValue(x => x.CurrentPage)
+        _windowTitleSubscription = this.WhenAnyValue(x => x.CurrentPage)
             .Select(page => page is MainWindowViewModel vm
                 ? vm.WhenAnyValue(v => v.WindowTitle)
                 : Observable.Return(BaseTitle))
@@ -35,7 +51,13 @@ public class AppViewModel : ReactiveObject
     public ReactiveObject CurrentPage
     {
         get => _currentPage;
-        private set => this.RaiseAndSetIfChanged(ref _currentPage, value);
+        private set
+        {
+            if (ReferenceEquals(_currentPage, value))
+                return;
+            LibraryPage.SetActive(ReferenceEquals(value, LibraryPage));
+            this.RaiseAndSetIfChanged(ref _currentPage, value);
+        }
     }
 
     public string WindowTitle
@@ -46,8 +68,14 @@ public class AppViewModel : ReactiveObject
 
     private void NavigateToMatch(ReplaySummary summary)
     {
-        var matchVm = new MainWindowViewModel(() => CurrentPage = LibraryPage);
+        var matchVm = new MainWindowViewModel(() => CurrentPage = LibraryPage, themeService: _themeService);
         CurrentPage = matchVm;
         matchVm.LoadReplayCommand.Execute(summary.FilePath).Subscribe();
+    }
+
+    public void Dispose()
+    {
+        _windowTitleSubscription.Dispose();
+        LibraryPage.Dispose();
     }
 }

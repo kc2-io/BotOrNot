@@ -186,6 +186,8 @@ public class ReplayServiceTests
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 8)]
+    [TestCase("UnsavedReplay-2026.06.10-06.22.43.replay", 3)]
     public async Task OwnerElim_ShouldShowCorrectElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange
@@ -202,6 +204,79 @@ public class ReplayServiceTests
         Assert.That(elimCount, Is.EqualTo(expectedElimCount),
             $"Expected owner elim to contain {expectedElimCount} for {replayFileName}, " +
             $"but got {elimCount} (OwnerKills={result.OwnerKills})");
+        Assert.That(result.OwnerEliminations, Has.Count.EqualTo(expectedElimCount),
+            "Event-derived owner rows should agree with the known authoritative owner count.");
+        Assert.That(result.OwnerEliminations.Select(row => row.ElimTime), Is.All.Not.Null,
+            "Each credited event should retain its own event time, including repeated Reload lives.");
+    }
+
+    [Test]
+    public async Task Issue57SecondAttachment_ExplicitDbnoRecoveryInvalidatesStaleOwnerKnock()
+    {
+        var replayPath = Environment.GetEnvironmentVariable("BOTORNOT_F1_REPLAY");
+        replayPath ??= Path.GetFullPath(Path.Combine(
+            TestContext.CurrentContext.TestDirectory,
+            "..", "..", "..", "..", "..",
+            "issue-review-evidence",
+            "UnsavedReplay-2026.06.25-08.43.29.replay"));
+        if (!File.Exists(replayPath))
+            Assert.Ignore("Set BOTORNOT_F1_REPLAY to run the private issue #57 attachment regression.");
+
+        var result = await new ReplayService().LoadReplayAsync(replayPath);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.OwnerKills, Is.EqualTo(2));
+            Assert.That(result.OwnerEliminations, Has.Count.EqualTo(2),
+                "The recovery between the owner's knock and another player's finish must clear stale credit.");
+            Assert.That(result.OwnerEliminations.Select(row => row.ElimTime),
+                Is.EqualTo(new[] { "10:33", "10:57" }));
+            Assert.That(result.OwnerEliminations.Select(row => row.DeathCauseInfo?.RawEventCode),
+                Is.EqualTo(new int?[] { 5, 5 }),
+                "Each row must use its own elimination event rather than the victim's final aggregate cause.");
+            Assert.That(result.OwnerEliminations.Any(row => row.ElimTime == "18:44"), Is.False);
+        });
+    }
+
+    [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 4, 8)]
+    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 2, 12)]
+    public async Task OwnerIdentityAndTeam_AreProjectedFromAuthoritativeOwnerFlag(
+        string replayFileName,
+        int expectedOwnerTeamMembers,
+        int expectedOpponentCount)
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", replayFileName);
+
+        var result = await service.LoadReplayAsync(replayPath);
+        var owner = result.Players.Single(player => player.IsReplayOwner);
+        var projection = OpponentProjection.FromReplay(result);
+        var opponentIds = projection.Opponents
+            .Select(opponent => opponent.StableId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(owner.StableId, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.OwnerId, Is.EqualTo(owner.StableId));
+            Assert.That(result.OwnerTeamIndex, Is.EqualTo(owner.TeamIndexValue));
+            Assert.That(result.OwnerTeamIndex, Is.GreaterThan(0));
+            Assert.That(
+                result.Players.Count(player => player.TeamIndexValue == result.OwnerTeamIndex),
+                Is.EqualTo(expectedOwnerTeamMembers));
+            Assert.That(projection.IsComplete, Is.True);
+            Assert.That(projection.Opponents, Has.Count.EqualTo(expectedOpponentCount));
+            Assert.That(opponentIds, Has.Count.EqualTo(projection.Opponents.Count));
+            Assert.That(
+                result.Players.Any(player => player.StableId != null &&
+                                             opponentIds.Contains(player.StableId) &&
+                                             (player.IsReplayOwner ||
+                                              player.TeamIndexValue == result.OwnerTeamIndex ||
+                                              player.IsBot ||
+                                              player.IsNpc)),
+                Is.False,
+                "The real-fixture opponent projection must not contain the owner, team members, bots, or NPCs.");
+        });
     }
 
     /// <summary>
@@ -223,9 +298,43 @@ public class ReplayServiceTests
             "Fortnite 41.00 replay should parse players — regression test for infinite loop and ShortComponents rotation fix");
     }
 
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 24.38475, "++Fortnite+Release-39.30", 50141518u)]
+    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 15.944183333333333, "++Fortnite+Release-39.40", 50341043u)]
+    public async Task Metadata_UsesRecordedDurationAndHeaderValues(
+        string replayFileName,
+        double expectedRecordingMinutes,
+        string expectedBranch,
+        uint expectedChangelist)
+    {
+        var service = new ReplayService();
+        var replayPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", replayFileName);
+
+        var result = await service.LoadReplayAsync(replayPath);
+
+        Assert.That(result.Metadata.RecordingDurationMinutes, Is.EqualTo(expectedRecordingMinutes).Within(0.000001),
+            "Duration should be computed from Replay.Info.LengthInMs, not an absolute game-clock value.");
+        Assert.That(result.Metadata.Version, Is.EqualTo(expectedBranch));
+        Assert.That(result.Metadata.Changelist, Is.EqualTo(expectedChangelist));
+        Assert.That(result.Metadata.GameNetProtocol, Is.EqualTo(0),
+            "Protocol zero is a recorded value and must not be replaced with a guessed value.");
+    }
+
+    [Test]
+    public void Metadata_DefaultsLeaveUnavailableHeaderFieldsExplicit()
+    {
+        var metadata = new BotOrNot.Core.Models.ReplayMetadata();
+
+        Assert.That(metadata.Version, Is.Empty);
+        Assert.That(metadata.Changelist, Is.Zero);
+        Assert.That(metadata.GameNetProtocol, Is.Zero);
+        Assert.That(metadata.RecordingDurationMinutes, Is.Zero);
+    }
+
     [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 1)]
     [TestCase("Blitz_ForbiddenFruitNoBuildBRSquad_Owner_Elim_1_Team_Elim_12_Place_1.replay", 1)]
     [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 5)]
+    [TestCase("UnsavedReplay-2026.01.31-15.34.27.replay", 8)]
+    [TestCase("UnsavedReplay-2026.06.10-06.22.43.replay", 3)]
     public async Task OwnerElimListLengthMatchesElimCount(string replayFileName, int expectedElimCount)
     {
         // Arrange

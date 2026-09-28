@@ -17,6 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Test release signature verification
+        shell: pwsh
+        run: ./scripts/test-release-signature.ps1
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -25,7 +29,7 @@ jobs:
       - name: Build patched FortniteReplayReader
         shell: pwsh
         run: |
-          $VER = "3.0.2-botornot"
+          $VER = "3.0.12-botornot"
           $FRD = Join-Path $env:RUNNER_TEMP "FRD"
           $OUT = Join-Path "${{ github.workspace }}" "local-packages"
           New-Item -ItemType Directory -Force -Path $OUT | Out-Null
@@ -35,7 +39,7 @@ jobs:
           Push-Location $FRD
           git checkout 2fc699e
 
-          # Apply upstream bug fixes (infinite loop issue #75 + Fortnite 41.00 PR #77)
+          # Apply the reviewed BotOrNot parser patch to the pinned upstream revision
           python "${{ github.workspace }}\patches\apply-patches.py" $FRD
 
           # Register the output dir as a NuGet source so subsequent packs can restore patched deps
@@ -86,6 +90,9 @@ jobs:
 
       - name: Test
         run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Smoke test offscreen library benchmark
+        run: dotnet run --project BotOrNot.LibraryUiBenchmark --configuration Release --no-build -- --self-test
 
       - name: Publish Windows x64
         run: |

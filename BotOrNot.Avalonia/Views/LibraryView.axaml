@@ -7,30 +7,73 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
         <!-- Toolbar -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8" Spacing="8">
-            <Image Source="avares://BotOrNot/Assets/logo.png"
-                   Width="32" Height="32" VerticalAlignment="Center" />
-            <Button Content="Select Replay Folder" Click="PickDirectory_Click" />
-            <TextBlock Text="{Binding DirectoryPath}"
-                       Foreground="{DynamicResource SubtleTextBrush}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       MaxWidth="400"
-                       TextTrimming="CharacterEllipsis"
-                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <TextBlock Text="No folder selected"
-                       Foreground="{DynamicResource HintTextBrush}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
-            <Button Content="Scan"
-                    Command="{Binding ScanCommand}"
-                    IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <ProgressBar Value="{Binding ScanProgress}"
-                         Minimum="0" Maximum="100"
-                         IsVisible="{Binding IsScanning}"
-                         Width="120" Height="16" />
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="8" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+            <Image Grid.RowSpan="3"
+                   Source="avares://BotOrNot/Assets/logo.png"
+                   Width="32" Height="32" Margin="0,0,8,0"
+                   VerticalAlignment="Top" />
+            <WrapPanel Grid.Column="1" Grid.Row="0">
+                <Button Content="Select Replay Folder" Click="PickDirectory_Click" Margin="0,0,8,4" />
+                <TextBlock Text="{Binding DirectoryPath}"
+                           Foreground="{DynamicResource SubtleTextBrush}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           MaxWidth="400" Margin="0,0,8,4"
+                           TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Text="No folder selected"
+                           Foreground="{DynamicResource HintTextBrush}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding DirectoryPath, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+            </WrapPanel>
+            <WrapPanel Grid.Column="1" Grid.Row="1" Margin="0,6,0,0">
+                <Label Content="Replay scan limit"
+                       Margin="0,0,8,4"
+                       Target="{Binding #ReplayScanLimitInput}"
+                       VerticalAlignment="Center" />
+                <TextBox x:Name="ReplayScanLimitInput"
+                         Text="{Binding ReplayScanLimitText, UpdateSourceTrigger=PropertyChanged}"
+                         Width="80" Margin="0,0,8,4"
+                         Watermark="50"
+                         VerticalContentAlignment="Center"
+                         KeyDown="ReplayScanLimit_KeyDown" />
+                <Button Content="Apply &amp; Scan"
+                        Command="{Binding ApplyScanLimitCommand}" Margin="0,0,8,4"
+                        />
+                <ProgressBar Value="{Binding ScanProgress}"
+                             Minimum="0" Maximum="100"
+                             IsVisible="{Binding IsScanning}"
+                             Width="120" Height="16" Margin="0,0,8,4"
+                             VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ScanStatusText}"
+                           Margin="0,0,8,4"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ScanOutcomeText}"
+                           Margin="0,0,8,4"
+                           VerticalAlignment="Center" />
+            </WrapPanel>
+            <WrapPanel Grid.Column="1" Grid.Row="2" Margin="0,4,0,0">
+                <CheckBox x:Name="AutoRefreshEnabledCheckBox" Content="Auto refresh library"
+                          ToolTip.Tip="Refreshes while the Library is open."
+                          IsChecked="{Binding AutoRefreshEnabled, Mode=TwoWay}"
+                          VerticalAlignment="Center" Margin="0,0,12,4" />
+                <Label Content="Every (minutes)"
+                       Target="{Binding #AutoRefreshMinutesInput}"
+                       VerticalAlignment="Center" Margin="0,0,4,4" />
+                <Button x:Name="DecreaseAutoRefreshMinutesButton" Content="−" Command="{Binding DecreaseAutoRefreshMinutesCommand}"
+                        Width="28" Margin="0,0,4,4" />
+                <TextBox x:Name="AutoRefreshMinutesInput"
+                         Text="{Binding AutoRefreshMinutesText, UpdateSourceTrigger=PropertyChanged}"
+                         Width="58" Margin="0,0,4,4"
+                         Watermark="10" VerticalContentAlignment="Center"
+                         KeyDown="AutoRefreshMinutes_KeyDown" />
+                <Button x:Name="IncreaseAutoRefreshMinutesButton" Content="+" Command="{Binding IncreaseAutoRefreshMinutesCommand}"
+                        Width="28" Margin="0,0,4,4" />
+                <Button x:Name="ApplyAutoRefreshMinutesButton" Content="Apply interval" Command="{Binding ApplyAutoRefreshMinutesCommand}"
+                        Margin="0,0,8,4" />
+            </WrapPanel>
+        </Grid>
 
         <!-- Error Banner -->
         <Border Grid.Row="1"
@@ -78,7 +121,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <TextBlock Text="Avg Kills:" FontSize="12" VerticalAlignment="Center"
                                    Foreground="{DynamicResource SubtleTextBrush}" />
-                        <TextBlock Text="{Binding AvgKills, StringFormat={}{0:F1}}" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Text="{Binding AvgKillsDisplay}" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
@@ -96,7 +139,7 @@
         <!-- Replay List -->
         <DataGrid Grid.Row="3"
                   x:Name="ReplayGrid"
-                  ItemsSource="{Binding Replays}"
+                  ItemsSource="{Binding VisibleReplays}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserReorderColumns="True"
@@ -105,17 +148,23 @@
                   GridLinesVisibility="Horizontal"
                   Margin="8,4,8,4"
                   DoubleTapped="ReplayGrid_DoubleTapped">
+            <DataGrid.Styles>
+                <Style Selector="DataGridRow">
+                    <Setter Property="ToolTip.Tip" Value="Double-click to view match details" />
+                </Style>
+            </DataGrid.Styles>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Date"
-                                    Binding="{Binding FileDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
+                                    Binding="{Binding FileDate, Mode=OneWay, StringFormat={}{0:yyyy-MM-dd HH:mm}}"
                                     Width="140" />
                 <DataGridTextColumn Header="Mode" Binding="{Binding GameMode}" Width="140" />
                 <DataGridTextColumn Header="Playlist" Binding="{Binding Playlist}" Width="120" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="60" />
-                <DataGridTextColumn Header="Duration" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
+                <DataGridTextColumn Header="Recorded" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="60" />
                 <DataGridTextColumn Header="Player Kills" Binding="{Binding PlayerKills}" Width="90" />
                 <DataGridTextColumn Header="Bot Kills" Binding="{Binding BotKills}" Width="80" />
+                <DataGridTextColumn Header="Analysis" Binding="{Binding AnalysisStatusText}" Width="130" />
                 <DataGridTextColumn Header="Players" Binding="{Binding PlayerCount}" Width="70" />
                 <DataGridTextColumn Header="Bots" Binding="{Binding BotCount}" Width="60" />
                 <DataGridTextColumn Header="Bot%" Binding="{Binding BotPercent, StringFormat={}{0:F1}%}" Width="70" />
@@ -128,15 +177,30 @@
                 BorderBrush="{DynamicResource SummaryBarBorder}"
                 BorderThickness="0,1,0,0"
                 Padding="8,6"
-                MaxHeight="160">
-            <Grid RowDefinitions="Auto,*">
+                MaxHeight="200">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
                 <TextBlock Grid.Row="0"
                            Text="Frequent Opponents (top 10)"
                            FontWeight="SemiBold"
                            FontSize="12"
                            Margin="0,0,0,4"
                            Foreground="{DynamicResource SubtleTextBrush}" />
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding FrequentOpponents}">
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto"
+                      IsVisible="{Binding HasOpponentFilter}" Margin="0,0,0,4">
+                    <TextBlock Text="{Binding FilterSummaryText}" FontSize="12"
+                               TextTrimming="CharacterEllipsis" Margin="0,0,8,0"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1" x:Name="ClearOpponentFilterButton" Content="Clear filter"
+                            Command="{Binding ClearOpponentFilterCommand}"
+                            Padding="6,2" />
+                </Grid>
+                <TextBlock Grid.Row="2"
+                           Text="{Binding OpponentDataIncompleteText}"
+                           Margin="0,0,0,4"
+                           FontSize="12"
+                           IsVisible="{Binding HasIncompleteOpponentData}" />
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FrequentOpponents}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal" />
@@ -144,20 +208,41 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:FrequentOpponent">
-                            <Border Background="{DynamicResource PillBackground}"
-                                    CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                            <ToggleButton x:Name="OpponentFilterChip"
+                                          IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                          Click="OpponentChip_Click"
+                                          ToolTip.Tip="{Binding Name}"
+                                          Padding="8,3" Margin="0,2,6,2">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center"
+                                               MaxWidth="180" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Appearances, StringFormat=×{0}}"
                                                FontSize="11"
                                                Foreground="{DynamicResource SubtleTextBrush}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
-                            </Border>
+                            </ToggleButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                </ScrollViewer>
             </Grid>
+        </Border>
+
+        <!-- A selected opponent can have no matches after a library refresh. -->
+        <Border Grid.Row="3" Margin="8">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="!IsScanning" />
+                    <Binding Path="HasNoFilteredMatches" />
+                </MultiBinding>
+            </Border.IsVisible>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                <TextBlock Text="No matches with this opponent in the current library."
+                           FontSize="16" HorizontalAlignment="Center" />
+                <Button Content="Clear filter" Command="{Binding ClearOpponentFilterCommand}"
+                        HorizontalAlignment="Center" />
+            </StackPanel>
         </Border>
 
         <!-- Empty state when no replays loaded -->
@@ -167,6 +252,7 @@
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="!IsScanning" />
                     <Binding Path="!HasReplays" />
+                    <Binding Path="!HasOpponentFilter" />
                 </MultiBinding>
             </Border.IsVisible>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">

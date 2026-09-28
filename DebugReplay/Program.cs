@@ -6,6 +6,12 @@ using Unreal.Core.Models.Enums;
 
 string? replayPath = args.Length > 0 ? args[0] : null;
 
+if (args.Length > 1 && args[0] == "--diagnose")
+{
+    await ReplayDiagnostic.RunAsync(args[1], args.Length > 2 ? args[2] : null);
+    return;
+}
+
 if (!string.IsNullOrEmpty(replayPath) && Directory.Exists(replayPath))
 {
     await CompareElims.RunAsync(replayPath);
@@ -148,8 +154,8 @@ var result = reader.ReadReplay(replayPath);
 Console.WriteLine("KEY MODE INDICATORS:");
 Console.WriteLine("--------------------");
 
-// Match duration (result.Info removed in v3.x; MatchEndTime is in seconds)
-Console.WriteLine($"Match Duration: {(result.GameData?.MatchEndTime ?? 0f) / 60.0:F1} minutes ({result.GameData?.MatchEndTime}s)");
+// Recording length comes from replay Info; MatchEndTime is an absolute game clock.
+Console.WriteLine($"Recording Duration: {result.Info.LengthInMs / 60000.0:F1} minutes ({result.Info.LengthInMs}ms)");
 
 // Player counts
 var playerCount = result.PlayerData?.Count() ?? 0;
@@ -189,7 +195,11 @@ else
     Console.WriteLine("  (null)");
 }
 
-// Header info (result.Header removed in v3.x)
+Console.WriteLine($"\nHEADER:");
+Console.WriteLine($"  Branch: {result.Header.Branch ?? "(null)"}");
+Console.WriteLine($"  Changelist: {result.Header.Changelist}");
+Console.WriteLine($"  EngineNetworkVersion: {result.Header.EngineNetworkVersion}");
+Console.WriteLine($"  GameNetworkProtocolVersion: {result.Header.GameNetworkProtocolVersion}");
 
 // Look for unique team indices in player data
 Console.WriteLine($"\nPLAYER TEAM ANALYSIS:");

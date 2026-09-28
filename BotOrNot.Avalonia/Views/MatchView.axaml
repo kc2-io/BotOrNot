@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:BotOrNot.Avalonia.ViewModels"
              xmlns:models="using:BotOrNot.Core.Models"
+             xmlns:services="using:BotOrNot.Core.Services"
              xmlns:conv="using:BotOrNot.Avalonia.Converters"
              x:Class="BotOrNot.Avalonia.Views.MatchView"
              x:DataType="vm:MainWindowViewModel">
@@ -14,7 +15,7 @@
         <conv:UnknownToDashConverter x:Key="UnknownToDashConverter" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,3*,Auto"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,Auto,Auto,3*,Auto"
           DragDrop.AllowDrop="True"
           Background="Transparent">
 
@@ -30,7 +31,7 @@
                    VerticalAlignment="Center" />
             <Button x:Name="OpenButton" Content="Select Replay File" Click="OpenReplay_Click" />
             <TextBlock Text="or drag &amp; drop"
-                       Foreground="{DynamicResource HintTextBrush}"
+                       TextWrapping="Wrap"
                        FontSize="12"
                        VerticalAlignment="Center" />
             <Button x:Name="ColumnsButton" Content="Columns" />
@@ -132,12 +133,13 @@
         </StackPanel>
 
         <!-- Owner Eliminations Header -->
-        <TextBlock Grid.Row="3"
-                   Text="{Binding OwnerKillsHeader}"
-                   FontWeight="Bold"
-                   FontSize="14"
-                   Margin="8,8,8,4"
-                   IsVisible="{Binding HasData}" />
+        <StackPanel Grid.Row="3" Margin="8,8,8,4" IsVisible="{Binding HasData}">
+            <TextBlock Text="{Binding OwnerKillsHeader}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding EliminationCoverageNotice}"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       IsVisible="{Binding HasEliminationCoverageNotice}" />
+        </StackPanel>
 
         <!-- Owner Eliminations Grid -->
         <DataGrid Grid.Row="4"
@@ -199,15 +201,98 @@
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
                 <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
-                <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
+                <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding DeathCause}" Margin="12,0,8,0" VerticalAlignment="Center">
+                                <ToolTip.Tip>
+                                    <ScrollViewer MaxWidth="560" MaxHeight="400">
+                                        <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </ToolTip.Tip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       Margin="12,0,8,0" VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding StormPhaseTooltip}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>
         </DataGrid>
 
+        <!-- Squad section is deliberately independent of the player search. -->
+        <StackPanel Grid.Row="5"
+                    Margin="8,8,8,4"
+                    Spacing="2"
+                    IsVisible="{Binding HasSquadSection}">
+            <TextBlock Text="Squad" FontWeight="Bold" FontSize="14" />
+            <TextBlock Text="{Binding SquadStatusText}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <DataGrid Grid.Row="6"
+                  x:Name="SquadGrid"
+                  MaxHeight="200"
+                  ItemsSource="{Binding Teammates}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  Margin="8,0,8,8"
+                  IsVisible="{Binding HasSquadMembers}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding StableId}" Width="220" IsVisible="False" />
+                <DataGridTemplateColumn Header="Name" Width="195" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="services:SquadMemberSummary">
+                            <Panel>
+                                <Button Content="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
+                                        Click="OpenFortniteTracker_Click"
+                                        IsVisible="{Binding CanOpenFortniteTracker}"
+                                        Padding="4,2"
+                                        FontSize="12"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{DynamicResource LinkForeground}"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="Click to check if this player has a Fortnite Tracker page">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover">
+                                            <Setter Property="Foreground" Value="{DynamicResource LinkHoverForeground}" />
+                                        </Style>
+                                    </Button.Styles>
+                                </Button>
+                                <TextBlock Text="{Binding Name, Converter={StaticResource UnknownToDashConverter}}"
+                                           IsVisible="{Binding !CanOpenFortniteTracker}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding Name}"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0" />
+                            </Panel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80" />
+                <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="120" />
+                <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="75" />
+                <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="75" />
+                <DataGridTextColumn Header="Observed" Binding="{Binding ObservedSquadSize}" Width="95" />
+            </DataGrid.Columns>
+        </DataGrid>
+
         <!-- Players Seen Header -->
-        <TextBlock Grid.Row="5"
+        <TextBlock Grid.Row="7"
                    Text="{Binding PlayersSeenHeader}"
                    FontWeight="Bold"
                    FontSize="14"
@@ -215,7 +300,7 @@
                    IsVisible="{Binding HasData}" />
 
         <!-- All Players Grid -->
-        <DataGrid Grid.Row="6"
+        <DataGrid Grid.Row="8"
                   x:Name="PlayersGrid"
                   ItemsSource="{Binding Players}"
                   AutoGenerateColumns="False"
@@ -274,15 +359,36 @@
                 <DataGridTextColumn Header="Squad" Binding="{Binding TeamIndex, Converter={StaticResource SquadDisplayConverter}}" Width="100" />
                 <DataGridTextColumn Header="Squad Size" Binding="{Binding SquadSize}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement, Converter={StaticResource UnknownToDashConverter}}" Width="90" />
-                <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
+                <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding DeathCause}" Margin="12,0,8,0" VerticalAlignment="Center">
+                                <ToolTip.Tip>
+                                    <ScrollViewer MaxWidth="560" MaxHeight="400">
+                                        <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </ToolTip.Tip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:PlayerRow">
+                            <TextBlock Text="{Binding StormPhaseDisplay}"
+                                       Margin="12,0,8,0" VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding StormPhaseTooltip}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Pickaxe" Binding="{Binding Pickaxe}" Width="195" IsVisible="False" />
                 <DataGridTextColumn Header="Glider" Binding="{Binding Glider}" Width="195" IsVisible="False" />
             </DataGrid.Columns>
         </DataGrid>
 
         <!-- NPCs Expander -->
-        <Expander Grid.Row="7"
+        <Expander Grid.Row="9"
                   Margin="8,8,8,4"
                   IsExpanded="False"
                   IsVisible="{Binding HasNpcs}">
@@ -310,7 +416,7 @@
         </Expander>
 
         <!-- Empty-state drop zone (visible when no data loaded) -->
-        <Border Grid.Row="2" Grid.RowSpan="6"
+        <Border Grid.Row="2" Grid.RowSpan="8"
                 IsVisible="{Binding !HasData}"
                 Background="Transparent"
                 Margin="8">
@@ -334,7 +440,7 @@
         </Border>
 
         <!-- Drag-over overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="8"
+        <Border Grid.Row="0" Grid.RowSpan="10"
                 IsVisible="{Binding IsDropTargetActive}"
                 Background="{DynamicResource DragOverlayBackground}"
                 BorderBrush="{DynamicResource DragOverlayBorder}"

@@ -11,9 +11,23 @@ public interface IReplayService
     Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default);
 }
 
-public sealed class ReplayService : IReplayService
+public interface IReplaySummaryService
 {
+    Task<ReplaySummary> LoadSummaryAsync(string path, CancellationToken cancellationToken = default);
+}
+
+public sealed class ReplayService : IReplayService, IReplaySummaryService
+{
+    private sealed record ReplayEliminationRecord(EliminationEventEvidence Evidence, object? RawTime);
+
     private readonly ILogger<ReplayService> _logger;
+    private static readonly TimeSpan ParseTimeout = TimeSpan.FromSeconds(90);
+
+    // ReplayReader is synchronous and offers no cooperative cancellation. Keep a physical
+    // decoder lease until ReadReplay really exits, even when the caller stops waiting. This
+    // bounds timed-out/cancelled parser threads across overlapping scans instead of treating
+    // an abandoned await as available decoder capacity.
+    private static readonly SemaphoreSlim PhysicalDecoderSlots = new(4, 4);
 
     // Reuse a single no-op logger for the replay reader instead of creating a LoggerFactory per call
     private static readonly ILogger<ReplayReader> ReaderLogger = NullLoggerFactory.Instance.CreateLogger<ReplayReader>();
@@ -23,22 +37,49 @@ public sealed class ReplayService : IReplayService
         _logger = logger ?? NullLogger<ReplayService>.Instance;
     }
 
-    public async Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+    public Task<ReplayData> LoadReplayAsync(string path, CancellationToken cancellationToken = default)
+        => LoadReplayCoreAsync(path, summaryOnly: false, cancellationToken);
+
+    public async Task<ReplaySummary> LoadSummaryAsync(string path, CancellationToken cancellationToken = default)
     {
-        var reader = new ReplayReader(ReaderLogger, ParseMode.Normal);
+        var data = await LoadReplayCoreAsync(path, summaryOnly: true, cancellationToken).ConfigureAwait(false);
+        return ReplaySummaryFactory.Create(data, new FileInfo(path));
+    }
 
-        // Run the synchronous parser on a thread-pool thread. Use Task.WhenAny with a 90-second
-        // deadline so a hung parser (e.g. the infinite-loop bug in FortniteReplayReader for
-        // Fortnite 41.00 packets) surfaces as a TimeoutException instead of a frozen spinner.
-        // The background thread cannot be cancelled mid-flight; it leaks until the library
-        // returns on its own or the process exits. This is acceptable for a desktop app — the
-        // user has already seen the error and moved on.
-        var replayTask = Task.Run(() => reader.ReadReplay(path));
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(90));
-        var timeoutTask = Task.Delay(Timeout.Infinite, timeoutCts.Token);
+    // Both profiles use the same physical decoder limit and the same identity/credit rules.
+    private async Task<ReplayData> LoadReplayCoreAsync(
+        string path, bool summaryOnly, CancellationToken cancellationToken)
+    {
+        await PhysicalDecoderSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
+        Task<FortniteReplayReader.Models.FortniteReplay> replayTask;
+        try
+        {
+            ReplayReader reader = summaryOnly
+                ? new SummaryReplayReader()
+                : new ReplayReader(ReaderLogger, ParseMode.Normal);
+            replayTask = Task.Run(() => reader.ReadReplay(path), CancellationToken.None);
+        }
+        catch
+        {
+            PhysicalDecoderSlots.Release();
+            throw;
+        }
+        _ = replayTask.ContinueWith(
+            completedTask =>
+            {
+                // Observe a late fault after timeout/cancellation and release only when the
+                // synchronous decoder has physically stopped using CPU and parser state.
+                _ = completedTask.Exception;
+                PhysicalDecoderSlots.Release();
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
-        if (await Task.WhenAny(replayTask, timeoutTask).ConfigureAwait(false) != replayTask)
+        var timeoutTask = Task.Delay(ParseTimeout, CancellationToken.None);
+        var cancelledTask = Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        var completed = await Task.WhenAny(replayTask, timeoutTask, cancelledTask).ConfigureAwait(false);
+        if (completed != replayTask)
         {
             cancellationToken.ThrowIfCancellationRequested();
             throw new TimeoutException(
@@ -48,16 +89,35 @@ public sealed class ReplayService : IReplayService
 
         var result = await replayTask.ConfigureAwait(false);
 
+        // Safe-zone observations use the replay frame clock. Elimination EventInfo.StartTime
+        // uses the same clock, unlike the replicated world clock and formatted Time property.
+        var stormObservations = new List<StormCircleObservation>();
+        var safeZonesObj = ReflectionUtils.GetObject(result.MapData, "SafeZones");
+        if (safeZonesObj is System.Collections.IEnumerable safeZonesEnum)
+        {
+            foreach (var zone in safeZonesEnum)
+            {
+                var replayTime = ReflectionUtils.GetDouble(zone, "ReplayTimeSeconds");
+                if (!replayTime.HasValue)
+                    continue;
+
+                var channel = ReflectionUtils.GetUInt(zone, "ChannelIndex");
+                var actorGuid = ReflectionUtils.GetUInt(zone, "ActorGuid");
+                stormObservations.Add(new StormCircleObservation(
+                    replayTime.Value,
+                    ReflectionUtils.GetInt(zone, "CurrentPhase"),
+                    ReflectionUtils.GetInt(zone, "PhaseCount"),
+                    channel,
+                    actorGuid));
+            }
+        }
+        var stormCircleResolver = new StormCircleResolver(stormObservations);
+
         // Pre-size dictionaries for typical Fortnite lobby (~100 players)
         var playersById = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
         var playersByNumericId = new Dictionary<string, PlayerRow>(128, StringComparer.OrdinalIgnoreCase);
 
-        // Owner detection — collected during the single PlayerData pass
-        string? ownerId = null;
-        string? ownerName = null;
-        int? ownerKills = null;
-        object? fallbackOwnerPd = null;
-        int fallbackMaxLocations = 0;
+        // Owner detection — the parser's IsReplayOwner flag is the only authority.
 
         // === PASS 1: Single iteration over PlayerData ===
         // Extracts player attributes, builds numericId lookup, and detects replay owner
@@ -70,6 +130,8 @@ public sealed class ReplayService : IReplayService
             var platform = ReflectionUtils.FirstString(pd, "Platform");
             var kills = ReflectionUtils.FirstString(pd, "Kills");
             var teamIndex = ReflectionUtils.FirstString(pd, "TeamIndex");
+            var stableId = string.IsNullOrWhiteSpace(id) ? null : id.Trim();
+            var teamIndexValue = ParticipantClassifier.NormalizeTeamIndex(teamIndex);
             var death = ReflectionUtils.FirstString(pd, "DeathCause");
             var deathTagsObj = ReflectionUtils.GetObject(pd, "DeathTags");
             var deathTagStrings = (deathTagsObj as System.Collections.IEnumerable)?
@@ -93,15 +155,43 @@ public sealed class ReplayService : IReplayService
                 playersById[key] = row;
             }
 
+            row.StableId ??= stableId;
             row.Name = string.IsNullOrWhiteSpace(name) ? (row.Name ?? "unknown") : name;
             row.Level = string.IsNullOrWhiteSpace(level) ? (row.Level ?? "unknown") : level;
             row.Bot = string.IsNullOrWhiteSpace(bot) ? (row.Bot ?? "unknown") : bot;
             row.Platform = platform ?? row.Platform;
             row.Kills = string.IsNullOrWhiteSpace(kills) ? (row.Kills ?? "unknown") : kills;
-            row.TeamIndex = string.IsNullOrWhiteSpace(teamIndex) ? (row.TeamIndex ?? "unknown") : teamIndex;
-            row.DeathCause = DeathCauseHelper.GetDisplayName(death, deathTagStrings) is var resolved && resolved != "Unknown"
-                ? resolved
-                : (row.DeathCause ?? "Unknown");
+            if (!string.IsNullOrWhiteSpace(teamIndex))
+            {
+                if (teamIndexValue.HasValue &&
+                    row.TeamIndexValue.HasValue &&
+                    row.TeamIndexValue != teamIndexValue)
+                {
+                    row.TeamIndex = "unknown";
+                    row.TeamIndexValue = null;
+                    row.HasConflictingTeamIndex = true;
+                }
+                else if (teamIndexValue.HasValue && !row.HasConflictingTeamIndex)
+                {
+                    row.TeamIndex = teamIndex;
+                    row.TeamIndexValue = teamIndexValue;
+                }
+                else if (!row.TeamIndexValue.HasValue && !row.HasConflictingTeamIndex)
+                {
+                    row.TeamIndex = teamIndex;
+                }
+            }
+            else
+            {
+                row.TeamIndex ??= "unknown";
+            }
+            var legacyDeathCause = DeathCauseHelper.ResolveLegacy(death, deathTagStrings);
+            if (legacyDeathCause.ResolutionStatus == DeathCauseResolutionStatus.Resolved ||
+                row.DeathCauseInfo == null)
+            {
+                row.DeathCauseInfo = legacyDeathCause;
+                row.DeathCause = legacyDeathCause.DisplayName;
+            }
             row.Placement = string.IsNullOrWhiteSpace(placement) ? null : placement;
             row.Pickaxe = pickaxe;
             row.Glider = glider;
@@ -113,55 +203,37 @@ public sealed class ReplayService : IReplayService
                 playersByNumericId[numericId] = row;
             }
 
-            // Detect replay owner (was Pass 8)
-            if (ownerId == null && ReflectionUtils.GetBool(pd, "IsReplayOwner"))
+            // Detect replay owner (was Pass 8). Keep the flag on the row so later projections do
+            // not need to infer ownership from a mutable display name.
+            if (ReflectionUtils.GetBool(pd, "IsReplayOwner"))
             {
-                ownerId = ReflectionUtils.FirstString(pd, "PlayerId", "EpicId", "Id");
-                ownerName = ReflectionUtils.FirstString(pd, "PlayerName", "DisplayName", "Name");
-                var killsStr = ReflectionUtils.FirstString(pd, "Kills");
-                if (int.TryParse(killsStr, out var k))
-                    ownerKills = k;
+                row.IsReplayOwner = true;
             }
 
-            // Track fallback owner candidate (player with most locations)
-            if (ownerId == null)
-            {
-                var locations = ReflectionUtils.GetObject(pd, "Locations");
-                if (locations is System.Collections.IEnumerable enumerable)
-                {
-                    int count = 0;
-                    foreach (var _ in enumerable) count++;
-                    if (count > fallbackMaxLocations)
-                    {
-                        fallbackMaxLocations = count;
-                        fallbackOwnerPd = pd;
-                    }
-                }
-            }
         }
 
-        // Apply fallback owner if primary detection didn't find one
-        if (string.IsNullOrEmpty(ownerId) && fallbackOwnerPd != null)
-        {
-            ownerId = ReflectionUtils.FirstString(fallbackOwnerPd, "PlayerId", "EpicId", "Id");
-            ownerName = ReflectionUtils.FirstString(fallbackOwnerPd, "PlayerName", "DisplayName", "Name");
-            var killsStr = ReflectionUtils.FirstString(fallbackOwnerPd, "Kills");
-            if (int.TryParse(killsStr, out var kills))
-                ownerKills = kills;
-        }
+        var replayOwners = playersById.Values.Where(player => player.IsReplayOwner).Take(2).ToList();
+        var replayOwner = replayOwners.Count == 1 ? replayOwners[0] : null;
+        var ownerId = replayOwner?.StableId;
+        var ownerName = replayOwner?.Name is { } recordedOwnerName && recordedOwnerName != "unknown"
+            ? recordedOwnerName
+            : null;
+        int? ownerKills = int.TryParse(replayOwner?.Kills, out var parsedOwnerKills)
+            ? parsedOwnerKills
+            : null;
+        var ownerTeamIndex = replayOwner?.TeamIndexValue;
 
         // === Compute squad sizes from TeamIndex grouping (excluding NPCs) ===
-        var squadSizeByTeamIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var squadSizeByTeamIndex = new Dictionary<int, int>();
         foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
-            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && row.TeamIndex != "unknown")
-            {
-                squadSizeByTeamIndex[row.TeamIndex] = squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndex) + 1;
-            }
+            if (row.TeamIndexValue.HasValue)
+                squadSizeByTeamIndex[row.TeamIndexValue.Value] =
+                    squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndexValue.Value) + 1;
         }
         foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
-            if (!string.IsNullOrWhiteSpace(row.TeamIndex) && squadSizeByTeamIndex.TryGetValue(row.TeamIndex, out var sz))
+            if (row.TeamIndexValue.HasValue && squadSizeByTeamIndex.TryGetValue(row.TeamIndexValue.Value, out var sz))
                 row.SquadSize = sz;
         }
 
@@ -216,7 +288,7 @@ public sealed class ReplayService : IReplayService
         var winTeamStr = winningTeam?.ToString();
 
         // === PASS 3: Apply team data + mark winners (merged from 3 passes into 1) ===
-        var eliminationCount = 0; // Count finishes instead of building unused display strings
+        var eliminationCount = 0;
         foreach (var row in playersById.Values)
         {
             if (!string.IsNullOrWhiteSpace(row.TeamIndex))
@@ -232,112 +304,186 @@ public sealed class ReplayService : IReplayService
             }
 
             // Winners never died — show "N/A Won Match" instead of "Unknown" (was Pass 7)
-            if (row.IsWinner && row.DeathCause == "Unknown")
-                row.DeathCause = "N/A Won Match";
+            if (row.IsWinner && row.DeathCauseInfo?.ResolutionStatus != DeathCauseResolutionStatus.Resolved)
+            {
+                row.DeathCauseInfo = DeathCauseInfo.WonMatch;
+                row.DeathCause = DeathCauseInfo.WonMatch.DisplayName;
+            }
         }
 
-        // === PASS 4: Process eliminations ===
+        // === PASS 4: Correlate event-chunk eliminations with player-state evidence ===
         var ownerEliminations = new List<PlayerRow>();
-        var pendingKnocks = new Dictionary<string, TimeSpan?>(StringComparer.OrdinalIgnoreCase);
-        var ownerKnockTimes = new Dictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
         string? ownerEliminatedBy = null;
 
-        foreach (var elim in result.Eliminations ?? Enumerable.Empty<object>())
+        var eliminationRecords = (result.Eliminations ?? Enumerable.Empty<object>())
+            .Select((elimination, sequence) =>
+            {
+                var victimId = ReflectionUtils.FirstString(
+                    ReflectionUtils.GetObject(elimination, "EliminatedInfo"), "Id")
+                    ?? ReflectionUtils.FirstString(elimination, "Eliminated")
+                    ?? "unknown";
+                var actorId = ReflectionUtils.FirstString(
+                    ReflectionUtils.GetObject(elimination, "EliminatorInfo"), "Id")
+                    ?? ReflectionUtils.FirstString(elimination, "Eliminator")
+                    ?? "unknown";
+                return new ReplayEliminationRecord(
+                    new EliminationEventEvidence(
+                        sequence,
+                        GetEventReplayTimeSeconds(elimination),
+                        victimId,
+                        actorId,
+                        ReflectionUtils.GetBool(elimination, "Knocked"),
+                        ReflectionUtils.GetInt(elimination, "GunType")),
+                    ReflectionUtils.GetObject(elimination, "Time"));
+            })
+            .ToArray();
+
+        string? ResolveNumericPlayerId(object? numericId)
         {
-            var isKnock = ReflectionUtils.GetBool(elim, "Knocked");
-            var eliminatedId = ReflectionUtils.FirstString(
-                ReflectionUtils.GetObject(elim, "EliminatedInfo"), "Id")
-                ?? ReflectionUtils.FirstString(elim, "Eliminated")
-                ?? "unknown";
-            var eliminatorId = ReflectionUtils.FirstString(
-                ReflectionUtils.GetObject(elim, "EliminatorInfo"), "Id")
-                ?? ReflectionUtils.FirstString(elim, "Eliminator")
-                ?? "unknown";
+            var numericText = numericId?.ToString();
+            return !string.IsNullOrWhiteSpace(numericText) &&
+                   playersByNumericId.TryGetValue(numericText, out var player)
+                ? player.StableId
+                : null;
+        }
 
-            var isOwnerAction = !string.IsNullOrEmpty(ownerId) &&
-                                eliminatorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase);
-
-            var timeObj = ReflectionUtils.GetObject(elim, "Time");
-            var eventTime = ParseElimTime(timeObj);
-            var eventTimeStr = FormatElimTime(eventTime, timeObj);
-
-            if (isKnock)
+        var playerStateEvidence = new List<PlayerStateEventEvidence>();
+        var killFeed = ReflectionUtils.GetObject(result, "KillFeed") as System.Collections.IEnumerable;
+        if (killFeed != null)
+        {
+            var sequence = 0;
+            foreach (var entry in killFeed)
             {
-                pendingKnocks[eliminatedId] = eventTime;
-                if (isOwnerAction && eventTime.HasValue)
-                    ownerKnockTimes[eliminatedId] = eventTime.Value;
-                else if (!isOwnerAction)
-                    ownerKnockTimes.Remove(eliminatedId);
+                var victimId = ResolveNumericPlayerId(ReflectionUtils.GetObject(entry, "PlayerId"));
+                if (!string.IsNullOrWhiteSpace(victimId))
+                {
+                    playerStateEvidence.Add(new PlayerStateEventEvidence(
+                        sequence,
+                        ReflectionUtils.GetDouble(entry, "ReplayTimeSeconds"),
+                        victimId,
+                        ResolveNumericPlayerId(ReflectionUtils.GetObject(entry, "FinisherOrDowner")),
+                        ReflectionUtils.GetNullableBool(entry, "IsDbno"),
+                        ReflectionUtils.GetInt(entry, "RebootCounter"),
+                        ReflectionUtils.GetInt(entry, "DeathCause"),
+                        GetStringValues(entry, "DeathTags")));
+                }
+                sequence++;
             }
-            else
+        }
+
+        var correlation = ReplayEventMatcher.Correlate(
+            eliminationRecords.Select(record => record.Evidence),
+            playerStateEvidence);
+        var lifecycle = new List<CombatLifecycleEvent>(eliminationRecords.Length + playerStateEvidence.Count);
+        var causeBySequence = new Dictionary<int, DeathCauseInfo>();
+
+        foreach (var record in eliminationRecords)
+        {
+            correlation.Matches.TryGetValue(record.Evidence.Sequence, out var matchedState);
+            var cause = DeathCauseHelper.ResolveEvent(
+                record.Evidence.RawCode,
+                matchedState?.RawDeathCause,
+                matchedState?.DeathTags);
+            causeBySequence[record.Evidence.Sequence] = cause;
+            lifecycle.Add(new CombatLifecycleEvent(
+                record.Evidence.Sequence,
+                record.Evidence.ReplayTimeSeconds,
+                record.Evidence.IsKnock ? CombatLifecycleEventKind.Knock : CombatLifecycleEventKind.Finish,
+                record.Evidence.VictimId,
+                record.Evidence.ActorId,
+                DbnoTrueObserved: matchedState?.IsDbno == true,
+                DeathCause: cause));
+        }
+
+        foreach (var state in playerStateEvidence)
+        {
+            // A DBNO field related to any elimination candidate is part of that event, not a
+            // recovery. Ambiguous correlations remain unused. Reboot counters are still retained
+            // so only a later observed increase can reset a life.
+            var dbno = correlation.RelatedObservationSequences.Contains(state.Sequence)
+                ? null
+                : state.IsDbno;
+            if (!dbno.HasValue && !state.RebootCounter.HasValue)
+                continue;
+
+            lifecycle.Add(new CombatLifecycleEvent(
+                1_000_000 + state.Sequence,
+                state.ReplayTimeSeconds,
+                CombatLifecycleEventKind.PlayerState,
+                state.VictimId,
+                state.ActorId,
+                dbno,
+                state.RebootCounter));
+        }
+
+        eliminationCount = eliminationRecords.Count(record => !record.Evidence.IsKnock);
+        foreach (var record in eliminationRecords.Where(record => !record.Evidence.IsKnock))
+        {
+            var evidence = record.Evidence;
+            var eventTime = evidence.ReplayTimeSeconds.HasValue
+                ? TimeSpan.FromSeconds(evidence.ReplayTimeSeconds.Value)
+                : ParseElimTime(record.RawTime);
+            var eventTimeStr = FormatElimTime(eventTime, record.RawTime);
+            var circle = stormCircleResolver.Resolve(evidence.ReplayTimeSeconds);
+            var cause = causeBySequence[evidence.Sequence];
+
+            if (playersById.TryGetValue(evidence.VictimId, out var eliminatedPlayer))
             {
-                // Finish event — count it and record time on the eliminated player
-                eliminationCount++;
-
-                // Set elimination time on the player row
-                if (playersById.TryGetValue(eliminatedId, out var elimRow) && eventTimeStr != null)
-                    elimRow.ElimTime = eventTimeStr;
-
-                // Track who eliminated the replay owner
-                if (!string.IsNullOrEmpty(ownerId) &&
-                    eliminatedId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) &&
-                    !eliminatorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase))
-                {
-                    ownerEliminatedBy = playersById.TryGetValue(eliminatorId, out var eliminatorRow)
-                        ? eliminatorRow.Name ?? eliminatorRow.Id
-                        : eliminatorId;
-                }
-
-                // Credit owner for this elimination?
-                var creditOwner = false;
-
-                // A pending knock is stale if >60s have passed (player was revived)
-                var hasActiveKnock = pendingKnocks.TryGetValue(eliminatedId, out var knockedAt)
-                    && (!knockedAt.HasValue || !eventTime.HasValue
-                        || (eventTime.Value - knockedAt.Value).TotalSeconds <= 60);
-
-                if (!hasActiveKnock && isOwnerAction)
-                {
-                    creditOwner = true;
-                }
-                else if (ownerKnockTimes.TryGetValue(eliminatedId, out var knockTime)
-                         && eventTime.HasValue
-                         && (eventTime.Value - knockTime).TotalSeconds <= 60)
-                {
-                    creditOwner = true;
-                }
-
-                if (creditOwner && playersById.TryGetValue(eliminatedId, out var victim))
-                {
-                    ownerEliminations.Add(new PlayerRow
-                    {
-                        Id = victim.Id,
-                        Name = victim.Name,
-                        Level = victim.Level,
-                        Bot = victim.Bot,
-                        Platform = victim.Platform,
-                        Kills = victim.Kills,
-                        TeamIndex = victim.TeamIndex,
-                        DeathCause = victim.DeathCause,
-                        Placement = victim.Placement,
-                        ElimTime = eventTimeStr,
-                        Pickaxe = victim.Pickaxe,
-                        Glider = victim.Glider,
-                        SquadSize = victim.SquadSize
-                    });
-                }
-
-                pendingKnocks.Remove(eliminatedId);
-                ownerKnockTimes.Remove(eliminatedId);
+                if (eventTimeStr != null) eliminatedPlayer.ElimTime = eventTimeStr;
+                eliminatedPlayer.DeathCauseInfo = cause;
+                eliminatedPlayer.DeathCause = cause.DisplayName;
+                eliminatedPlayer.SetStormCircle(circle);
             }
+
+            if (!string.IsNullOrEmpty(ownerId) &&
+                evidence.VictimId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) &&
+                !evidence.ActorId.Equals(ownerId, StringComparison.OrdinalIgnoreCase))
+                ownerEliminatedBy = playersById.TryGetValue(evidence.ActorId, out var eliminatorRow)
+                    ? eliminatorRow.Name ?? eliminatorRow.Id
+                    : evidence.ActorId;
+        }
+
+        var decisions = OwnerEliminationResolver.Resolve(ownerId, lifecycle);
+        foreach (var decision in decisions.Where(item => item.Status == OwnerCreditStatus.Credited))
+        {
+            var record = eliminationRecords.Single(item => item.Evidence.Sequence == decision.EventSequence);
+            if (!playersById.TryGetValue(decision.VictimId, out var victim)) continue;
+            var eventTime = record.Evidence.ReplayTimeSeconds.HasValue
+                ? TimeSpan.FromSeconds(record.Evidence.ReplayTimeSeconds.Value)
+                : ParseElimTime(record.RawTime);
+            var circle = stormCircleResolver.Resolve(record.Evidence.ReplayTimeSeconds);
+
+            ownerEliminations.Add(new PlayerRow
+            {
+                StableId = victim.StableId,
+                Id = victim.Id,
+                Name = victim.Name,
+                Level = victim.Level,
+                Bot = victim.Bot,
+                Platform = victim.Platform,
+                Kills = victim.Kills,
+                TeamIndex = victim.TeamIndex,
+                TeamIndexValue = victim.TeamIndexValue,
+                HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
+                DeathCauseInfo = decision.DeathCause,
+                DeathCause = decision.DeathCause.DisplayName,
+                Placement = victim.Placement,
+                ElimTime = FormatElimTime(eventTime, record.RawTime),
+                Pickaxe = victim.Pickaxe,
+                Glider = victim.Glider,
+                SquadSize = victim.SquadSize,
+                CircleNumber = circle.CircleNumber,
+                CircleStatus = circle.Status,
+            });
         }
 
         // === Build metadata ===
         var playlist = result.GameData?.CurrentPlaylist ?? "";
         var gameMode = PlaylistHelper.GetDisplayNameWithFallback(playlist);
         var maxPlayers = result.GameData?.MaxPlayers;
-        // result.Info was removed in FortniteReplayReader v3.x; MatchEndTime (seconds) is the closest equivalent
-        var matchDuration = (double)(result.GameData?.MatchEndTime ?? 0f) / 60.0;
+        // Info.LengthInMs is the duration of the recorded replay. MatchEndTime is an absolute
+        // game-clock value, so it cannot be treated as an elapsed duration without a matching start time.
+        var recordingDuration = result.Info.LengthInMs / 60000.0;
 
         var nonNpcCount = 0;
         foreach (var p in playersById.Values)
@@ -346,14 +492,15 @@ public sealed class ReplayService : IReplayService
         var metadata = new ReplayMetadata
         {
             FileName = Path.GetFileName(path),
-            Version = "",
-            GameNetProtocol = "",
+            Version = result.Header.Branch ?? "",
+            Changelist = result.Header.Changelist,
+            GameNetProtocol = result.Header.GameNetworkProtocolVersion,
             PlayerCount = nonNpcCount,
             EliminationCount = eliminationCount,
             GameMode = gameMode,
             Playlist = playlist,
             MaxPlayers = maxPlayers,
-            MatchDurationMinutes = matchDuration,
+            RecordingDurationMinutes = recordingDuration,
             WinningTeam = winningTeam,
             WinningPlayerIds = winningPlayerIds,
             WinningPlayerNames = winningPlayerNames
@@ -363,11 +510,35 @@ public sealed class ReplayService : IReplayService
         {
             Players = playersById.Values.OrderBy(v => v.Name ?? v.Id).ToList(),
             OwnerEliminations = ownerEliminations,
+            OwnerId = ownerId,
+            OwnerTeamIndex = ownerTeamIndex,
             OwnerName = ownerName,
             OwnerKills = ownerKills,
+            HasUncertainEliminationAttribution = decisions.Any(item => item.Status == OwnerCreditStatus.Uncertain),
             OwnerEliminatedBy = ownerEliminatedBy,
             Metadata = metadata
         };
+    }
+
+    private static double? GetEventReplayTimeSeconds(object elimination)
+    {
+        var info = ReflectionUtils.GetObject(elimination, "Info");
+        var startTimeMilliseconds = ReflectionUtils.GetDouble(info, "StartTime");
+        return startTimeMilliseconds.HasValue ? startTimeMilliseconds.Value / 1000d : null;
+    }
+
+    private static IReadOnlyList<string> GetStringValues(object? source, string propertyName)
+    {
+        var value = ReflectionUtils.GetObject(source, propertyName);
+        if (value is not System.Collections.IEnumerable enumerable) return Array.Empty<string>();
+
+        var values = new List<string>();
+        foreach (var item in enumerable)
+        {
+            var text = item?.ToString();
+            if (!string.IsNullOrWhiteSpace(text)) values.Add(text);
+        }
+        return values;
     }
 
     static string? FormatElimTime(TimeSpan? ts, object? rawTimeObj)

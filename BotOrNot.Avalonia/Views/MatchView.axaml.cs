@@ -25,6 +25,7 @@ public partial class MatchView : UserControl
     private readonly Dictionary<DataGridColumn, int> _columnSortMode = new();
     private DataGrid? _playersGrid;
     private DataGrid? _npcsGrid;
+    private DataGrid? _squadGrid;
     private Button? _columnsButton;
 
     public MatchView()
@@ -35,6 +36,7 @@ public partial class MatchView : UserControl
 
         _playersGrid = this.FindControl<DataGrid>("PlayersGrid");
         _npcsGrid = this.FindControl<DataGrid>("NpcsGrid");
+        _squadGrid = this.FindControl<DataGrid>("SquadGrid");
         _columnsButton = this.FindControl<Button>("ColumnsButton");
 
         if (_columnsButton != null)
@@ -56,6 +58,8 @@ public partial class MatchView : UserControl
             _npcsGrid.Sorting += OnDataGridSorting;
             _npcsGrid.LoadingRow += OnDataGridLoadingRow;
         }
+        if (_squadGrid != null)
+            _squadGrid.Sorting += OnDataGridSorting;
 
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
@@ -68,6 +72,7 @@ public partial class MatchView : UserControl
             RefreshDataGridRows(ownerGrid);
             RefreshDataGridRows(_playersGrid);
             RefreshDataGridRows(_npcsGrid);
+            RefreshDataGridRows(_squadGrid);
         };
 
         DataContextChanged += (_, _) => _viewModel = DataContext as MainWindowViewModel;
@@ -84,6 +89,12 @@ public partial class MatchView : UserControl
     private void OnDataGridSorting(object? sender, DataGridColumnEventArgs e)
     {
         if (sender is not DataGrid grid) return;
+
+        if (ReferenceEquals(grid, _squadGrid))
+        {
+            SortSquadGrid(grid, e);
+            return;
+        }
 
         var info = GetColumnSortInfo(e.Column);
         if (info.Selector == null) return;
@@ -108,6 +119,56 @@ public partial class MatchView : UserControl
                 cv.SortDescriptions.Add(DataGridSortDescription.FromComparer(comparer));
             }
         });
+    }
+
+    private void SortSquadGrid(DataGrid grid, DataGridColumnEventArgs e)
+    {
+        var selector = e.Column.Header?.ToString() switch
+        {
+            "Id" => new Func<SquadMemberSummary, object?>(member => member.StableId),
+            "Name" => member => member.Name,
+            "Level" => member => member.Level,
+            "Bot" => member => member.IsBot,
+            "Platform" => member => member.Platform,
+            "Kills" => member => member.Kills,
+            "Place" => member => member.Placement,
+            "Observed" => member => member.ObservedSquadSize,
+            _ => null
+        };
+        if (selector == null) return;
+
+        _columnSortMode.TryGetValue(e.Column, out var currentMode);
+        var descending = currentMode == 1;
+        _columnSortMode[e.Column] = descending ? 0 : 1;
+        var comparer = new SquadMemberComparer(selector, descending);
+        e.Column.CustomSortComparer = comparer;
+        Dispatcher.UIThread.Post(() =>
+        {
+            var view = grid.CollectionView;
+            if (view == null) return;
+            view.SortDescriptions.Clear();
+            view.SortDescriptions.Add(DataGridSortDescription.FromComparer(comparer));
+        });
+    }
+
+    private sealed class SquadMemberComparer(Func<SquadMemberSummary, object?> selector, bool descending) : IComparer
+    {
+        public int Compare(object? x, object? y)
+        {
+            if (x is not SquadMemberSummary left || y is not SquadMemberSummary right) return 0;
+            var leftValue = selector(left);
+            var rightValue = selector(right);
+            if (leftValue is null) return rightValue is null ? 0 : 1;
+            if (rightValue is null) return -1;
+
+            var result = leftValue switch
+            {
+                int leftNumber when rightValue is int rightNumber => leftNumber.CompareTo(rightNumber),
+                bool leftBool when rightValue is bool rightBool => leftBool.CompareTo(rightBool),
+                _ => StringComparer.OrdinalIgnoreCase.Compare(leftValue.ToString(), rightValue.ToString())
+            };
+            return descending ? -result : result;
+        }
     }
 
     private void OnDataGridLoadingRow(object? sender, DataGridRowEventArgs e)
@@ -182,6 +243,7 @@ public partial class MatchView : UserControl
             "Place" => new(p => p.Placement, true, false, false),
             "Death Cause" => new(p => p.DeathCause, false, false, true),
             "Elim Time" => new(p => p.ElimTime, true, false, false),
+            "Storm Phase" => new(p => p.StormPhaseSortValue, true, false, false),
             "Pickaxe" => new(p => p.Pickaxe, false, false, false),
             "Glider" => new(p => p.Glider, false, false, false),
             _ => default
@@ -267,16 +329,26 @@ public partial class MatchView : UserControl
 
     private void OpenFortniteTracker_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button { DataContext: PlayerRow player } && !string.IsNullOrEmpty(player.Name))
+        var url = sender is Button button ? GetFortniteTrackerUrl(button.DataContext) : null;
+        if (url != null)
         {
-            var encodedName = Uri.EscapeDataString(player.Name);
             Process.Start(new ProcessStartInfo
             {
-                FileName = $"https://fortnitetracker.com/profile/all/{encodedName}",
+                FileName = url,
                 UseShellExecute = true
             });
         }
     }
+
+    internal static string? GetFortniteTrackerUrl(object? player) =>
+        player switch
+        {
+            PlayerRow { IsBot: false, Name: { Length: > 0 } name } =>
+                $"https://fortnitetracker.com/profile/all/{Uri.EscapeDataString(name)}",
+            SquadMemberSummary member when member.CanOpenFortniteTracker =>
+                $"https://fortnitetracker.com/profile/all/{Uri.EscapeDataString(member.Name!)}",
+            _ => null
+        };
 
     private async void ExportCsv_Click(object? sender, RoutedEventArgs e)
     {
@@ -358,6 +430,7 @@ public partial class MatchView : UserControl
             "Place" => new(header, p => UnknownToDash(p.Placement)),
             "Death Cause" => new(header, p => p.DeathCause ?? ""),
             "Elim Time" => new(header, p => p.ElimTime ?? ""),
+            "Storm Phase" => new(header, p => p.StormPhaseCsvValue),
             "Pickaxe" => new(header, p => p.Pickaxe ?? ""),
             "Glider" => new(header, p => p.Glider ?? ""),
             _ => null

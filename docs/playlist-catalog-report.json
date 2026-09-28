@@ -1,0 +1,4034 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-09-13",
+  "added": [
+    "Playlist_BlastBerryNoBuildDuo",
+    "Playlist_BlastBerryNoBuildSolo",
+    "Playlist_BlastBerryNoBuildSquad",
+    "Playlist_BlastBerryNoBuildTrio",
+    "Playlist_BlastBerrySolo2",
+    "Playlist_BlastBerryTrio",
+    "Playlist_Bots_DefaultDuo",
+    "Playlist_Bots_DefaultSolo",
+    "Playlist_Bots_DefaultSquad",
+    "Playlist_Bots_NoBuildBR_Duo",
+    "Playlist_Bots_NoBuildBR_Solo",
+    "Playlist_Bots_NoBuildBR_Squad",
+    "Playlist_Bots_NoBuildBR_Trio",
+    "Playlist_Bots_Trios",
+    "Playlist_CakePenSquad",
+    "Playlist_DashBerryNoBuildDuo",
+    "Playlist_DashBerryNoBuildSolo",
+    "Playlist_DashBerryNoBuildSquad",
+    "Playlist_DefaultSolo_AIProfiling",
+    "Playlist_DefaultSquad_23",
+    "Playlist_DefaultSquad_Helios",
+    "Playlist_Deliver_Squads",
+    "Playlist_Deliver_Squads_ZB",
+    "Playlist_FM_Build_Duo",
+    "Playlist_FM_Build_Solo",
+    "Playlist_FM_Build_Squad",
+    "Playlist_ForbiddenFruit_CalmSambucusBRStack",
+    "Playlist_ForbiddenFruit_CalmSambucusBRStackPC",
+    "Playlist_ForbiddenFruit_PlunderFlopBRDuo",
+    "Playlist_ForbiddenFruit_PlunderFlopBRSolo",
+    "Playlist_ForbiddenFruit_PlunderFlopBRSquad",
+    "Playlist_ForbiddenFruit_PlunderFlopBRStack",
+    "Playlist_ForbiddenFruit_PlunderFlopBRStackPC",
+    "Playlist_ForbiddenFruit_TensePotatoBRDuo",
+    "Playlist_ForbiddenFruit_TensePotatoBRSolo",
+    "Playlist_ForbiddenFruit_TensePotatoBRSquad",
+    "Playlist_ForbiddenFruit_TensePotatoBRStack",
+    "Playlist_ForbiddenFruit_TensePotatoBRStackPC",
+    "Playlist_ForbiddenFruitNoBuildBRStack",
+    "Playlist_ForbiddenFruitNoBuildBRStackPC",
+    "Playlist_ForbiddenFruitOldNoBuildBRDuo",
+    "Playlist_ForbiddenFruitOldNoBuildBRSquad",
+    "Playlist_ForbiddenFruitOldNoBuildBRStack",
+    "Playlist_ForbiddenFruitOldNoBuildBRStackPC",
+    "Playlist_FoxtrotSquad",
+    "Playlist_FoxtrotSquad_Alt",
+    "Playlist_Habanero_DashBerry_Duos",
+    "Playlist_Habanero_DashBerry_Solo",
+    "Playlist_Habanero_DashBerry_Squads",
+    "Playlist_Habanero_JumpBear_Solo",
+    "Playlist_Habanero_JumpBear_Squads",
+    "Playlist_Habanero_MatchMist_Duos",
+    "Playlist_Habanero_MatchMist_Solo",
+    "Playlist_Habanero_MatchMist_Squads",
+    "Playlist_Habanero_NoBuild_DashBerry_Duos",
+    "Playlist_Habanero_NoBuild_DashBerry_Solo",
+    "Playlist_Habanero_NoBuild_DashBerry_Squads",
+    "Playlist_Habanero_NoBuild_JumpBear_Duos",
+    "Playlist_Habanero_NoBuild_JumpBear_Solo",
+    "Playlist_Habanero_NoBuild_JumpBear_Squads",
+    "Playlist_Habanero_NoBuild_MatchMist_Duos",
+    "Playlist_Habanero_NoBuild_MatchMist_Solo",
+    "Playlist_Habanero_NoBuild_MatchMist_Squads",
+    "Playlist_Habanero_NoBuild_PiperBoot_Duos",
+    "Playlist_Habanero_NoBuild_PiperBoot_Solo",
+    "Playlist_Habanero_NoBuild_PiperBoot_Squads",
+    "Playlist_Habanero_NoBuild_PunchBerry_Duos",
+    "Playlist_Habanero_NoBuild_PunchBerry_Solo",
+    "Playlist_Habanero_NoBuild_PunchBerry_Squads",
+    "Playlist_Habanero_NoBuild_RopeSmile_Duos",
+    "Playlist_Habanero_NoBuild_RopeSmile_Solo",
+    "Playlist_Habanero_NoBuild_RopeSmile_Squads",
+    "Playlist_Habanero_NoBuild_SourSpawn_Duos",
+    "Playlist_Habanero_NoBuild_SourSpawn_Solo",
+    "Playlist_Habanero_NoBuild_SourSpawn_Squads",
+    "Playlist_Habanero_NoBuild_SquareClub_Duos",
+    "Playlist_Habanero_NoBuild_SquareClub_Solo",
+    "Playlist_Habanero_NoBuild_Sunflower_Duos",
+    "Playlist_Habanero_NoBuild_Sunflower_Solo",
+    "Playlist_Habanero_NoBuild_Sunflower_Squads",
+    "Playlist_Habanero_NoBuild_TimberStake_Duos",
+    "Playlist_Habanero_NoBuild_TimberStake_Solo",
+    "Playlist_Habanero_NoBuild_TimberStake_Squads",
+    "Playlist_Habanero_PiperBoot_Duos",
+    "Playlist_Habanero_PiperBoot_Solo",
+    "Playlist_Habanero_PiperBoot_Squads",
+    "Playlist_Habanero_PunchBerry_Duos",
+    "Playlist_Habanero_PunchBerry_Solo",
+    "Playlist_Habanero_PunchBerry_Squads",
+    "Playlist_Habanero_RopeSmile_Duos",
+    "Playlist_Habanero_RopeSmile_Solo",
+    "Playlist_Habanero_RopeSmile_Squads",
+    "Playlist_Habanero_SourSpawn_Duos",
+    "Playlist_Habanero_SourSpawn_Solo",
+    "Playlist_Habanero_SourSpawn_Squads",
+    "Playlist_Habanero_SquareClub_Duos",
+    "Playlist_Habanero_SquareClub_Solo",
+    "Playlist_Habanero_Sunflower_Duos",
+    "Playlist_Habanero_Sunflower_Solo",
+    "Playlist_Habanero_Sunflower_Squads",
+    "Playlist_Habanero_TimberStake_Duos",
+    "Playlist_Habanero_TimberStake_Solo",
+    "Playlist_Habanero_TimberStake_Squads",
+    "Playlist_HabaneroSolo",
+    "Playlist_HabaneroSquad",
+    "Playlist_HabaneroSquad_100_30",
+    "Playlist_HabaneroSquad_80_40",
+    "Playlist_HabaneroTrio",
+    "Playlist_Hoplite",
+    "Playlist_ItemTest_NoBuild",
+    "Playlist_JumpBearDuo",
+    "Playlist_JumpBearNoBuildDuo",
+    "Playlist_JumpBearNoBuildSolo",
+    "Playlist_JumpBearNoBuildSquad",
+    "Playlist_JumpBearSolo",
+    "Playlist_JumpBearSquad",
+    "Playlist_LightBunny_Duo",
+    "Playlist_MatchMistNoBuildDuo",
+    "Playlist_MatchMistNoBuildSolo",
+    "Playlist_MatchMistNoBuildSquad",
+    "Playlist_MiniBread",
+    "Playlist_NoBuildBR_CoffeeMuffin_Habanero_Duo",
+    "Playlist_NoBuildBR_CoffeeMuffin_Habanero_Solo",
+    "Playlist_NoBuildBR_Habanero_Duo",
+    "Playlist_NoBuildBR_Habanero_Squad",
+    "Playlist_NoBuildBR_Habanero_Trio",
+    "Playlist_NoBuildBR_Squad_Storm_Data_Test",
+    "Playlist_PaprikaSquad",
+    "Playlist_PiperBootNoBuildDuo",
+    "Playlist_PiperBootNoBuildSolo",
+    "Playlist_PiperBootNoBuildSquad",
+    "Playlist_PunchBerryNoBuildDuo",
+    "Playlist_PunchBerryNoBuildSolo",
+    "Playlist_PunchBerryNoBuildSquad",
+    "Playlist_PunchBerryNoBuildTrio",
+    "Playlist_PunchBerryTrio",
+    "Playlist_RopeSmileNoBuildDuo",
+    "Playlist_RopeSmileNoBuildSolo",
+    "Playlist_RopeSmileNoBuildSquad",
+    "Playlist_RopeSmileSquad",
+    "Playlist_RusticPepperDuo",
+    "Playlist_RusticPepperNoBuildDuo",
+    "Playlist_RusticPepperNoBuildSolo",
+    "Playlist_RusticPepperNoBuildSquad",
+    "Playlist_RusticPepperSolo",
+    "Playlist_RusticPepperSquad",
+    "Playlist_Showdown_RE_BlastBerry_Duos",
+    "Playlist_Showdown_RE_CTS_DashBerry_Duos",
+    "Playlist_Showdown_RE_CTS_DashBerryNoBuildSolo_MES",
+    "Playlist_Showdown_RE_CTS_MatchMist_Duos",
+    "Playlist_Showdown_RE_CTS_PiperBoot_Duos",
+    "Playlist_Showdown_RE_CTS_PunchBerry_Duos",
+    "Playlist_Showdown_RE_CTS_RopeSmile_Duos",
+    "Playlist_Showdown_RE_CTS_SourSpawn_Duos",
+    "Playlist_Showdown_RE_CTS_SunflowerDuos",
+    "Playlist_Showdown_RE_CTS_TimberStake_Duos",
+    "Playlist_Showdown_RE_ForbiddenFruitNoBuildSolo",
+    "Playlist_Showdown_RE_JumpBearDuos_CTS",
+    "Playlist_Showdown_RE_JumpBearNoBuildDuos_CTS",
+    "Playlist_Showdown_RE_JumpBearNoBuildSolo_CTS",
+    "Playlist_Showdown_RE_JumpBearSolo_CTS",
+    "Playlist_Showdown_RE_RopeSmileSolo_CTS",
+    "Playlist_ShowdownTournament_BlastBerryDuo_CR",
+    "Playlist_ShowdownTournament_BlastBerryDuo_Fill",
+    "Playlist_ShowdownTournament_BlastBerryDuo_NoFill",
+    "Playlist_ShowdownTournament_BlastBerryDuo_NPM",
+    "Playlist_ShowdownTournament_BlastBerryDuo_PBM",
+    "Playlist_ShowdownTournament_BlastBerryDuo_RC",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_Fill",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_NoFill",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildDuo_RC",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildSquad_Fill",
+    "Playlist_ShowdownTournament_BlastBerryNoBuildSquad_NoFill",
+    "Playlist_ShowdownTournament_BlastBerrySquad_Fill",
+    "Playlist_ShowdownTournament_BlastBerrySquad_NoFill",
+    "Playlist_ShowdownTournament_DashBerryDuo_CR",
+    "Playlist_ShowdownTournament_DashBerryDuo_Fill",
+    "Playlist_ShowdownTournament_DashBerryDuo_NoFill",
+    "Playlist_ShowdownTournament_DashBerryDuo_NPM",
+    "Playlist_ShowdownTournament_DashBerryDuo_PBM",
+    "Playlist_ShowdownTournament_DashBerryDuo_RC",
+    "Playlist_ShowdownTournament_DashBerryNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_DashBerryNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_DashBerryNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_DashBerryNoBuildDuo_RC",
+    "Playlist_ShowdownTournament_DashBerryNoBuildSolo_NPM_MES",
+    "Playlist_ShowdownTournament_DashBerryNoBuildSolo_PBM_MES",
+    "Playlist_ShowdownTournament_FNCS_DashBerryDuos",
+    "Playlist_ShowdownTournament_FNCS_MatchMistDuos",
+    "Playlist_ShowdownTournament_FNCS_SunflowerDuos",
+    "Playlist_ShowdownTournament_ForbiddenFruitBuildDuo",
+    "Playlist_ShowdownTournament_ForbiddenFruitNoBuild_Trios",
+    "Playlist_ShowdownTournament_ForbiddenFruitNoBuildDuo",
+    "Playlist_ShowdownTournament_ForbiddenFruitNoBuildSolo",
+    "Playlist_ShowdownTournament_ForbiddenFruitNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_ML_Test",
+    "Playlist_ShowdownTournament_PiperBootDuos",
+    "Playlist_ShowdownTournament_PiperBootDuos_CR",
+    "Playlist_ShowdownTournament_PiperBootDuos_NPM",
+    "Playlist_ShowdownTournament_PiperBootDuos_PBM",
+    "Playlist_ShowdownTournament_PiperBootDuos_RC",
+    "Playlist_ShowdownTournament_PiperBootNoBuildDuos",
+    "Playlist_ShowdownTournament_PiperBootNoBuildDuos_CR",
+    "Playlist_ShowdownTournament_PiperBootNoBuildDuos_NPM",
+    "Playlist_ShowdownTournament_PiperBootNoBuildDuos_PBM",
+    "Playlist_ShowdownTournament_PiperBootNoBuildDuos_RC",
+    "Playlist_ShowdownTournament_PunchBerryDuo_CR",
+    "Playlist_ShowdownTournament_PunchBerryDuo_NoFill",
+    "Playlist_ShowdownTournament_PunchBerryDuo_NPM",
+    "Playlist_ShowdownTournament_PunchBerryDuo_PBM",
+    "Playlist_ShowdownTournament_PunchBerryDuo_RC",
+    "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_PunchBerryNoBuildDuo_RC",
+    "Playlist_ShowdownTournament_PunchBerrySquad_NoFill",
+    "Playlist_ShowdownTournament_RC_DashBerryDuo_NoFill",
+    "Playlist_ShowdownTournament_RC_PunchBerryDuo_NoFill",
+    "Playlist_ShowdownTournament_RC_SunflowerDuo_NoFill",
+    "Playlist_ShowdownTournament_RC_TimberStakeDuo_NoFill",
+    "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_BlastBerryNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_BlastBerrySolo_CR",
+    "Playlist_ShowdownTournament_RE_BlastBerrySolo_NPM",
+    "Playlist_ShowdownTournament_RE_BlastBerrySolo_PBM",
+    "Playlist_ShowdownTournament_RE_BlastBerrySolo_RC",
+    "Playlist_ShowdownTournament_RE_BlastBerrySquad_Fill",
+    "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_DashBerryNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_DashBerrySolo_CR",
+    "Playlist_ShowdownTournament_RE_DashBerrySolo_NPM",
+    "Playlist_ShowdownTournament_RE_DashBerrySolo_PBM",
+    "Playlist_ShowdownTournament_RE_DashBerrySolo_RC",
+    "Playlist_ShowdownTournament_RE_JumpBearDuos_CR",
+    "Playlist_ShowdownTournament_RE_JumpBearDuos_NPM",
+    "Playlist_ShowdownTournament_RE_JumpBearDuos_PBM",
+    "Playlist_ShowdownTournament_RE_JumpBearDuos_RC",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_CR",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_NPM",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_PBM",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildDuos_RC",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_JumpBearNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_JumpBearSolo_CR",
+    "Playlist_ShowdownTournament_RE_JumpBearSolo_NPM",
+    "Playlist_ShowdownTournament_RE_JumpBearSolo_PBM",
+    "Playlist_ShowdownTournament_RE_JumpBearSolo_RC",
+    "Playlist_ShowdownTournament_RE_MatchMistDuos_CR",
+    "Playlist_ShowdownTournament_RE_MatchMistDuos_NPM",
+    "Playlist_ShowdownTournament_RE_MatchMistDuos_PBM",
+    "Playlist_ShowdownTournament_RE_MatchMistDuos_RC",
+    "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_MatchMistNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_MatchMistSolo_CR",
+    "Playlist_ShowdownTournament_RE_MatchMistSolo_NPM",
+    "Playlist_ShowdownTournament_RE_MatchMistSolo_PBM",
+    "Playlist_ShowdownTournament_RE_MatchMistSolo_RC",
+    "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_PiperBootNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_PiperBootSolo_CR",
+    "Playlist_ShowdownTournament_RE_PiperBootSolo_NPM",
+    "Playlist_ShowdownTournament_RE_PiperBootSolo_PBM",
+    "Playlist_ShowdownTournament_RE_PiperBootSolo_RC",
+    "Playlist_ShowdownTournament_RE_PunchBerryDuo_Icon",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildDuo_RC",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_PunchBerryNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_PunchBerrySolo_CR",
+    "Playlist_ShowdownTournament_RE_PunchBerrySolo_NPM",
+    "Playlist_ShowdownTournament_RE_PunchBerrySolo_PBM",
+    "Playlist_ShowdownTournament_RE_PunchBerrySolo_RC",
+    "Playlist_ShowdownTournament_RE_RopeSmileDuos_CR",
+    "Playlist_ShowdownTournament_RE_RopeSmileDuos_NPM",
+    "Playlist_ShowdownTournament_RE_RopeSmileDuos_PBM",
+    "Playlist_ShowdownTournament_RE_RopeSmileDuos_RC",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildDuo_RC",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_RopeSmileNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_RopeSmileSolo_CR",
+    "Playlist_ShowdownTournament_RE_RopeSmileSolo_NPM",
+    "Playlist_ShowdownTournament_RE_RopeSmileSolo_PBM",
+    "Playlist_ShowdownTournament_RE_RopeSmileSolo_RC",
+    "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_SourSpawnNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_SourSpawnSolo_CR",
+    "Playlist_ShowdownTournament_RE_SourSpawnSolo_NPM",
+    "Playlist_ShowdownTournament_RE_SourSpawnSolo_PBM",
+    "Playlist_ShowdownTournament_RE_SourSpawnSolo_RC",
+    "Playlist_ShowdownTournament_RE_SquareClubDuos",
+    "Playlist_ShowdownTournament_RE_SquareClubDuos_CR",
+    "Playlist_ShowdownTournament_RE_SquareClubDuos_NPM",
+    "Playlist_ShowdownTournament_RE_SquareClubDuos_PBM",
+    "Playlist_ShowdownTournament_RE_SquareClubDuos_RC",
+    "Playlist_ShowdownTournament_RE_SquareClubNoBuildDuos",
+    "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_CR",
+    "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_NPM",
+    "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_PBM",
+    "Playlist_ShowdownTournament_RE_TimberStakeNoBuildSolo_RC",
+    "Playlist_ShowdownTournament_RE_TimberStakeSolo_CR",
+    "Playlist_ShowdownTournament_RE_TimberStakeSolo_NPM",
+    "Playlist_ShowdownTournament_RE_TimberStakeSolo_PBM",
+    "Playlist_ShowdownTournament_RE_TimberStakeSolo_RC",
+    "Playlist_ShowdownTournament_REML_Test",
+    "Playlist_ShowdownTournament_SourSpawnDuos",
+    "Playlist_ShowdownTournament_SourSpawnDuos_CR",
+    "Playlist_ShowdownTournament_SourSpawnDuos_NPM",
+    "Playlist_ShowdownTournament_SourSpawnDuos_PBM",
+    "Playlist_ShowdownTournament_SourSpawnDuos_RC",
+    "Playlist_ShowdownTournament_SourSpawnNoBuildDuos",
+    "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_CR",
+    "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_NPM",
+    "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_PBM",
+    "Playlist_ShowdownTournament_SourSpawnNoBuildDuos_RC",
+    "Playlist_ShowdownTournament_SunflowerDuo_Fill",
+    "Playlist_ShowdownTournament_SunflowerDuo_NoFill",
+    "Playlist_ShowdownTournament_SunflowerNoBuildDuo_Fill",
+    "Playlist_ShowdownTournament_SunflowerNoBuildDuo_NoFill",
+    "Playlist_ShowdownTournament_SunflowerNoBuildSquad_Fill",
+    "Playlist_ShowdownTournament_SunflowerNoBuildSquad_NoFill",
+    "Playlist_ShowdownTournament_SunflowerSquad_Fill",
+    "Playlist_ShowdownTournament_SunflowerSquad_NoFill",
+    "Playlist_ShowdownTournament_TimberStakeDuo_CR",
+    "Playlist_ShowdownTournament_TimberStakeDuo_NPM",
+    "Playlist_ShowdownTournament_TimberStakeDuo_PBM",
+    "Playlist_ShowdownTournament_TimberStakeDuo_RC",
+    "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_CR",
+    "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_NPM",
+    "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_PBM",
+    "Playlist_ShowdownTournament_TimberStakeNoBuildDuo_RC",
+    "Playlist_SourSpawnDuo",
+    "Playlist_SourSpawnNoBuildDuo",
+    "Playlist_SourSpawnNoBuildSolo",
+    "Playlist_SourSpawnNoBuildSquad",
+    "Playlist_SourSpawnSolo",
+    "Playlist_SourSpawnSquad",
+    "Playlist_SquareClubDuo",
+    "Playlist_SquareClubNoBuildDuo",
+    "Playlist_SquareClubNoBuildSolo",
+    "Playlist_SquareClubSolo",
+    "Playlist_StormDataTest_Squad",
+    "Playlist_StormTest_Squad",
+    "Playlist_StormTest_Squad_Mid",
+    "Playlist_SunflowerNoBuildDuo",
+    "Playlist_SunflowerNoBuildSolo",
+    "Playlist_SunflowerNoBuildSquad",
+    "Playlist_SunflowerNoBuildTrio",
+    "Playlist_SunflowerTrio",
+    "Playlist_TigerRanchDuo",
+    "Playlist_TigerRanchNoBuildDuo",
+    "Playlist_TigerRanchNoBuildSolo",
+    "Playlist_TigerRanchNoBuildSquad",
+    "Playlist_TigerRanchSolo",
+    "Playlist_TigerRanchSquad",
+    "Playlist_TimberStakeDuo",
+    "Playlist_TimberStakeNoBuildDuo",
+    "Playlist_TimberStakeNoBuildSolo",
+    "Playlist_TimberStakeNoBuildSquad",
+    "Playlist_TimberStakeSolo",
+    "Playlist_TimberStakeSquad"
+  ],
+  "changed": [],
+  "preserved": [
+    "Playlist_Blitz_Duos",
+    "Playlist_Blitz_Solo",
+    "Playlist_Blitz_Squad",
+    "Playlist_Comp_Blitz_Solo",
+    "Playlist_DefaultTrio",
+    "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
+    "Playlist_ForbiddenFruit_CalmSambucusBRSolo",
+    "Playlist_ForbiddenFruit_CalmSambucusBRSquad",
+    "Playlist_ForbiddenFruitNoBuildBRDuo",
+    "Playlist_ForbiddenFruitNoBuildBRSolo",
+    "Playlist_ForbiddenFruitNoBuildBRSquad",
+    "Playlist_ForbiddenFruitOldNoBuildBRSolo",
+    "Playlist_NoBuild_BlastBerry_Duo",
+    "Playlist_NoBuild_BlastBerry_Solo",
+    "Playlist_NoBuild_BlastBerry_Squad",
+    "Playlist_NoBuild_DashBerry_Duo",
+    "Playlist_NoBuild_DashBerry_Solo",
+    "Playlist_NoBuild_DashBerry_Squad",
+    "Playlist_NoBuild_PunchBerry_Duo",
+    "Playlist_NoBuild_PunchBerry_Solo",
+    "Playlist_NoBuild_PunchBerry_Squad",
+    "Playlist_NoBuild_Ranked_Duo",
+    "Playlist_NoBuild_Ranked_Solo",
+    "Playlist_NoBuild_Ranked_Squad",
+    "Playlist_NoBuild_Ranked_Trio",
+    "Playlist_NoBuildBR_Habanero_Solo",
+    "Playlist_NoBuildSunflowerDuo",
+    "Playlist_NoBuildSunflowerSolo",
+    "Playlist_NoBuildSunflowerSquad",
+    "Playlist_NoBuildSunflowerTrio",
+    "Playlist_Ranked_Duo",
+    "Playlist_Ranked_Solo",
+    "Playlist_Ranked_Squad",
+    "Playlist_Ranked_Trio"
+  ],
+  "unresolved": [
+    {
+      "playlist_name": "Playlist_Beanstalk",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryNoBuildOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerryOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_DefaultQuint",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentNoBuildTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_FigmentTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Bots_NoBuildBR_Quint",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_BR_Lite",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Build_Cinco",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_Creative_Play_V2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DefaultPIE",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DefaultQuint",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_DelMar",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Alpine",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo2_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Apollo_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Aqueduct",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Borealis",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze01Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze02Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze03Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze04Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze06Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze07",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze08",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Drifting_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09DriftingAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09DriftingAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09Flying_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09FlyingAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze09FlyingAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10Adv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Bronze10Adv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cascade",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cave",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_10",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_4",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_5",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_6",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_7",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_8",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Challenge_QA_9",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_Alternate",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_COD_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_EasyRider",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_PerfTest01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_10",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_4",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_5",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_6",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_7",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_8",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_QA_9",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Competitive_Rotation",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_CoralCove",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Cruise",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_DeathRace",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_DifficultTrack",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Draino_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Draino_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Driftmania_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_GoldRush",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_Alternate",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_1",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Habanero_Competitive_QA_3",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra2_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra2_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Hydra_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Infinity_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Infinity_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Iron",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_JackRabbit_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_JackRabbit_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Jumper_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Jumper_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Kickflip_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Kickflip_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Limited",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Mobius",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_NUX",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_NUXJumper_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Olympus_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ouroboros_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ouroboros_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_OuroborosAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_OuroborosAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Phoenix_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Phoenix_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_PirateAdventure",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Poseidon_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Poseidon_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Racing_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Racing_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Rally_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Rally_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RallyAdv_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RallyAdv_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ranked_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Ranked_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RankedTest_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Riviera_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_RoundTwoEasy",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Seamless_Tutorial",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Sidewinder_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap2_SpeedRun",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Snap_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Advanced_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Root_Temp",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SpeedRun_Standard_Root",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SweetJumps_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_SweetJumps_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder02_Adv",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder02_Reversed",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Thunder03_Scenic",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_ThunderWP_01",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_ThunderWP_02",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Turbine_Racing",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Turbine_Ranked",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Tutorial",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_DelMar_Twister",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Delulu",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Delulu_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_EmptyPerf",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_EventSandbox",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine_15v15",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_BarkLine_NoBuild",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_CloseEncounters",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Figment_Martin_Md",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentBuild_Hardcore_Alt2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuild_Hardcore_Alt2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentNoBuildTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentSquad_Casual",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FigmentTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_FMClubIsland",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Duo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Squad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_Figment_Trio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Duo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Squad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_Figment_Trio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_SunflowerVkPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ItemTest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Juno",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_LightBunny_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_LocomotionInitiative",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Melt_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_MeltDisarmed_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuild_SunflowerVKPlayTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_BigBattle",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Quint",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_Papaya",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PaprikaPlaytest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PerfTest_Empty",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PilgrimQuickplay",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PilgrimQuickplay_Setlist",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootNoBuildOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_Playground",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PlaygroundV2",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Polaris",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryNoBuildOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_24",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_24_Alt",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_Alt_MiniMobile",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Respawn_MiniMobile",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShootersFTUE_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_CTS_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_NoBuildBR_CTS_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Icon_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Regular_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Regular_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownAlt_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownScrims_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTesting_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Architect_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Duos_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Icon_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Icon_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Regular_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Squads_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_BlueCheese_Trios_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_DefaultDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Delulu_NoBuild",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Duos_DS",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentDuos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildDuos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentNoBuildSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FigmentSquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_ZBM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FillOnly_ZBM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_TriosIcon_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FN_TriosIcon_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_Duos_JIP",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_PBM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_FNCS_PBM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ForbiddenFruitBuildSolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Gen_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LG_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_LS_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Melt_Solo_A",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Melt_Solos_NP",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_CRS_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Duos_DS",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Headset_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NoBuildBR_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_NPM_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuo_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuo_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuos_NPM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_OG_FigmentDuos_PBM",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_RC_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo_QA",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Solo_Test",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_ShowdownTournament_ZF_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SolidGold_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Sprout",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerDuoTest",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerNoBuildOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerOctet",
+      "reason": "unsupported-team-size"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlayDuo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlaySolo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlaySquad",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerVKPlayTrio",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_TestBuild_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Duos",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Solo",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_Toss_Trios",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Edit",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Play",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
+      "playlist_name": "Playlist_VK_Tournament",
+      "reason": "unsupported-or-insufficient-evidence"
+    }
+  ],
+  "conflicts": [
+    {
+      "playlist_name": "Playlist_BlastBerryDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Venture Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerrySolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Venture Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_BlastBerrySquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Venture Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_DashBerryDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Slurp Rush Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_DashBerrySolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Slurp Rush Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_DashBerrySquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Slurp Rush Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_DefaultDuo",
+      "community_name": "Duos",
+      "official_display_name": "Duos",
+      "preserved_display_name": "BR Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSolo",
+      "community_name": "Solo",
+      "official_display_name": "Solo",
+      "preserved_display_name": "BR Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_DefaultSquad",
+      "community_name": "Squads",
+      "official_display_name": "Squads",
+      "preserved_display_name": "BR Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 2,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Starfall Island - Duos"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSolo",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Starfall Island - Solo"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruit_CalmSambucusBRSquad",
+      "source_descriptor": {
+        "family": "Blitz",
+        "buildMode": "Zero Build",
+        "teamSize": 4,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Starfall Island - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRDuo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 2,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Asteria Awakened - Duos"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSolo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Asteria Awakened - Solo"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSquad",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 4,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Asteria Awakened - Squads"
+    },
+    {
+      "playlist_name": "Playlist_ForbiddenFruitOldNoBuildBRSolo",
+      "source_descriptor": {
+        "family": "Reload",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "unknown",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Blitz Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_JumpBear_Duos",
+      "community_name": "Ranked Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Ranked Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_HabaneroDuo",
+      "community_name": "Duos",
+      "official_display_name": null,
+      "preserved_display_name": "Ranked BR Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistSolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_MatchMistSquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Duo",
+      "community_name": "Zero Build - Duos",
+      "official_display_name": "Zero Build - Duos",
+      "preserved_display_name": "BR Zero Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Habanero_Solo",
+      "source_descriptor": {
+        "family": "BR",
+        "buildMode": "Zero Build",
+        "teamSize": 1,
+        "rankedState": "ranked",
+        "variant": null,
+        "sources": [
+          "fortnite-api.com/v1/playlists"
+        ],
+        "observedDate": "2026-09-13",
+        "confidence": "source-derived"
+      },
+      "official_display_name": null,
+      "preserved_display_name": "Ranked Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Solo",
+      "community_name": "Zero Build - Solo",
+      "official_display_name": "Zero Build - Solo",
+      "preserved_display_name": "BR Zero Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Squad",
+      "community_name": "Zero Build - Squads",
+      "official_display_name": "Zero Build - Squads",
+      "preserved_display_name": "BR Zero Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_Trio",
+      "community_name": "Zero Build - Trios",
+      "official_display_name": "Zero Build - Trios",
+      "preserved_display_name": "BR Zero Build - Trios"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Surf City - Duo"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootSolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Surf City - Solo"
+    },
+    {
+      "playlist_name": "Playlist_PiperBootSquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Surf City - Squad"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerryDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Oasis Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerrySolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Oasis Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_PunchBerrySquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Oasis Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_RopeSmileSolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerDuo",
+      "community_name": "Reload - Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Duos"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerSolo",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Solo"
+    },
+    {
+      "playlist_name": "Playlist_SunflowerSquad",
+      "community_name": "Reload - Squads",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build - Squads"
+    },
+    {
+      "playlist_name": "Playlist_Trios",
+      "community_name": "Trios",
+      "official_display_name": "Trios",
+      "preserved_display_name": "BR Build - Trios"
+    }
+  ],
+  "officialCoverage": {
+    "matched": [
+      "Playlist_Blitz_Duos",
+      "Playlist_Blitz_Solo",
+      "Playlist_Blitz_Squad",
+      "Playlist_Comp_Blitz_Solo",
+      "Playlist_DefaultDuo",
+      "Playlist_DefaultSolo",
+      "Playlist_DefaultSquad",
+      "Playlist_NoBuildBR_Duo",
+      "Playlist_NoBuildBR_Solo",
+      "Playlist_NoBuildBR_Squad",
+      "Playlist_NoBuildBR_Trio",
+      "Playlist_Trios"
+    ],
+    "historicalMissing": [
+      "Playlist_BlastBerryDuo",
+      "Playlist_BlastBerrySolo",
+      "Playlist_BlastBerrySquad",
+      "Playlist_DashBerryDuo",
+      "Playlist_DashBerrySolo",
+      "Playlist_DashBerrySquad",
+      "Playlist_DefaultTrio",
+      "Playlist_FigmentSquad",
+      "Playlist_ForbiddenFruit_CalmSambucusBRDuo",
+      "Playlist_ForbiddenFruit_CalmSambucusBRSolo",
+      "Playlist_ForbiddenFruit_CalmSambucusBRSquad",
+      "Playlist_ForbiddenFruitNoBuildBRDuo",
+      "Playlist_ForbiddenFruitNoBuildBRSolo",
+      "Playlist_ForbiddenFruitNoBuildBRSquad",
+      "Playlist_ForbiddenFruitOldNoBuildBRSolo",
+      "Playlist_Habanero_JumpBear_Duos",
+      "Playlist_HabaneroDuo",
+      "Playlist_MatchMistDuo",
+      "Playlist_MatchMistSolo",
+      "Playlist_MatchMistSquad",
+      "Playlist_NoBuild_BlastBerry_Duo",
+      "Playlist_NoBuild_BlastBerry_Solo",
+      "Playlist_NoBuild_BlastBerry_Squad",
+      "Playlist_NoBuild_DashBerry_Duo",
+      "Playlist_NoBuild_DashBerry_Solo",
+      "Playlist_NoBuild_DashBerry_Squad",
+      "Playlist_NoBuild_PunchBerry_Duo",
+      "Playlist_NoBuild_PunchBerry_Solo",
+      "Playlist_NoBuild_PunchBerry_Squad",
+      "Playlist_NoBuild_Ranked_Duo",
+      "Playlist_NoBuild_Ranked_Solo",
+      "Playlist_NoBuild_Ranked_Squad",
+      "Playlist_NoBuild_Ranked_Trio",
+      "Playlist_NoBuildBR_Habanero_Solo",
+      "Playlist_NoBuildSunflowerDuo",
+      "Playlist_NoBuildSunflowerSolo",
+      "Playlist_NoBuildSunflowerSquad",
+      "Playlist_NoBuildSunflowerTrio",
+      "Playlist_PiperBootDuo",
+      "Playlist_PiperBootSolo",
+      "Playlist_PiperBootSquad",
+      "Playlist_PunchBerryDuo",
+      "Playlist_PunchBerrySolo",
+      "Playlist_PunchBerrySquad",
+      "Playlist_Ranked_Duo",
+      "Playlist_Ranked_Solo",
+      "Playlist_Ranked_Squad",
+      "Playlist_Ranked_Trio",
+      "Playlist_RopeSmileDuo",
+      "Playlist_RopeSmileSolo",
+      "Playlist_SunflowerDuo",
+      "Playlist_SunflowerSolo",
+      "Playlist_SunflowerSquad"
+    ],
+    "officialOnly": [
+      {
+        "playlist_name": "Ground_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_33",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_50v50",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_50v50HE",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_50v50SAU",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_5x20",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Antares_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Antares_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Argon_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Argon_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Argon_HighTower_Duos_16",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Argon_HighTower_Solo_16",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Armadillo",
+        "official_display_name": "Collision"
+      },
+      {
+        "playlist_name": "Playlist_Arseniccore_Duos_Maxfog",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Arseniccore_Solo_Maxfog",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "playlist_arseniccore_squads_maxfog",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "playlist_arseniccore_trios_maxfog",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Ashton_Sm",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Auto_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Barrier_12",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Barrier_16",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Barrier_16_B_Lava",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_BattleLab",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_BattleLab_Fortnitemares_MaxFog",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Beagles_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Behind_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bling_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bling_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bling_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Blue_Squads",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Bodyguard_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bodyguard_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bodyguard_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bots_ArsenicCore_Solo_MaxFog",
+        "official_display_name": "Dev Autoflush Solos"
+      },
+      {
+        "playlist_name": "Playlist_Bounty_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bounty_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Bounty_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Buffet",
+        "official_display_name": "RIFT TOUR"
+      },
+      {
+        "playlist_name": "Playlist_Care_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Carmine",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Classic_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Classic_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Close_50",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Close_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Close_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Close_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Close_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Cobalt_Duos_P_Respawn",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Cobalt_HT_Duos",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Cobalt_HT_Trios",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "playlist_cobalt_squads_p_respawn",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Comp_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_BeachAssault",
+        "official_display_name": "BEACH ASSAULT BY PRUDIZ"
+      },
+      {
+        "playlist_name": "Playlist_Creative_Hyena_G",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_KaleTofu",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_16v16Dom",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_16v16LastMaze",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_1V1BF",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_200LevelRun",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_222DeathRun",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_2XZoneWars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_AdvancedRVB",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_BIOSZWTrio",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_BlitzRVB",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_BoltBash",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_BriteCityMafia",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_CageFGG",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_CarRoyaleRumble",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_CityRoyale",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ClixBF",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_CM",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ColorSwitch",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Containment",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_CourtCrashers",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_DAD_1.",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_DAD_2",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Doll",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Fashion",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FiendSlayer",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FinestYTReal2v2",
+        "official_display_name": "Finest's Realistic 2v2"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FishtopiaFishTycoon",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Fishy",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FortniteJB",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FortWars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_FreakyFlights",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_GhostVsShadowPro",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_GoCrazyArena",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_GoGoated3v3",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_GVP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_GvRvYvB",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_HotelFight",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_InfiniteDefaultDeathRun",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_JDuth100",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Laser",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_LavaCTF",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_LivingRoomPVP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_LoadoutWarfare",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_LockdownHorde",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Mars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_MarsTycoon",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_MIG8v8",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Money",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Mystery",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_NE30ZW",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_NewRVB2",
+        "official_display_name": "RED VS BLUE 2.0"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_O2Exp",
+        "official_display_name": "EASY LIFE AT THE O2"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_OneShot",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Outbreak",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_OutlawsHaven",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_OVB100GG",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PandvilBoxfights",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Pararoyale",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PHModernMall",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PiratesOF",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Pit",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PrimalRumble",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PRO100",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PRO2",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ProFFAArena",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ProFishing",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PropHuntInfinite",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ProRVB",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ProRVB100",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PWR_SalvageSurvival",
+        "official_display_name": "Salvage Survival | PWR"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_PWRTinyTown",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Realistic",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RGYPCarFight",
+        "official_display_name": "Red&Green vs Yellow&Purple Car Fight"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RocketsVsCars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVBGG8v8",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVBLava",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVBOGPrison",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVBRumble",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVBXS",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_RVGDinosaurs",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ShadowVsGhost",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SimpleTriosZoneWars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Skydock",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Skyfall",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Skyland",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Crystal",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Gilded",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Gold",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Midas",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Santa",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Shopper",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Spy_Steam",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SpyTycoon",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Summer",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SunriseHorde",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SurvivalSim",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SurvivalSimDesert",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_SurviveTheCity",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_TheHoleFFA",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_TheMarch",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ThemeParkSummerEvent",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_TideTycoonFishing",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Tropical",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_TropicalThunder",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Tycoon",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Underwater",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Underworld",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_VehicleHub",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_VertigoDR",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_VolcanoWars",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_WallWars",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_WatermaniaUltimate",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_Waterpark",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_WildlandsSurvival",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_WorldsEndMillionaireMansion",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZodiacGG",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZombieIsland",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZoneWarsP",
+        "official_display_name": "Duo Zone Wars: Purgatory"
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZooGunGame",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZWBF",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_LTM_ZWPlacement",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_PlayOnly",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_PlayOnly_40",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_PuppyHugs",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_SourDropper",
+        "official_display_name": "Search and Destroy"
+      },
+      {
+        "playlist_name": "Playlist_Creative_SourDropper_2",
+        "official_display_name": "Search and Destroy"
+      },
+      {
+        "playlist_name": "Playlist_Creative_Squad_Battle_16_A",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_Squad_Battle_16_B",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_Squad_Battle_32_A",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_Vigilante",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_A",
+        "official_display_name": "Colosseum"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_D",
+        "official_display_name": "Zone Wars 4"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_DH",
+        "official_display_name": "Downhill River"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_Random",
+        "official_display_name": "PARTY FFA"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_Random2",
+        "official_display_name": "SOLO FFA"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_Random_Solos",
+        "official_display_name": "Zone Wars 3"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_Random_Squads",
+        "official_display_name": "Zone Wars 0"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_solos",
+        "official_display_name": "Zone Wars 0"
+      },
+      {
+        "playlist_name": "Playlist_Creative_ZebraWallet_V",
+        "official_display_name": "Vortex"
+      },
+      {
+        "playlist_name": "Playlist_Crucible_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_DADBRO_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_DADBRO_Squads_12",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_DADBRO_Squads_8",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Daybreak_PE_Squads",
+        "official_display_name": "Impossible Escape! PvE"
+      },
+      {
+        "playlist_name": "Playlist_Daybreak_PP_Squads",
+        "official_display_name": "Impossible Escape! PvP"
+      },
+      {
+        "playlist_name": "playlist_deimos_50",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Duo",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Duo_Winter",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Solo",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Solo_Winter",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Squad",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Deimos_Squad_Winter",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Disco",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Disco_32",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Disco_32_Alt",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Fill_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Fill_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Fill_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Final_12",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Final_20",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Fluoride_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Fluoride_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_FlyExplosives_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_FlyExplosives_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_FlyExplosives_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Goose_Duos_16",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Goose_Duos_16_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Goose_Duos_24",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Goose_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Goose_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Green_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Green_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Green_Squad",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Ground_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Ground_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Guava",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Gungame_Reverse",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Gungame_Reverse_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Hard_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Hard_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Heavy_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Heavy_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Heavy_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_HighExplosives_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_HighExplosives_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_HighExplosives_Squads / Event 24",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_hightower",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_hightower_12",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_HighTower_Hydro",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_HighTower_Hydro_12v12",
+        "official_display_name": "Marvel Takeover"
+      },
+      {
+        "playlist_name": "Playlist_Hover",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Hover_48",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Hover_64",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Hydrogen_24",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Infiltration",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "playlist_junior_32",
+        "official_display_name": "THE DEVOURER OF WORLDS"
+      },
+      {
+        "playlist_name": "Playlist_Kiwi",
+        "official_display_name": "OPERATION: SKY FIRE"
+      },
+      {
+        "playlist_name": "Playlist_LeadAlloy_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Love_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Love_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Love_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Low_Duos",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Low_Solo",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Low_Squads",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Madman_Squads",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Madman_Trios",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Mash_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "playlist_mash_squads_legacy",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Melt_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Melt_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Melt_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Melt_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_MeltDisarmed_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_MeltDisarmed_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_MeltDisarmed_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Mira_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Mira_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Mira_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_MoleGame",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_MoleGameVoice",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Music_High",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Music_Higher",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Music_Highest   ",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Music_Low",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Music_Lowest",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Music_Med",
+        "official_display_name": "Travis Scott’s Astronomical"
+      },
+      {
+        "playlist_name": "Playlist_Nickel_Evergreen_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Nickel_Evergreen_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Nickel_Evergreen_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Nitrogen12_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Nitrogen12_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Nitrogen12_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_NowPlaying",
+        "official_display_name": "Now Playing!"
+      },
+      {
+        "playlist_name": "Playlist_Omaha",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Papaya",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Paradise_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Phosphorus_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Phosphorus_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_PhosphorusWipeout_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_PhosphorusWipeout_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_PhosphorusWipeout_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_PhosphorusWipeout_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_PlaygroundV2",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Polaris_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Pow_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Purple_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Race_12",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Rebirth_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Rebirth_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_20_Lava",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_20_Sif",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24_Alt",
+        "official_display_name": "Team Rumble"
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24_Low",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24_SolidGold",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24_Unvaulted",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_24_Vamp",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Respawn_Vamp_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_RespawnPB_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "playlist_rumble_op",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Score_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Score_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Score_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Score_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_ShowdownAlt_BlueFlatline16_1v1",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Slide_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Slide_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Slide_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sneaky_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sneaky_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sneaky_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Snipers_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Snipers_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Snipers_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Soaring_50s",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Soaring_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Soaring_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Soaring_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_SolidGold_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_SolidGold_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_SolidGold_Squads",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_SolidGold_Trios",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Steady_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Steady_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Steady_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Strategic_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Swap_Squads_Respawn",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sword_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sword_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Sword_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Tag_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Tank_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Tank_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Tank_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Taxes_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Taxes_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Taxes_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Titanium_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Titanium_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Titanium_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Toss_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Toss_Duos_SP",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Toss_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Toss_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Toss_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Unvaulted_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Unvaulted_Squads",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Unvaulted_Trios",
+        "official_display_name": ""
+      },
+      {
+        "playlist_name": "Playlist_Uranium_P",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vamp_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vamp_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vendetta_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vendetta_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vendetta_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Vendetta_Trios",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Wax_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Wax_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Wax_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_WinterArena_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_WW_Duos",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_WW_Solo",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_WW_Squads",
+        "official_display_name": null
+      },
+      {
+        "playlist_name": "Playlist_Yogurt",
+        "official_display_name": "ZERO CRISIS FINALE"
+      }
+    ],
+    "labelConflicts": [
+      {
+        "playlist_name": "Playlist_DefaultDuo",
+        "official_display_name": "Duos",
+        "preserved_display_name": "BR Build - Duos"
+      },
+      {
+        "playlist_name": "Playlist_DefaultSolo",
+        "official_display_name": "Solo",
+        "preserved_display_name": "BR Build - Solo"
+      },
+      {
+        "playlist_name": "Playlist_DefaultSquad",
+        "official_display_name": "Squads",
+        "preserved_display_name": "BR Build - Squads"
+      },
+      {
+        "playlist_name": "Playlist_NoBuildBR_Duo",
+        "official_display_name": "Zero Build - Duos",
+        "preserved_display_name": "BR Zero Build - Duos"
+      },
+      {
+        "playlist_name": "Playlist_NoBuildBR_Solo",
+        "official_display_name": "Zero Build - Solo",
+        "preserved_display_name": "BR Zero Build - Solo"
+      },
+      {
+        "playlist_name": "Playlist_NoBuildBR_Squad",
+        "official_display_name": "Zero Build - Squads",
+        "preserved_display_name": "BR Zero Build - Squads"
+      },
+      {
+        "playlist_name": "Playlist_NoBuildBR_Trio",
+        "official_display_name": "Zero Build - Trios",
+        "preserved_display_name": "BR Zero Build - Trios"
+      },
+      {
+        "playlist_name": "Playlist_Trios",
+        "official_display_name": "Trios",
+        "preserved_display_name": "BR Build - Trios"
+      }
+    ]
+  }
+}

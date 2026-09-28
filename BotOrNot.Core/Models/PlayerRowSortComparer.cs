@@ -7,8 +7,9 @@ namespace BotOrNot.Core.Models;
 /// sort order directly — callers use OrderBy (never negate the result).
 ///
 /// When <paramref name="descending"/> is true, non-unknown values are returned
-/// in descending order. Unknown/null/empty values always sort to bottom
+/// in descending order. Unknown/null/empty selected values always sort to bottom
 /// unless <paramref name="unknownsFirst"/> is true (then they sort to top).
+/// Null PlayerRow objects always sort to bottom, regardless of either setting.
 /// </summary>
 public sealed class PlayerRowSortComparer : IComparer<PlayerRow>, IComparer
 {
@@ -44,18 +45,9 @@ public sealed class PlayerRowSortComparer : IComparer<PlayerRow>, IComparer
         var xUnknown = IsUnknownOrEmpty(vx);
         var yUnknown = IsUnknownOrEmpty(vy);
 
-        if (_unknownsFirst)
-        {
-            if (xUnknown && yUnknown) return 0;
-            if (xUnknown) return -1;
-            if (yUnknown) return 1;
-        }
-        else
-        {
-            if (xUnknown && yUnknown) return 0;
-            if (xUnknown) return 1;
-            if (yUnknown) return -1;
-        }
+        if (xUnknown && yUnknown) return 0;
+        if (xUnknown) return _unknownsFirst ? -1 : 1;
+        if (yUnknown) return _unknownsFirst ? 1 : -1;
 
         int result;
 

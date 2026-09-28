@@ -1,0 +1,1064 @@
+diff --git a/src/FortniteReplayReader/FortniteReplayBuilder.cs b/src/FortniteReplayReader/FortniteReplayBuilder.cs
+index ac80328..3d609e3 100644
+--- a/src/FortniteReplayReader/FortniteReplayBuilder.cs
++++ b/src/FortniteReplayReader/FortniteReplayBuilder.cs
+@@ -1,4 +1,4 @@
+-﻿using System.Collections.Generic;
++using System.Collections.Generic;
+ using System.Diagnostics.CodeAnalysis;
+ using System.Linq;
+ using FortniteReplayReader.Models;
+@@ -27,6 +27,8 @@ public class FortniteReplayBuilder
+ 
+     private readonly HashSet<uint> _onlySpectatingPlayers = new();
+     private readonly Dictionary<uint, PlayerData> _players = new();
++    private readonly List<PlayerData> _retiredPlayers = new();
++    private PlayerData? _replayOwner;
+     private readonly Dictionary<int?, TeamData> _teams = new();
+     private readonly Dictionary<uint, Llama> _llamas = new();
+     private readonly Dictionary<int, RebootVan> _rebootVans = new();
+@@ -36,19 +38,58 @@ public class FortniteReplayBuilder
+     private readonly Dictionary<uint, WeaponData> _weapons = new();
+     private readonly Dictionary<uint, WeaponData> _unknownWeapons = new();
+ 
++    private readonly Dictionary<uint, SafeZoneState> _safeZoneStates = new();
++
+     private float? ReplicatedWorldTimeSeconds = 0;
+     private double? ReplicatedWorldTimeSecondsDouble = 0;
+ 
+     public void AddActorChannel(uint channelIndex, uint guid)
+     {
++        // Channels and actor GUIDs may both be reused. Keep the two indexes in sync so
++        // an old RecorderId mapping can never point at a different channel occupant.
++        if (_channelToActor.TryGetValue(channelIndex, out var previousActor) && previousActor != guid)
++        {
++            _safeZoneStates.Remove(channelIndex);
++            if (_actorToChannel.TryGetValue(previousActor, out var previousActorChannel) &&
++                previousActorChannel == channelIndex)
++            {
++                _actorToChannel.Remove(previousActor);
++            }
++        }
++
++        if (_actorToChannel.TryGetValue(guid, out var previousChannel) && previousChannel != channelIndex &&
++            _channelToActor.TryGetValue(previousChannel, out var previousChannelActor) &&
++            previousChannelActor == guid)
++        {
++            _channelToActor.Remove(previousChannel);
++            _safeZoneStates.Remove(previousChannel);
++        }
++
+         _actorToChannel[guid] = channelIndex;
+         _channelToActor[channelIndex] = guid;
++        ReconcileReplayOwner();
+     }
+ 
+     public void RemoveChannel(uint channelIndex)
+     {
+         _weapons.Remove(channelIndex);
+         _unknownWeapons.Remove(channelIndex);
++
++        // Preserve completed player history while allowing a later actor to reuse the
++        // numeric channel without inheriting the departed player's model or owner flag.
++        if (_players.Remove(channelIndex, out var playerData))
++        {
++            _retiredPlayers.Add(playerData);
++        }
++        _onlySpectatingPlayers.Remove(channelIndex);
++        _safeZoneStates.Remove(channelIndex);
++
++        if (_channelToActor.Remove(channelIndex, out var actorId) &&
++            _actorToChannel.TryGetValue(actorId, out var actorChannel) &&
++            actorChannel == channelIndex)
++        {
++            _actorToChannel.Remove(actorId);
++        }
+     }
+ 
+     /// <summary>
+@@ -58,12 +99,13 @@ public class FortniteReplayBuilder
+     /// <returns>FortniteReplay</returns>
+     public FortniteReplay Build(FortniteReplay replay)
+     {
++        ReconcileReplayOwner(force: true);
+         UpdateTeamData();
+         replay.GameData = GameData;
+         replay.MapData = MapData;
+         replay.KillFeed = KillFeed;
+         replay.TeamData = _teams.Values;
+-        replay.PlayerData = _players.Values;
++        replay.PlayerData = _retiredPlayers.Concat(_players.Values).ToArray();
+         return replay;
+     }
+ 
+@@ -119,6 +161,7 @@ public class FortniteReplayBuilder
+         GameData.MaxPlayers ??= state.TeamCount;
+         GameData.TeamSize ??= state.TeamSize;
+         GameData.TeamSize ??= state.ActiveTeamNums?.Length;
++        GameData.RecordedTeamSize ??= state.TeamSize;
+         GameData.TotalBots = state.PlayerBotsLeft > GameData.TotalBots ? state.PlayerBotsLeft : GameData.TotalBots;
+ 
+         GameData.TotalPlayerStructures ??= state.TotalPlayerStructures;
+@@ -141,6 +184,7 @@ public class FortniteReplayBuilder
+         GameData.WinningPlayerIds ??= state.WinningPlayerList;
+         GameData.WinningTeam ??= state.WinningTeam;
+         GameData.RecorderId ??= state.RecorderPlayerState?.Value;
++        ReconcileReplayOwner();
+     }
+ 
+     public void UpdatePrivateName(uint channelIndex, PlayerNameData playerNameData)
+@@ -157,7 +201,7 @@ public class FortniteReplayBuilder
+ 
+     public void UpdateTeamData()
+     {
+-        foreach (var playerData in _players.Values)
++        foreach (var playerData in _retiredPlayers.Concat(_players.Values))
+         {
+             if (playerData?.TeamIndex == null)
+             {
+@@ -190,7 +234,7 @@ public class FortniteReplayBuilder
+         }
+     }
+ 
+-    public void UpdatePlayerState(uint channelIndex, FortPlayerState state)
++    public void UpdatePlayerState(uint channelIndex, FortPlayerState state, float? replayTimeSeconds = null)
+     {
+         if (state.bOnlySpectator == true)
+         {
+@@ -208,14 +252,14 @@ public class FortniteReplayBuilder
+         if (isNewPlayer)
+         {
+             playerData = new PlayerData(state);
+-
+-            if (_channelToActor.TryGetValue(channelIndex, out var actorId) && actorId == GameData.RecorderId)
+-            {
+-                playerData.IsReplayOwner = true;
+-            }
+-
+             _players[channelIndex] = playerData;
+         }
++        else
++        {
++            playerData.Update(state);
++        }
++
++        ReconcileReplayOwner();
+ 
+         if (state.RebootCounter > 0 && state.RebootCounter > playerData.RebootCounter)
+         {
+@@ -224,7 +268,7 @@ public class FortniteReplayBuilder
+ 
+         if (state.RebootCounter > 0 || state.bDBNO != null || state.DeathCause != null || state.DeathLocation != null)
+         {
+-            UpdateKillFeed(channelIndex, playerData, state);
++            UpdateKillFeed(channelIndex, playerData, state, replayTimeSeconds);
+         }
+ 
+         if (state.TeamIndex > 0)
+@@ -259,12 +303,54 @@ public class FortniteReplayBuilder
+         }
+     }
+ 
+-    public void UpdateKillFeed(uint channelIndex, PlayerData data, FortPlayerState state)
++    /// <summary>
++    /// Resolves the authoritative recorder actor GUID through the current actor/channel map.
++    /// If the mapping is unavailable, an already resolved owner remains stable; no weaker
++    /// player ID, account ID, or elimination heuristic is used.
++    /// </summary>
++    private void ReconcileReplayOwner(bool force = false)
++    {
++        if (GameData.RecorderId is not uint recorderActorId ||
++            !_actorToChannel.TryGetValue(recorderActorId, out var recorderChannel) ||
++            !_channelToActor.TryGetValue(recorderChannel, out var mappedActorId) ||
++            mappedActorId != recorderActorId ||
++            !_players.TryGetValue(recorderChannel, out var recorderPlayer))
++        {
++            return;
++        }
++
++        if (!force && ReferenceEquals(_replayOwner, recorderPlayer))
++        {
++            return;
++        }
++
++        if (!force)
++        {
++            if (_replayOwner is not null)
++            {
++                _replayOwner.IsReplayOwner = false;
++            }
++            recorderPlayer.IsReplayOwner = true;
++            _replayOwner = recorderPlayer;
++            return;
++        }
++
++        foreach (var player in _retiredPlayers.Concat(_players.Values))
++        {
++            player.IsReplayOwner = ReferenceEquals(player, recorderPlayer);
++        }
++        _replayOwner = recorderPlayer;
++    }
++
++    public void UpdateKillFeed(uint channelIndex, PlayerData data, FortPlayerState state, float? replayTimeSeconds = null)
+     {
+         var entry = new KillFeedEntry()
+         {
+             ReplicatedWorldTimeSeconds = ReplicatedWorldTimeSeconds,
+             ReplicatedWorldTimeSecondsDouble = ReplicatedWorldTimeSecondsDouble,
++            ReplayTimeSeconds = replayTimeSeconds,
++            IsDbno = state.bDBNO,
++            RebootCounter = state.RebootCounter,
+         };
+ 
+         if (state.RebootCounter != null)
+@@ -295,7 +381,9 @@ public class FortniteReplayBuilder
+         entry.DeathCause ??= state.DeathCause;
+         entry.DeathLocation ??= state.DeathLocation;
+         entry.DeathCircumstance ??= state.DeathCircumstance;
+-        entry.DeathTags ??= state.DeathTags?.Tags?.Select(i => i.TagName);
++        entry.DeathTags ??= state.DeathTags?.Tags?.Select(i => i.TagName).ToArray();
++        entry.VictimTags ??= state.VictimTags?.Tags?.Select(i => i.TagName).ToArray();
++        entry.FinisherOrDownerTags ??= state.FinisherOrDownerTags?.Tags?.Select(i => i.TagName).ToArray();
+ 
+         KillFeed.Add(entry);
+     }
+@@ -472,14 +560,62 @@ public class FortniteReplayBuilder
+         newWeapon.WeaponName ??= weapon.WeaponData?.Name;
+     }
+ 
+-    public void UpdateSafeZones(SafeZoneIndicator safeZone)
++    public void UpdateSafeZones(uint channelIndex, SafeZoneIndicator safeZone, float? replayTimeSeconds = null)
+     {
+-        if (safeZone.SafeZoneStartShrinkTime <= 0 && safeZone.SafeZoneFinishShrinkTime <= 0)
++        if (!_safeZoneStates.TryGetValue(channelIndex, out var state))
++        {
++            state = new SafeZoneState();
++            _safeZoneStates[channelIndex] = state;
++        }
++
++        var changed = Merge(ref state.StartShrinkTime, safeZone.SafeZoneStartShrinkTime);
++        changed |= Merge(ref state.FinishShrinkTime, safeZone.SafeZoneFinishShrinkTime);
++        changed |= Merge(ref state.CurrentPhase, safeZone.CurrentPhase);
++        changed |= Merge(ref state.PhaseCount, safeZone.PhaseCount);
++        if (!changed)
+         {
+             return;
+         }
+ 
+-        MapData.SafeZones.Add(new SafeZone(safeZone));
++        uint? actorGuid = _channelToActor.TryGetValue(channelIndex, out var mappedActorGuid)
++            ? mappedActorGuid
++            : null;
++        var observation = new SafeZone(safeZone)
++        {
++            ChannelIndex = channelIndex,
++            ActorGuid = actorGuid,
++            ReplayTimeSeconds = replayTimeSeconds,
++            ReplicatedWorldTimeSeconds = ReplicatedWorldTimeSeconds,
++            ReplicatedWorldTimeSecondsDouble = ReplicatedWorldTimeSecondsDouble,
++            StartShrinkTime = state.StartShrinkTime,
++            FinishShrinkTime = state.FinishShrinkTime,
++            CurrentPhase = state.CurrentPhase,
++            PhaseCount = state.PhaseCount,
++            StartShrinkTimeWasExported = safeZone.SafeZoneStartShrinkTime.HasValue,
++            FinishShrinkTimeWasExported = safeZone.SafeZoneFinishShrinkTime.HasValue,
++            CurrentPhaseWasExported = safeZone.CurrentPhase.HasValue,
++            PhaseCountWasExported = safeZone.PhaseCount.HasValue,
++        };
++        MapData.SafeZones.Add(observation);
++    }
++
++    private static bool Merge<T>(ref T? current, T? update) where T : struct
++    {
++        if (!update.HasValue || EqualityComparer<T?>.Default.Equals(current, update))
++        {
++            return false;
++        }
++
++        current = update;
++        return true;
++    }
++
++    private sealed class SafeZoneState
++    {
++        public float? StartShrinkTime;
++        public float? FinishShrinkTime;
++        public int? CurrentPhase;
++        public int? PhaseCount;
+     }
+ 
+     public void UpdateLlama(uint channelIndex, SupplyDropLlama supplyDropLlama)
+diff --git a/src/FortniteReplayReader/FortniteReplayReader.cs b/src/FortniteReplayReader/FortniteReplayReader.cs
+index 11a1e92..d9f1110 100644
+--- a/src/FortniteReplayReader/FortniteReplayReader.cs
++++ b/src/FortniteReplayReader/FortniteReplayReader.cs
+@@ -72,10 +72,7 @@ public class ReplayReader : Unreal.Core.ReplayReader<FortniteReplay>
+ 
+     protected override void OnChannelClosed(uint channelIndex, NetworkGUID? actor)
+     {
+-        if (actor != null)
+-        {
+-            Builder.RemoveChannel(channelIndex);
+-        }
++        Builder.RemoveChannel(channelIndex);
+     }
+ 
+     protected override void OnNetDeltaRead(uint channelIndex, NetDeltaUpdate update)
+@@ -108,7 +105,7 @@ public class ReplayReader : Unreal.Core.ReplayReader<FortniteReplay>
+                 Builder.UpdatePlaylistInfo(playlist);
+                 break;
+             case FortPlayerState state:
+-                Builder.UpdatePlayerState(channelIndex, state);
++                Builder.UpdatePlayerState(channelIndex, state, CurrentReplayTimeSeconds);
+                 break;
+             case PlayerPawn pawn:
+                 Builder.UpdatePlayerPawn(channelIndex, pawn);
+@@ -123,7 +120,7 @@ public class ReplayReader : Unreal.Core.ReplayReader<FortniteReplay>
+             //    Builder.UpdateExplosion(explosion);
+             //    break;
+             case SafeZoneIndicator safeZone:
+-                Builder.UpdateSafeZones(safeZone);
++                Builder.UpdateSafeZones(channelIndex, safeZone, CurrentReplayTimeSeconds);
+                 break;
+             case SupplyDropLlama llama:
+                 Builder.UpdateLlama(channelIndex, llama);
+diff --git a/src/FortniteReplayReader/Models/GameData.cs b/src/FortniteReplayReader/Models/GameData.cs
+index d9b828d..052e852 100644
+--- a/src/FortniteReplayReader/Models/GameData.cs
++++ b/src/FortniteReplayReader/Models/GameData.cs
+@@ -22,6 +22,7 @@ public class GameData
+     public int? TotalTeams { get; set; }
+     public int? TotalBots { get; set; }
+     public int? TeamSize { get; set; }
++    public int? RecordedTeamSize { get; set; }
+     public int? TotalPlayerStructures { get; set; }
+ 
+     public bool IsTournamentRound => TournamentRound > 0;
+diff --git a/src/FortniteReplayReader/Models/KillFeedEntry.cs b/src/FortniteReplayReader/Models/KillFeedEntry.cs
+index b7cb4b7..da072d4 100644
+--- a/src/FortniteReplayReader/Models/KillFeedEntry.cs
++++ b/src/FortniteReplayReader/Models/KillFeedEntry.cs
+@@ -15,11 +15,17 @@ public class KillFeedEntry
+ 
+     public float? ReplicatedWorldTimeSeconds { get; set; }
+     public double? ReplicatedWorldTimeSecondsDouble { get; set; }
++    public float? ReplayTimeSeconds { get; set; }
+     public float? Distance { get; set; }
+     public int? DeathCause { get; set; }
+     public FVector DeathLocation { get; set; }
+     public int? DeathCircumstance { get; set; }
+     public IEnumerable<string> DeathTags { get; set; }
++    public IEnumerable<string> VictimTags { get; set; }
++    public IEnumerable<string> FinisherOrDownerTags { get; set; }
++
++    public bool? IsDbno { get; set; }
++    public uint? RebootCounter { get; set; }
+ 
+     public bool IsDowned { get; set; }
+     public bool IsRevived { get; set; }
+diff --git a/src/FortniteReplayReader/Models/NetFieldExports/GameState.cs b/src/FortniteReplayReader/Models/NetFieldExports/GameState.cs
+index f2362f4..5f6e41d 100644
+--- a/src/FortniteReplayReader/Models/NetFieldExports/GameState.cs
++++ b/src/FortniteReplayReader/Models/NetFieldExports/GameState.cs
+@@ -1,4 +1,4 @@
+-﻿using Unreal.Core.Attributes;
++using Unreal.Core.Attributes;
+ using Unreal.Core.Contracts;
+ using Unreal.Core.Models;
+ using Unreal.Core.Models.Enums;
+@@ -391,3 +391,13 @@ public class GameState : INetFieldExportGroup
+     public double RealMatchStartTime { get; set; }
+ 
+ }
++
++[NetFieldExportClassNetCache("Playspace_GameState_C_ClassNetCache", minimalParseMode: ParseMode.Minimal)]
++public class PlayspaceGameStateCache : GameStateCache
++{
++}
++
++[NetFieldExportGroup("/Game/Athena/Playspace_GameState.Playspace_GameState_C", minimalParseMode: ParseMode.Minimal)]
++public class PlayspaceGameState : GameState
++{
++}
+diff --git a/src/FortniteReplayReader/Models/NetFieldExports/SafeZoneIndicator.cs b/src/FortniteReplayReader/Models/NetFieldExports/SafeZoneIndicator.cs
+index 3b17904..796231b 100644
+--- a/src/FortniteReplayReader/Models/NetFieldExports/SafeZoneIndicator.cs
++++ b/src/FortniteReplayReader/Models/NetFieldExports/SafeZoneIndicator.cs
+@@ -33,10 +33,10 @@ public class SafeZoneIndicator : INetFieldExportGroup
+     public FVector NextNextCenter { get; set; }
+ 
+     [NetFieldExport("SafeZoneStartShrinkTime", RepLayoutCmdType.PropertyFloat)]
+-    public float SafeZoneStartShrinkTime { get; set; }
++    public float? SafeZoneStartShrinkTime { get; set; }
+ 
+     [NetFieldExport("SafeZoneFinishShrinkTime", RepLayoutCmdType.PropertyFloat)]
+-    public float SafeZoneFinishShrinkTime { get; set; }
++    public float? SafeZoneFinishShrinkTime { get; set; }
+ 
+     [NetFieldExport("bPausedForPreview", RepLayoutCmdType.PropertyBool)]
+     public bool bPausedForPreview { get; set; }
+@@ -50,8 +50,8 @@ public class SafeZoneIndicator : INetFieldExportGroup
+     [NetFieldExport("PreviousRadius", RepLayoutCmdType.PropertyFloat)]
+     public float PreviousRadius { get; set; }
+ 
+-    [NetFieldExport("CurrentPhase", RepLayoutCmdType.PropertyFloat)]
+-    public float CurrentPhase { get; set; }
++    [NetFieldExport("CurrentPhase", RepLayoutCmdType.PropertyInt)]
++    public int? CurrentPhase { get; set; }
+ 
+     [NetFieldExport("PreviousCenter", RepLayoutCmdType.PropertyVector100)]
+     public FVector PreviousCenter { get; set; }
+@@ -59,8 +59,8 @@ public class SafeZoneIndicator : INetFieldExportGroup
+     [NetFieldExport("Damage", RepLayoutCmdType.PropertyFloat)]
+     public float Damage { get; set; }
+ 
+-    [NetFieldExport("PhaseCount", RepLayoutCmdType.PropertyFloat)]
+-    public float PhaseCount { get; set; }
++    [NetFieldExport("PhaseCount", RepLayoutCmdType.PropertyInt)]
++    public int? PhaseCount { get; set; }
+ 
+     [NetFieldExport("TimeRemainingWhenPhasePaused", RepLayoutCmdType.PropertyFloat)]
+     public float TimeRemainingWhenPhasePaused { get; set; }
+diff --git a/src/FortniteReplayReader/Models/PlayerData.cs b/src/FortniteReplayReader/Models/PlayerData.cs
+index f78d19f..1b1e05b 100644
+--- a/src/FortniteReplayReader/Models/PlayerData.cs
++++ b/src/FortniteReplayReader/Models/PlayerData.cs
+@@ -1,4 +1,4 @@
+-﻿using System.Collections.Generic;
++using System.Collections.Generic;
+ using FortniteReplayReader.Models.NetFieldExports;
+ using Unreal.Core.Models;
+ 
+@@ -8,31 +8,75 @@ public class PlayerData
+ {
+     public PlayerData(FortPlayerState playerState)
+     {
+-        Id = playerState.PlayerId is null ? playerState.PlayerID : (int?)playerState.PlayerId;
+-        EpicId = playerState.UniqueId ?? playerState.UniqueID;
+-        BotId = playerState.BotUniqueId;
+-        IsBot = playerState.bIsABot == true;
+-        PlayerNameCustomOverride = playerState.PlayerNameCustomOverride?.Text;
+-        IsGameSessionOwner = playerState.bIsGameSessionOwner;
+-        PlayerNumber = playerState.WorldPlayerId is not null ? (int?)playerState.WorldPlayerId : null;
+-        StreamerModeName = playerState.StreamerModeName?.Text;
+-        IsPartyLeader = playerState.PartyOwnerUniqueId == playerState.UniqueId || playerState.PartyOwnerUniqueId == playerState.UniqueID;
+-        TeamIndex = playerState.TeamIndex;
+-        Level = playerState.Level;
+-        SeasonLevelUIDisplay = playerState.SeasonLevelUIDisplay;
+-        PlatformUniqueNetId = playerState.PlatformUniqueNetId;
+-        Platform = playerState.Platform;
+-        HasFinishedLoading = playerState.bHasFinishedLoading;
+-        HasStartedPlaying = playerState.bHasStartedPlaying;
+-        IsUsingAnonymousMode = playerState.bUsingAnonymousMode;
+-        IsUsingStreamerMode = playerState.bUsingStreamerMode;
+-
+         Cosmetics = new Cosmetics()
+         {
+-            CharacterBodyType = playerState.CharacterBodyType,
+-            HeroType = playerState.HeroType?.Name,
+-            CharacterGender = playerState.CharacterGender
+         };
++
++        Update(playerState);
++    }
++
++    /// <summary>
++    /// Applies an incremental player-state export. Missing fields do not erase values from
++    /// earlier exports, while explicit false and zero values remain meaningful updates.
++    /// </summary>
++    public void Update(FortPlayerState playerState)
++    {
++        if (playerState.PlayerId is not null)
++            Id = (int?)playerState.PlayerId;
++        else if (playerState.PlayerID is not null)
++            Id = playerState.PlayerID;
++
++        if (!string.IsNullOrEmpty(playerState.UniqueId))
++            EpicId = playerState.UniqueId;
++        else if (!string.IsNullOrEmpty(playerState.UniqueID))
++            EpicId = playerState.UniqueID;
++
++        if (!string.IsNullOrEmpty(playerState.BotUniqueId))
++            BotId = playerState.BotUniqueId;
++        if (playerState.bIsABot is not null)
++            IsBot = playerState.bIsABot.Value;
++        if (playerState.PlayerNameCustomOverride is not null)
++            PlayerNameCustomOverride = playerState.PlayerNameCustomOverride.Text;
++        if (playerState.bIsGameSessionOwner is not null)
++            IsGameSessionOwner = playerState.bIsGameSessionOwner;
++        if (playerState.WorldPlayerId is not null)
++            PlayerNumber = playerState.WorldPlayerId;
++        if (playerState.StreamerModeName is not null)
++            StreamerModeName = playerState.StreamerModeName.Text;
++        if (!string.IsNullOrEmpty(playerState.PartyOwnerUniqueId))
++        {
++            var effectivePlayerId = !string.IsNullOrEmpty(playerState.UniqueId)
++                ? playerState.UniqueId
++                : !string.IsNullOrEmpty(playerState.UniqueID)
++                    ? playerState.UniqueID
++                    : EpicId;
++            IsPartyLeader = playerState.PartyOwnerUniqueId == effectivePlayerId;
++        }
++        if (playerState.TeamIndex is not null)
++            TeamIndex = playerState.TeamIndex;
++        if (playerState.Level is not null)
++            Level = playerState.Level;
++        if (playerState.SeasonLevelUIDisplay is not null)
++            SeasonLevelUIDisplay = playerState.SeasonLevelUIDisplay;
++        if (!string.IsNullOrEmpty(playerState.PlatformUniqueNetId))
++            PlatformUniqueNetId = playerState.PlatformUniqueNetId;
++        if (!string.IsNullOrEmpty(playerState.Platform))
++            Platform = playerState.Platform;
++        if (playerState.bHasFinishedLoading is not null)
++            HasFinishedLoading = playerState.bHasFinishedLoading;
++        if (playerState.bHasStartedPlaying is not null)
++            HasStartedPlaying = playerState.bHasStartedPlaying;
++        if (playerState.bUsingAnonymousMode is not null)
++            IsUsingAnonymousMode = playerState.bUsingAnonymousMode;
++        if (playerState.bUsingStreamerMode is not null)
++            IsUsingStreamerMode = playerState.bUsingStreamerMode;
++
++        if (playerState.CharacterBodyType is not null)
++            Cosmetics.CharacterBodyType = playerState.CharacterBodyType;
++        if (playerState.HeroType is not null)
++            Cosmetics.HeroType = playerState.HeroType.Name;
++        if (playerState.CharacterGender is not null)
++            Cosmetics.CharacterGender = playerState.CharacterGender;
+     }
+ 
+     public int? Id { get; set; }
+diff --git a/src/FortniteReplayReader/Models/SafeZone.cs b/src/FortniteReplayReader/Models/SafeZone.cs
+index ef54a6d..128ee00 100644
+--- a/src/FortniteReplayReader/Models/SafeZone.cs
++++ b/src/FortniteReplayReader/Models/SafeZone.cs
+@@ -15,6 +15,8 @@ public class SafeZone
+         Radius = safeZone.Radius;
+         StartShrinkTime = safeZone.SafeZoneStartShrinkTime;
+         FinishShrinkTime = safeZone.SafeZoneFinishShrinkTime;
++        CurrentPhase = safeZone.CurrentPhase;
++        PhaseCount = safeZone.PhaseCount;
+         LastRadius = safeZone.LastRadius;
+         LastCenter = safeZone.LastCenter;
+         NextRadius = safeZone.NextRadius;
+@@ -24,8 +26,19 @@ public class SafeZone
+     }
+ 
+     public float Radius { get; set; }
+-    public float StartShrinkTime { get; set; }
+-    public float FinishShrinkTime { get; set; }
++    public uint ChannelIndex { get; set; }
++    public uint? ActorGuid { get; set; }
++    public float? ReplayTimeSeconds { get; set; }
++    public float? ReplicatedWorldTimeSeconds { get; set; }
++    public double? ReplicatedWorldTimeSecondsDouble { get; set; }
++    public float? StartShrinkTime { get; set; }
++    public float? FinishShrinkTime { get; set; }
++    public int? CurrentPhase { get; set; }
++    public int? PhaseCount { get; set; }
++    public bool StartShrinkTimeWasExported { get; set; }
++    public bool FinishShrinkTimeWasExported { get; set; }
++    public bool CurrentPhaseWasExported { get; set; }
++    public bool PhaseCountWasExported { get; set; }
+ 
+     public float LastRadius { get; set; }
+     public FVector LastCenter { get; set; }
+diff --git a/src/Unreal.Core/BitReader.cs b/src/Unreal.Core/BitReader.cs
+index 1517bd0..9b9f097 100644
+--- a/src/Unreal.Core/BitReader.cs
++++ b/src/Unreal.Core/BitReader.cs
+@@ -1,6 +1,7 @@
+ ﻿using System;
+ using System.Collections.Generic;
+ using System.IO;
++using System.Numerics;
+ using System.Text;
+ using Unreal.Core.Models;
+ using Unreal.Core.Models.Enums;
+@@ -14,6 +15,9 @@ namespace Unreal.Core;
+ public class BitReader : FBitArchive
+ {
+     private ReadOnlyMemory<byte> Buffer { get; set; }
++    private byte[] _reusableBuffer = [];
++
++    internal bool EnableFastSerializedIntegers { get; set; }
+ 
+     public override int Position { get; protected set; }
+ 
+@@ -74,6 +78,38 @@ public class BitReader : FBitArchive
+         IsError = false;
+     }
+ 
++    /// <summary>
++    /// Copies input into storage owned by this reader and reuses that storage on later fills.
++    /// The returned spans from this reader remain valid only until the next reusable fill.
++    /// </summary>
++    internal void FillBufferReusable(ReadOnlySpan<byte> input) =>
++        FillBufferReusable(input, checked(input.Length * 8));
++
++    /// <summary>
++    /// Copies input into storage owned by this reader and reuses that storage on later fills.
++    /// The returned spans from this reader remain valid only until the next reusable fill.
++    /// </summary>
++    internal void FillBufferReusable(ReadOnlySpan<byte> input, int bitCount)
++    {
++        if (bitCount < 0 || bitCount > (long)input.Length * 8)
++        {
++            throw new ArgumentOutOfRangeException(nameof(bitCount));
++        }
++
++        if (_reusableBuffer.Length < input.Length)
++        {
++            _reusableBuffer = new byte[input.Length];
++        }
++
++        input.CopyTo(_reusableBuffer);
++        Buffer = _reusableBuffer.AsMemory(0, input.Length);
++        LastBit = bitCount;
++        Position = 0;
++        MarkPosition = 0;
++        IsError = false;
++        _tempLastBit.Clear();
++    }
++
+     public override bool AtEnd() => Position >= LastBit;
+ 
+     public override bool CanRead(int count) => Position + count <= LastBit;
+@@ -283,6 +319,42 @@ public class BitReader : FBitArchive
+     public override string ReadGUID(int size) => ReadBytesToString(size);
+ 
+     public override uint ReadSerializedInt(int maxValue)
++    {
++        if (EnableFastSerializedIntegers
++            && maxValue > 0
++            && maxValue <= (1 << 30)
++            && (maxValue & (maxValue - 1)) == 0)
++        {
++            var bitCount = BitOperations.Log2((uint)maxValue);
++            if (!IsError && CanRead(bitCount))
++            {
++                if (bitCount == 0)
++                {
++                    return 0;
++                }
++
++                var bitOffset = Position & 7;
++                var byteIndex = Position >> 3;
++                var byteCount = (bitOffset + bitCount + 7) >> 3;
++                if (byteIndex + byteCount <= Buffer.Length)
++                {
++                    ulong packed = 0;
++                    var span = Buffer.Span;
++                    for (var i = 0; i < byteCount; i++)
++                    {
++                        packed |= (ulong)span[byteIndex + i] << (i * 8);
++                    }
++
++                    Position += bitCount;
++                    return (uint)((packed >> bitOffset) & ((1UL << bitCount) - 1));
++                }
++            }
++        }
++
++        return ReadSerializedIntSlow(maxValue);
++    }
++
++    private uint ReadSerializedIntSlow(int maxValue)
+     {
+         uint value = 0;
+         for (uint mask = 1; (value + mask) < maxValue; mask *= 2)
+@@ -325,6 +397,18 @@ public class BitReader : FBitArchive
+         var srcIndex = CurrentByte;
+         var nextSrcIndex = bitCountUsedInByte != 0 ? srcIndex + 1 : srcIndex;
+ 
++        if (EnableFastSerializedIntegers && !IsError && CanRead(8) && nextSrcIndex < Buffer.Length)
++        {
++            var span = Buffer.Span;
++            var readByte = (byte)(((span[srcIndex] >> bitCountUsedInByte) & srcMaskByte0)
++                | ((span[nextSrcIndex] & srcMaskByte1) << (bitCountLeftInByte & 7)));
++            if ((readByte & 1) == 0)
++            {
++                Position += 8;
++                return (uint)(readByte >> 1);
++            }
++        }
++
+         uint value = 0;
+         for (int It = 0, shiftCount = 0; It < 5; ++It, shiftCount += 7)
+         {
+diff --git a/src/Unreal.Core/Models/DataBunch.cs b/src/Unreal.Core/Models/DataBunch.cs
+index 54f5bbf..9bcabea 100644
+--- a/src/Unreal.Core/Models/DataBunch.cs
++++ b/src/Unreal.Core/Models/DataBunch.cs
+@@ -34,6 +34,33 @@ public class DataBunch
+         bIgnoreRPCs = InBunch.bIgnoreRPCs;
+         CloseReason = InBunch.CloseReason;
+     }
++
++    /// <summary>
++    /// Clears all state before this instance is used for another packet bunch. The archive of a
++    /// retained partial bunch is owned by its separate copy and is never reset through this method.
++    /// </summary>
++    internal void ResetForReuse()
++    {
++        Archive = null!;
++        PacketId = 0;
++        ChIndex = 0;
++        ChType = ChannelType.None;
++        ChName = ChannelName.None;
++        ChSequence = 0;
++        bOpen = false;
++        bClose = false;
++        bDormant = false;
++        bIsReplicationPaused = false;
++        bReliable = false;
++        bPartial = false;
++        bPartialInitial = false;
++        bHasPartialCustomExportsFinalBit = false;
++        bPartialFinal = false;
++        bHasPackageMapExports = false;
++        bHasMustBeMappedGUIDs = false;
++        bIgnoreRPCs = false;
++        CloseReason = ChannelCloseReason.Destroyed;
++    }
+     public FBitArchive Archive { get; set; }
+     public int PacketId { get; set; }
+     public uint ChIndex { get; set; }
+diff --git a/src/Unreal.Core/NetFieldParser.cs b/src/Unreal.Core/NetFieldParser.cs
+index a31b22c..46c49b4 100644
+--- a/src/Unreal.Core/NetFieldParser.cs
++++ b/src/Unreal.Core/NetFieldParser.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.Collections.Generic;
+ using System.Diagnostics.CodeAnalysis;
+ using System.Linq;
+@@ -333,7 +333,13 @@ public class NetFieldParser
+             RepLayoutCmdType.RepMovement => netFieldInfo.MovementAttribute != null ? netBitReader.SerializeRepMovement(
+                 locationQuantizationLevel: netFieldInfo.MovementAttribute.LocationQuantizationLevel,
+                 rotationQuantizationLevel: netFieldInfo.MovementAttribute.RotationQuantizationLevel,
+-                velocityQuantizationLevel: netFieldInfo.MovementAttribute.VelocityQuantizationLevel) : netBitReader.SerializeRepMovement(),
++                velocityQuantizationLevel: netFieldInfo.MovementAttribute.VelocityQuantizationLevel)
++                // Fortnite 41.00 widened default-path RepMovement rotation Byte->Short
++                : netBitReader.SerializeRepMovement(
++                    rotationQuantizationLevel: (netBitReader.NetworkReplayVersion != null
++                        && (netBitReader.NetworkReplayVersion.Changelist >= 54618515u
++                            || (netBitReader.NetworkReplayVersion.Branch?.Contains("+Release-41.") ?? false)))
++                        ? RotatorQuantization.ShortComponents : RotatorQuantization.ByteComponents),
+             _ => ReadDataType(netFieldInfo.Attribute.Type, netBitReader, netFieldInfo.PropertyInfo.PropertyType),
+         };
+ 
+diff --git a/src/Unreal.Core/ReplayReader.cs b/src/Unreal.Core/ReplayReader.cs
+index 659dd08..ea5fd36 100644
+--- a/src/Unreal.Core/ReplayReader.cs
++++ b/src/Unreal.Core/ReplayReader.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.Diagnostics.CodeAnalysis;
+ using System.IO;
+ using Microsoft.Extensions.Logging;
+@@ -60,6 +60,48 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     protected NetGuidCache _netGuidCache;
+     protected NetFieldParser _netFieldParser;
+ 
++    /// <summary>
++    /// Determines whether replicated fields from <paramref name="group"/> should be decoded.
++    /// Returning <see langword="false"/> consumes each framed field without decoding it and
++    /// does not permanently ignore the group on its channel. Overrides must remain stable for
++    /// the duration of a replay read.
++    /// </summary>
++    protected virtual bool ShouldReadGroup(NetFieldExportGroup group) => true;
++
++    /// <summary>
++    /// Determines whether <paramref name="field"/> should be decoded from
++    /// <paramref name="group"/>. Returning <see langword="false"/> consumes that field's
++    /// framed payload without copying or decoding it. Overrides must remain stable for the
++    /// duration of a replay read.
++    /// </summary>
++    protected virtual bool ShouldReadField(NetFieldExportGroup group, NetFieldExport field) => true;
++
++    /// <summary>
++    /// Reuses storage owned by the reader for transient packet, export, and property payloads.
++    /// Overrides must return <see langword="false"/> unless all supported replay versions consume
++    /// those payloads synchronously and do not retain spans returned from their archives.
++    /// </summary>
++    protected virtual bool UseReusableBuffers => false;
++
++    /// <summary>
++    /// Reuses a single transient DataBunch while parsing packet headers. Overrides must ensure
++    /// callbacks consume nonpartial bunches synchronously and never retain their object reference.
++    /// Partial bunches are copied into an independently owned DataBunch before retention.
++    /// </summary>
++    protected virtual bool UseReusableBunches => false;
++
++    /// <summary>
++    /// Uses a bounded direct read for power-of-two serialized integer ranges on the reader's
++    /// private archives. Unsupported ranges and error states retain the bit-by-bit behavior.
++    /// </summary>
++    protected virtual bool UseFastSerializedIntegers => false;
++
++    /// <summary>
++    /// Elapsed replay time for the frame whose packets are currently being decoded.
++    /// This is separate from replicated world time and event display timestamps.
++    /// </summary>
++    protected float? CurrentReplayTimeSeconds { get; private set; }
++
+     private int replayDataIndex = 0;
+     private int checkpointIndex = 0;
+     private int packetIndex = 0;
+@@ -70,6 +112,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+ 
+     // Allocate these once
+     private readonly DataBunch _currentBunch = new();
++    private bool _reusableBunchInUse;
+     private readonly NetBitReader _packetReader = new();
+     private readonly NetBitReader _exportReader = new();
+     private readonly NetBitReader _cmdReader = new();
+@@ -106,6 +149,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     public virtual T ReadReplay(FArchive archive)
+     {
+         Replay = new T();
++        CurrentReplayTimeSeconds = null;
+ 
+         ReadReplayInfo(archive);
+         ReadReplayChunks(archive);
+@@ -131,6 +175,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         bunchIndex = 0;
+         InPacketId = 0;
+         PartialBunch = null;
++        CurrentReplayTimeSeconds = null;
+ 
+         _netGuidCache.Cleanup();
+     }
+@@ -515,6 +560,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         _cmdReader.EngineNetworkVersion = header.EngineNetworkVersion;
+         _cmdReader.NetworkVersion = header.NetworkVersion;
+         _cmdReader.ReplayHeaderFlags = header.Flags;
++        _cmdReader.NetworkReplayVersion = archive.NetworkReplayVersion;
+     }
+ 
+ 
+@@ -732,7 +778,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         for (var i = 0; i < numGuids; i++)
+         {
+             var size = archive.ReadInt32();
+-            _exportReader.FillBuffer(archive.ReadBytes(size));
++            FillInternalReader(_exportReader, archive.ReadBytes(size));
+             InternalLoadObject(_exportReader, true);
+         }
+     }
+@@ -815,6 +861,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         }
+ 
+         var timeSeconds = archive.ReadSingle();
++        CurrentReplayTimeSeconds = timeSeconds;
+         _logger?.LogDebug("ReadDemoFrameIntoPlaybackPackets at {}", timeSeconds);
+ 
+         if (archive.NetworkVersion >= NetworkVersionHistory.HISTORY_LEVEL_STREAMING_FIXES)
+@@ -1374,6 +1421,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                     continue;
+                 }
+ 
++                if (!ShouldReadGroup(classNetCache) || !ShouldReadField(classNetCache, fieldCache))
++                {
++                    continue;
++                }
++
+                 if (fieldCache.Incompatible)
+                 {
+                     // We've already warned about this property once, so no need to continue to do so
+@@ -1518,7 +1570,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         if (export != null)
+         {
+             var numBits = reader.GetBitsLeft();
+-            _cmdReader.FillBuffer(reader.ReadBits(numBits), numBits);
++            FillInternalReader(_cmdReader, reader.ReadBits(numBits), numBits);
+             export.Serialize(_cmdReader);
+ 
+             if (_cmdReader.IsError)
+@@ -1630,7 +1682,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L2971
+     ///  https://github.com/EpicGames/UnrealEngine/blob/bf95c2cbc703123e08ab54e3ceccdd47e48d224a/Engine/Source/Runtime/Engine/Private/RepLayout.cpp#L3022
+     /// </summary>
+-    public virtual bool ReceiveProperties(FBitArchive archive, NetFieldExportGroup group, uint channelIndex, [NotNullWhen(returnValue: true)] out INetFieldExportGroup? exportGroup, bool enablePropertyChecksum = true, bool netDeltaUpdate = false)
++    public virtual bool ReceiveProperties(FBitArchive archive, NetFieldExportGroup group, uint channelIndex, out INetFieldExportGroup? exportGroup, bool enablePropertyChecksum = true, bool netDeltaUpdate = false)
+     {
+         exportGroup = default;
+ 
+@@ -1673,13 +1725,8 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         }
+ 
+         _logger?.LogDebug("ReceiveProperties: group {}", group.PathName);
+-        exportGroup = _netFieldParser.CreateType(group.PathName);
+-
+-        if (exportGroup is null)
+-        {
+-            _logger?.LogWarning("Couldnt create export group of type {}", group.PathName);
+-            return false;
+-        }
++        var shouldReadGroup = ShouldReadGroup(group);
++        var rejectedByPolicy = !shouldReadGroup;
+ 
+         var hasdata = false;
+ 
+@@ -1710,6 +1757,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 continue;
+             }
+ 
++            if (numBits > int.MaxValue || !archive.CanRead((int)numBits))
++            {
++                _logger?.LogWarning(
++                    "Property payload for group {pathName} exceeds the remaining archive bits: {numBits}",
++                    group.PathName, numBits);
++                return false;
++            }
++
+             if (export is null)
+             {
+                 _logger?.LogWarning("Couldnt find handle {handle} for group {pathname}, numbits is {numBits}", handle, group.PathName, numBits);
+@@ -1725,10 +1780,24 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 continue;
+             }
+ 
++            if (!shouldReadGroup || !ShouldReadField(group, export))
++            {
++                rejectedByPolicy = true;
++                archive.SkipBits(numBits);
++                continue;
++            }
++
++            exportGroup ??= _netFieldParser.CreateType(group.PathName);
++            if (exportGroup is null)
++            {
++                _logger?.LogWarning("Couldnt create export group of type {}", group.PathName);
++                return false;
++            }
++
+             hasdata = true;
+             try
+             {
+-                _cmdReader.FillBuffer(archive.ReadBits(numBits), (int)numBits);
++                FillInternalReader(_cmdReader, archive.ReadBits(numBits), (int)numBits);
+                 if (!_netFieldParser.ReadField(exportGroup, export, handle, group, _cmdReader))
+                 {
+                     // Set field incompatible since we couldnt (or didnt want to) parse it.
+@@ -1770,6 +1839,18 @@ public abstract class ReplayReader<T> where T : Replay, new()
+             }
+         }
+ 
++        // Preserve the default reader's historical non-null out value for an empty update.
++        // A filtering reader receives null when its policy rejected the update completely.
++        if (exportGroup is null && shouldReadGroup && !rejectedByPolicy)
++        {
++            exportGroup = _netFieldParser.CreateType(group.PathName);
++            if (exportGroup is null)
++            {
++                _logger?.LogWarning("Couldnt create export group of type {}", group.PathName);
++                return false;
++            }
++        }
++
+         if (!netDeltaUpdate && hasdata)
+         {
+             OnExportRead(channelIndex, exportGroup);
+@@ -1921,6 +2002,32 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     /// <summary>
+     /// see https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/NetConnection.cpp#L1007
+     /// </summary>
++    private void FillInternalReader(NetBitReader reader, ReadOnlySpan<byte> input)
++    {
++        reader.EnableFastSerializedIntegers = UseFastSerializedIntegers;
++        if (UseReusableBuffers)
++        {
++            reader.FillBufferReusable(input);
++        }
++        else
++        {
++            reader.FillBuffer(input);
++        }
++    }
++
++    private void FillInternalReader(NetBitReader reader, ReadOnlySpan<byte> input, int bitCount)
++    {
++        reader.EnableFastSerializedIntegers = UseFastSerializedIntegers;
++        if (UseReusableBuffers)
++        {
++            reader.FillBufferReusable(input, bitCount);
++        }
++        else
++        {
++            reader.FillBuffer(input, bitCount);
++        }
++    }
++
+     public virtual void ReceivedRawPacket(ReadOnlySpan<byte> packet)
+     {
+         var lastByte = packet[^1];
+@@ -1936,7 +2043,7 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 bitSize--;
+             }
+ 
+-            _packetReader.FillBuffer(packet, bitSize);
++            FillInternalReader(_packetReader, packet, bitSize);
+             try
+             {
+                 ReceivedPacket(_packetReader);
+@@ -1959,6 +2066,16 @@ public abstract class ReplayReader<T> where T : Replay, new()
+     /// </summary>
+     public virtual void ReceivedPacket(FBitArchive bitReader)
+     {
++        // A direct nested ReceivedPacket call must not overwrite the outer transient bunch.
++        // Reentrant ReceivedRawPacket remains unsupported because it also shares _packetReader.
++        var reuseBunchInThisPacket = UseReusableBunches && !_reusableBunchInUse;
++        if (reuseBunchInThisPacket)
++        {
++            _reusableBunchInUse = true;
++        }
++
++        try
++        {
+         // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/DemoNetDriver.cpp#L5101
+         // InternalAck always true!
+ 
+@@ -1981,7 +2098,11 @@ public abstract class ReplayReader<T> where T : Replay, new()
+             // FInBunch
+             // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Private/DataBunch.cpp#L18
+             // https://github.com/EpicGames/UnrealEngine/blob/70bc980c6361d9a7d23f6d23ffe322a2d6ef16fb/Engine/Source/Runtime/Engine/Public/Net/DataBunch.h#L168
+-            var bunch = new DataBunch();
++            var bunch = reuseBunchInThisPacket ? _currentBunch : new DataBunch();
++            if (reuseBunchInThisPacket)
++            {
++                bunch.ResetForReuse();
++            }
+ 
+             var bControl = bitReader.ReadBit();
+             bunch.PacketId = InPacketId;
+@@ -2091,6 +2212,12 @@ public abstract class ReplayReader<T> where T : Replay, new()
+                 bunch.Archive = bitReader;
+             }
+ 
++            if (bitReader.IsError)
++            {
++                _logger?.LogWarning("ReceivedPacket: bunch data bits overflows remaining packet bits, aborting packet {}", packetIndex);
++                break;
++            }
++
+             bunchIndex++;
+ 
+             if (bunch.bHasPackageMapExports)
+@@ -2200,6 +2327,14 @@ public abstract class ReplayReader<T> where T : Replay, new()
+         {
+             _logger?.LogWarning("Packet {} not fully read...", packetIndex);
+         }
++        }
++        finally
++        {
++            if (reuseBunchInThisPacket)
++            {
++                _reusableBunchInUse = false;
++            }
++        }
+     }
+ 
+     /// <summary>

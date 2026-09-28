@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "description": "Serialized fresh-process Windows native runs, empty application cache; manifest hashing warms OS file cache. One sample per lane; not percentile or physical scanout evidence.",
+  "sourceBaseCommit": "39e3944d32a6d7040681059bd622d6d66e579c80",
+  "sourceChange": "NativeClientCapture adds PW_RENDERFULLCONTENT (0x2) to PW_CLIENTONLY; no scan or parser changes.",
+  "executableSha256": "391E560A10EA346D29588A50921F916DEE2753F4ABA463C7F181EFE2E1A7DA3A",
+  "parserVersion": "3.0.12-botornot",
+  "nativeCapturesVisuallyInspected": true,
+  "excludedAttempt": "Initial Normal c2 run failed native capture: PW_CLIENTONLY returned a uniform black surface. Data/composition checks passed. Replaced by fresh-cache rerun after fixing capture flags; failed evidence retained privately.",
+  "lanes": [
+    {
+      "lane": "native-normal-c2-r2",
+      "result": {
+        "schemaVersion": 2,
+        "succeeded": true,
+        "error": null,
+        "scanProfile": "normal",
+        "scanLimit": 79,
+        "configuredMaxConcurrency": 2,
+        "observedMaxConcurrency": null,
+        "coldCacheRequired": true,
+        "nativeVisible": true,
+        "processStartedUtc": "2026-09-12T18:03:12.8026605-07:00",
+        "managedEntryUtc": "2026-09-12T18:03:12.8711916-07:00",
+        "dwmFlushSucceeded": true,
+        "dwmFlushError": null,
+        "softwareViewportDiagnostic": {
+          "succeeded": true,
+          "error": null,
+          "method": "Avalonia RenderTargetBitmap diagnostic after native composition acknowledgement and DwmFlush; not a desktop capture.",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 140814
+        },
+        "nativeClientViewportCapture": {
+          "succeeded": true,
+          "error": null,
+          "method": "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 3520054
+        },
+        "verification": {
+          "manifestValidated": true,
+          "manifestFingerprint": "2EA97D36D5F68603B3DDF99389740FA4D8584DCAA7A9CEECC8CBF11E7E3D9672",
+          "manifestReplayCount": 79,
+          "expectedSelectedReplayCount": 79,
+          "scanFinalStateValid": true,
+          "dataGridItemsSourceBound": true,
+          "realizedDataGridRows": 18,
+          "scanStatusRendered": true,
+          "scanOutcomeRendered": true,
+          "allAggregateLabelsRendered": true,
+          "incompleteNoticeRendered": true,
+          "summaryProjectionFingerprint": "CE7CE0A88D731783370C8129522F27C1D7389DE2AF068033BB6C1C10BF008DAE",
+          "errors": []
+        },
+        "timingsMs": {
+          "processStartToManagedEntry": 68.531,
+          "configValidation": 1200.605,
+          "managedEntryToWindowOpened": 2522.846,
+          "managedEntryToScanInvoked": 2037.892,
+          "scanInvokedToFirstModelRow": 3030.562,
+          "scanInvokedToFinalModelState": 20158.399,
+          "scanInvokedToScanDrained": 20158.702,
+          "scanInvokedToCompositionBatchRendered": 20182.002,
+          "scanInvokedToDwmFlush": 20190.158,
+          "scanInvokedToNativeClientCapture": 20255.479,
+          "managedEntryToNativeClientCapture": 22293.371
+        },
+        "finalState": {
+          "isScanning": false,
+          "replayRows": 79,
+          "totalMatches": 79,
+          "scanStatus": "Scanned 79 out of 79 replay files",
+          "scanOutcome": "79 loaded",
+          "errorMessage": null,
+          "availableReplayCount": 79,
+          "selectedReplayCount": 79,
+          "processedReplayCount": 79,
+          "loadedReplayCount": 79,
+          "failedReplayCount": 0
+        },
+        "cacheBefore": {
+          "exists": false,
+          "bytes": 0,
+          "lastWriteUtc": null
+        },
+        "cacheAfter": {
+          "exists": true,
+          "bytes": 164732,
+          "lastWriteUtc": "2026-09-12T18:03:35.0627041-07:00"
+        },
+        "processMetrics": {
+          "allocatedBytesDelta": 22450547792,
+          "cpuMillisecondsDelta": 43875,
+          "workingSetBytesAtEnd": 421642240,
+          "peakWorkingSetBytesAtEnd": 637538304,
+          "gen0CollectionsDelta": 939,
+          "gen1CollectionsDelta": 336,
+          "gen2CollectionsDelta": 91
+        }
+      },
+      "captureSha256": "CC383038F0282C3E320714D64EDE7786904F6D1453FA429A0EEB19684984E72A"
+    },
+    {
+      "lane": "native-summary-c2",
+      "result": {
+        "schemaVersion": 2,
+        "succeeded": true,
+        "error": null,
+        "scanProfile": "summary",
+        "scanLimit": 79,
+        "configuredMaxConcurrency": 2,
+        "observedMaxConcurrency": null,
+        "coldCacheRequired": true,
+        "nativeVisible": true,
+        "processStartedUtc": "2026-09-12T18:03:47.8569364-07:00",
+        "managedEntryUtc": "2026-09-12T18:03:47.9098735-07:00",
+        "dwmFlushSucceeded": true,
+        "dwmFlushError": null,
+        "softwareViewportDiagnostic": {
+          "succeeded": true,
+          "error": null,
+          "method": "Avalonia RenderTargetBitmap diagnostic after native composition acknowledgement and DwmFlush; not a desktop capture.",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 140814
+        },
+        "nativeClientViewportCapture": {
+          "succeeded": true,
+          "error": null,
+          "method": "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 3520054
+        },
+        "verification": {
+          "manifestValidated": true,
+          "manifestFingerprint": "2EA97D36D5F68603B3DDF99389740FA4D8584DCAA7A9CEECC8CBF11E7E3D9672",
+          "manifestReplayCount": 79,
+          "expectedSelectedReplayCount": 79,
+          "scanFinalStateValid": true,
+          "dataGridItemsSourceBound": true,
+          "realizedDataGridRows": 18,
+          "scanStatusRendered": true,
+          "scanOutcomeRendered": true,
+          "allAggregateLabelsRendered": true,
+          "incompleteNoticeRendered": true,
+          "summaryProjectionFingerprint": "CE7CE0A88D731783370C8129522F27C1D7389DE2AF068033BB6C1C10BF008DAE",
+          "errors": []
+        },
+        "timingsMs": {
+          "processStartToManagedEntry": 52.937,
+          "configValidation": 1206.917,
+          "managedEntryToWindowOpened": 2524.684,
+          "managedEntryToScanInvoked": 2019.438,
+          "scanInvokedToFirstModelRow": 2193.126,
+          "scanInvokedToFinalModelState": 12950.575,
+          "scanInvokedToScanDrained": 12950.833,
+          "scanInvokedToCompositionBatchRendered": 12968.067,
+          "scanInvokedToDwmFlush": 12979.918,
+          "scanInvokedToNativeClientCapture": 13050.536,
+          "managedEntryToNativeClientCapture": 15069.974
+        },
+        "finalState": {
+          "isScanning": false,
+          "replayRows": 79,
+          "totalMatches": 79,
+          "scanStatus": "Scanned 79 out of 79 replay files",
+          "scanOutcome": "79 loaded",
+          "errorMessage": null,
+          "availableReplayCount": 79,
+          "selectedReplayCount": 79,
+          "processedReplayCount": 79,
+          "loadedReplayCount": 79,
+          "failedReplayCount": 0
+        },
+        "cacheBefore": {
+          "exists": false,
+          "bytes": 0,
+          "lastWriteUtc": null
+        },
+        "cacheAfter": {
+          "exists": true,
+          "bytes": 164732,
+          "lastWriteUtc": "2026-09-12T18:04:02.872013-07:00"
+        },
+        "processMetrics": {
+          "allocatedBytesDelta": 10079206712,
+          "cpuMillisecondsDelta": 29281.25,
+          "workingSetBytesAtEnd": 397627392,
+          "peakWorkingSetBytesAtEnd": 712187904,
+          "gen0CollectionsDelta": 248,
+          "gen1CollectionsDelta": 146,
+          "gen2CollectionsDelta": 84
+        }
+      },
+      "captureSha256": "CC383038F0282C3E320714D64EDE7786904F6D1453FA429A0EEB19684984E72A"
+    },
+    {
+      "lane": "native-summary-c4",
+      "result": {
+        "schemaVersion": 2,
+        "succeeded": true,
+        "error": null,
+        "scanProfile": "summary",
+        "scanLimit": 79,
+        "configuredMaxConcurrency": 4,
+        "observedMaxConcurrency": null,
+        "coldCacheRequired": true,
+        "nativeVisible": true,
+        "processStartedUtc": "2026-09-12T18:04:21.5701917-07:00",
+        "managedEntryUtc": "2026-09-12T18:04:21.6201266-07:00",
+        "dwmFlushSucceeded": true,
+        "dwmFlushError": null,
+        "softwareViewportDiagnostic": {
+          "succeeded": true,
+          "error": null,
+          "method": "Avalonia RenderTargetBitmap diagnostic after native composition acknowledgement and DwmFlush; not a desktop capture.",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 140814
+        },
+        "nativeClientViewportCapture": {
+          "succeeded": true,
+          "error": null,
+          "method": "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 3520054
+        },
+        "verification": {
+          "manifestValidated": true,
+          "manifestFingerprint": "2EA97D36D5F68603B3DDF99389740FA4D8584DCAA7A9CEECC8CBF11E7E3D9672",
+          "manifestReplayCount": 79,
+          "expectedSelectedReplayCount": 79,
+          "scanFinalStateValid": true,
+          "dataGridItemsSourceBound": true,
+          "realizedDataGridRows": 19,
+          "scanStatusRendered": true,
+          "scanOutcomeRendered": true,
+          "allAggregateLabelsRendered": true,
+          "incompleteNoticeRendered": true,
+          "summaryProjectionFingerprint": "CE7CE0A88D731783370C8129522F27C1D7389DE2AF068033BB6C1C10BF008DAE",
+          "errors": []
+        },
+        "timingsMs": {
+          "processStartToManagedEntry": 49.935,
+          "configValidation": 1238.4,
+          "managedEntryToWindowOpened": 2580.712,
+          "managedEntryToScanInvoked": 2024.969,
+          "scanInvokedToFirstModelRow": 2515.845,
+          "scanInvokedToFinalModelState": 9458.326,
+          "scanInvokedToScanDrained": 9458.629,
+          "scanInvokedToCompositionBatchRendered": 9494.751,
+          "scanInvokedToDwmFlush": 9506.371,
+          "scanInvokedToNativeClientCapture": 9581.938,
+          "managedEntryToNativeClientCapture": 11606.907
+        },
+        "finalState": {
+          "isScanning": false,
+          "replayRows": 79,
+          "totalMatches": 79,
+          "scanStatus": "Scanned 79 out of 79 replay files",
+          "scanOutcome": "79 loaded",
+          "errorMessage": null,
+          "availableReplayCount": 79,
+          "selectedReplayCount": 79,
+          "processedReplayCount": 79,
+          "loadedReplayCount": 79,
+          "failedReplayCount": 0
+        },
+        "cacheBefore": {
+          "exists": false,
+          "bytes": 0,
+          "lastWriteUtc": null
+        },
+        "cacheAfter": {
+          "exists": true,
+          "bytes": 164732,
+          "lastWriteUtc": "2026-09-12T18:04:33.0938818-07:00"
+        },
+        "processMetrics": {
+          "allocatedBytesDelta": 10042747208,
+          "cpuMillisecondsDelta": 33187.5,
+          "workingSetBytesAtEnd": 508735488,
+          "peakWorkingSetBytesAtEnd": 781377536,
+          "gen0CollectionsDelta": 217,
+          "gen1CollectionsDelta": 113,
+          "gen2CollectionsDelta": 50
+        }
+      },
+      "captureSha256": "CC383038F0282C3E320714D64EDE7786904F6D1453FA429A0EEB19684984E72A"
+    },
+    {
+      "lane": "native-normal-50-c2",
+      "result": {
+        "schemaVersion": 2,
+        "succeeded": true,
+        "error": null,
+        "scanProfile": "normal",
+        "scanLimit": 50,
+        "configuredMaxConcurrency": 2,
+        "observedMaxConcurrency": null,
+        "coldCacheRequired": true,
+        "nativeVisible": true,
+        "processStartedUtc": "2026-09-12T18:05:00.8737554-07:00",
+        "managedEntryUtc": "2026-09-12T18:05:00.9242095-07:00",
+        "dwmFlushSucceeded": true,
+        "dwmFlushError": null,
+        "softwareViewportDiagnostic": {
+          "succeeded": true,
+          "error": null,
+          "method": "Avalonia RenderTargetBitmap diagnostic after native composition acknowledgement and DwmFlush; not a desktop capture.",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 143450
+        },
+        "nativeClientViewportCapture": {
+          "succeeded": true,
+          "error": null,
+          "method": "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 3520054
+        },
+        "verification": {
+          "manifestValidated": true,
+          "manifestFingerprint": "2EA97D36D5F68603B3DDF99389740FA4D8584DCAA7A9CEECC8CBF11E7E3D9672",
+          "manifestReplayCount": 79,
+          "expectedSelectedReplayCount": 50,
+          "scanFinalStateValid": true,
+          "dataGridItemsSourceBound": true,
+          "realizedDataGridRows": 18,
+          "scanStatusRendered": true,
+          "scanOutcomeRendered": true,
+          "allAggregateLabelsRendered": true,
+          "incompleteNoticeRendered": true,
+          "summaryProjectionFingerprint": "4E8DB23729EBEB632FD775A4F89A0AACA6EA2C170463D8F3505F58A8607504BF",
+          "errors": []
+        },
+        "timingsMs": {
+          "processStartToManagedEntry": 50.454,
+          "configValidation": 1220.762,
+          "managedEntryToWindowOpened": 2354.295,
+          "managedEntryToScanInvoked": 1868.742,
+          "scanInvokedToFirstModelRow": 2887.779,
+          "scanInvokedToFinalModelState": 15451.365,
+          "scanInvokedToScanDrained": 15451.569,
+          "scanInvokedToCompositionBatchRendered": 15478.918,
+          "scanInvokedToDwmFlush": 15488.228,
+          "scanInvokedToNativeClientCapture": 15572.28,
+          "managedEntryToNativeClientCapture": 17441.022
+        },
+        "finalState": {
+          "isScanning": false,
+          "replayRows": 50,
+          "totalMatches": 50,
+          "scanStatus": "Scanned 50 out of 79 replay files",
+          "scanOutcome": "50 loaded",
+          "errorMessage": null,
+          "availableReplayCount": 79,
+          "selectedReplayCount": 50,
+          "processedReplayCount": 50,
+          "loadedReplayCount": 50,
+          "failedReplayCount": 0
+        },
+        "cacheBefore": {
+          "exists": false,
+          "bytes": 0,
+          "lastWriteUtc": null
+        },
+        "cacheAfter": {
+          "exists": true,
+          "bytes": 104720,
+          "lastWriteUtc": "2026-09-12T18:05:18.2397553-07:00"
+        },
+        "processMetrics": {
+          "allocatedBytesDelta": 17773628640,
+          "cpuMillisecondsDelta": 33562.5,
+          "workingSetBytesAtEnd": 389664768,
+          "peakWorkingSetBytesAtEnd": 692350976,
+          "gen0CollectionsDelta": 718,
+          "gen1CollectionsDelta": 248,
+          "gen2CollectionsDelta": 67
+        }
+      },
+      "captureSha256": "E64EF22EF5AFD1944DF7DE1BDA2577D271E83EFF7427D03402D90A09BA9C10EF"
+    },
+    {
+      "lane": "native-summary-50-c2",
+      "result": {
+        "schemaVersion": 2,
+        "succeeded": true,
+        "error": null,
+        "scanProfile": "summary",
+        "scanLimit": 50,
+        "configuredMaxConcurrency": 2,
+        "observedMaxConcurrency": null,
+        "coldCacheRequired": true,
+        "nativeVisible": true,
+        "processStartedUtc": "2026-09-12T18:05:35.898072-07:00",
+        "managedEntryUtc": "2026-09-12T18:05:35.9438533-07:00",
+        "dwmFlushSucceeded": true,
+        "dwmFlushError": null,
+        "softwareViewportDiagnostic": {
+          "succeeded": true,
+          "error": null,
+          "method": "Avalonia RenderTargetBitmap diagnostic after native composition acknowledgement and DwmFlush; not a desktop capture.",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 143450
+        },
+        "nativeClientViewportCapture": {
+          "succeeded": true,
+          "error": null,
+          "method": "Win32 PrintWindow(PW_CLIENTONLY | PW_RENDERFULLCONTENT) 32-bit client DIB",
+          "pixelWidth": 1100,
+          "pixelHeight": 800,
+          "bytes": 3520054
+        },
+        "verification": {
+          "manifestValidated": true,
+          "manifestFingerprint": "2EA97D36D5F68603B3DDF99389740FA4D8584DCAA7A9CEECC8CBF11E7E3D9672",
+          "manifestReplayCount": 79,
+          "expectedSelectedReplayCount": 50,
+          "scanFinalStateValid": true,
+          "dataGridItemsSourceBound": true,
+          "realizedDataGridRows": 18,
+          "scanStatusRendered": true,
+          "scanOutcomeRendered": true,
+          "allAggregateLabelsRendered": true,
+          "incompleteNoticeRendered": true,
+          "summaryProjectionFingerprint": "4E8DB23729EBEB632FD775A4F89A0AACA6EA2C170463D8F3505F58A8607504BF",
+          "errors": []
+        },
+        "timingsMs": {
+          "processStartToManagedEntry": 45.781,
+          "configValidation": 1207.469,
+          "managedEntryToWindowOpened": 2320.692,
+          "managedEntryToScanInvoked": 1806.909,
+          "scanInvokedToFirstModelRow": 2223.522,
+          "scanInvokedToFinalModelState": 10106.585,
+          "scanInvokedToScanDrained": 10106.813,
+          "scanInvokedToCompositionBatchRendered": 10134.473,
+          "scanInvokedToDwmFlush": 10143.132,
+          "scanInvokedToNativeClientCapture": 10211.767,
+          "managedEntryToNativeClientCapture": 12018.676
+        },
+        "finalState": {
+          "isScanning": false,
+          "replayRows": 50,
+          "totalMatches": 50,
+          "scanStatus": "Scanned 50 out of 79 replay files",
+          "scanOutcome": "50 loaded",
+          "errorMessage": null,
+          "availableReplayCount": 79,
+          "selectedReplayCount": 50,
+          "processedReplayCount": 50,
+          "loadedReplayCount": 50,
+          "failedReplayCount": 0
+        },
+        "cacheBefore": {
+          "exists": false,
+          "bytes": 0,
+          "lastWriteUtc": null
+        },
+        "cacheAfter": {
+          "exists": true,
+          "bytes": 104720,
+          "lastWriteUtc": "2026-09-12T18:05:47.8525964-07:00"
+        },
+        "processMetrics": {
+          "allocatedBytesDelta": 7917059896,
+          "cpuMillisecondsDelta": 22343.75,
+          "workingSetBytesAtEnd": 376668160,
+          "peakWorkingSetBytesAtEnd": 658747392,
+          "gen0CollectionsDelta": 180,
+          "gen1CollectionsDelta": 106,
+          "gen2CollectionsDelta": 62
+        }
+      },
+      "captureSha256": "E64EF22EF5AFD1944DF7DE1BDA2577D271E83EFF7427D03402D90A09BA9C10EF"
+    }
+  ]
+}
