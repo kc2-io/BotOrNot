@@ -245,6 +245,24 @@ public class MainWindowViewModelFilterTests
         });
     }
 
+    [TestCase("NAW", "Region: NAW")]
+    [TestCase("  EU  ", "Region: EU")]
+    [TestCase("", "Region: Unknown")]
+    public async Task MatchmakingRegion_IsFormattedForMatchMetadata(string region, string expected)
+    {
+        var replay = new ReplayData
+        {
+            Metadata = new ReplayMetadata { MatchmakingRegion = region }
+        };
+        var viewModel = new MainWindowViewModel(
+            replayService: new SequenceReplayService(replay),
+            themeService: new ThemeService(new SettingsService(_settingsPath)));
+
+        await viewModel.LoadReplayCommand.Execute("region").FirstAsync();
+
+        Assert.That(viewModel.MatchmakingRegionDisplay, Is.EqualTo(expected));
+    }
+
     private static bool MatchesFilter(PlayerRow player, string searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
