@@ -63,6 +63,24 @@ public class MainWindowViewModelNpcSyntheticTests
         };
 
     [Test]
+    public async Task Npcs_KilledByOwner_MarkedInNpcGrid()
+    {
+        var wolf = Npc("Wolf");
+        var boss = Npc("Boss");
+        var data = BuildData(
+            new List<PlayerRow> { Human("Alice"), wolf, boss },
+            new List<PlayerRow> { Human("Victim"), wolf });
+
+        var viewModel = new MainWindowViewModel(replayService: new FakeReplayService(data));
+        await viewModel.LoadReplayCommand.Execute("test.replay").ToTask();
+
+        Assert.That(viewModel.Npcs, Has.Count.EqualTo(2));
+        var npcByName = viewModel.Npcs.ToDictionary(n => n.Name!);
+        Assert.That(npcByName["Wolf"].KilledByOwner, Is.True);
+        Assert.That(npcByName["Boss"].KilledByOwner, Is.False);
+    }
+
+    [Test]
     public async Task Partitioning_SeparatesPlayersAndNpcs()
     {
         var data = BuildData(new List<PlayerRow>

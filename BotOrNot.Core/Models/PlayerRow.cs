@@ -34,6 +34,8 @@ public sealed class PlayerRow
     public string? Pickaxe { get; set; }
     public string? Glider { get; set; }
     public int SquadSize { get; set; }
+    /// <summary>True when the replay recorder is credited with eliminating this row.</summary>
+    public bool KilledByOwner { get; set; }
 
     public int? CircleNumber { get; set; }
     public StormCircleStatus CircleStatus { get; set; }

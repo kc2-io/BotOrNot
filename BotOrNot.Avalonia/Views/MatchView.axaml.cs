@@ -433,6 +433,7 @@ public partial class MatchView : UserControl
             "Storm Phase" => new(header, p => p.StormPhaseCsvValue),
             "Pickaxe" => new(header, p => p.Pickaxe ?? ""),
             "Glider" => new(header, p => p.Glider ?? ""),
+            "Killed by You" => new(header, p => p.KilledByOwner ? "Yes" : "No"),
             _ => null
         };
     }
