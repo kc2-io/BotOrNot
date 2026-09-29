@@ -223,15 +223,15 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
             : null;
         var ownerTeamIndex = replayOwner?.TeamIndexValue;
 
-        // === Compute squad sizes from TeamIndex grouping ===
+        // === Compute squad sizes from TeamIndex grouping (excluding NPCs) ===
         var squadSizeByTeamIndex = new Dictionary<int, int>();
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (row.TeamIndexValue.HasValue)
                 squadSizeByTeamIndex[row.TeamIndexValue.Value] =
                     squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndexValue.Value) + 1;
         }
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (row.TeamIndexValue.HasValue && squadSizeByTeamIndex.TryGetValue(row.TeamIndexValue.Value, out var sz))
                 row.SquadSize = sz;
