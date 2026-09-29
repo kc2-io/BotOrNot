@@ -475,30 +475,20 @@ public partial class MatchView : UserControl
 
         foreach (var column in _playersGrid.Columns)
         {
-            var menuItem = new MenuItem
-            {
-                Header = column.Header?.ToString() ?? "Column",
-                Icon = column.IsVisible ? new CheckBox { IsChecked = true, IsHitTestVisible = false } : null,
-                Tag = column
-            };
-
-            menuItem.Click += (sender, _) =>
-            {
-                if (sender is MenuItem item && item.Tag is DataGridColumn col)
-                {
-                    var visibleCount = _playersGrid.Columns.Count(c => c.IsVisible);
-                    if (col.IsVisible && visibleCount <= 1)
-                        return;
-
-                    col.IsVisible = !col.IsVisible;
-                    item.Icon = col.IsVisible ? new CheckBox { IsChecked = true, IsHitTestVisible = false } : null;
-                }
-            };
-
-            _columnsFlyout.Items.Add(menuItem);
+            AddColumnToggleItem(_playersGrid, column);
         }
 
-        if (_playersGrid.Columns.Count > 0)
+        if (_npcsGrid?.Columns.Count > 0)
+        {
+            _columnsFlyout.Items.Add(new Separator { Header = "NPCs" });
+
+            foreach (var column in _npcsGrid.Columns)
+            {
+                AddColumnToggleItem(_npcsGrid, column);
+            }
+        }
+
+        if (_playersGrid.Columns.Count > 0 || _npcsGrid?.Columns.Count > 0)
         {
             _columnsFlyout.Items.Add(new Separator());
 
@@ -507,9 +497,39 @@ public partial class MatchView : UserControl
             {
                 foreach (var col in _playersGrid.Columns)
                     col.IsVisible = true;
+                if (_npcsGrid != null)
+                {
+                    foreach (var col in _npcsGrid.Columns)
+                        col.IsVisible = true;
+                }
                 BuildColumnsFlyout();
             };
             _columnsFlyout.Items.Add(showAllItem);
         }
+    }
+
+    private void AddColumnToggleItem(DataGrid grid, DataGridColumn column)
+    {
+        var menuItem = new MenuItem
+        {
+            Header = column.Header?.ToString() ?? "Column",
+            Icon = column.IsVisible ? new CheckBox { IsChecked = true, IsHitTestVisible = false } : null,
+            Tag = (grid, column)
+        };
+
+        menuItem.Click += (sender, _) =>
+        {
+            if (sender is not MenuItem item || item.Tag is not (DataGrid ownerGrid, DataGridColumn col))
+                return;
+
+            var visibleCount = ownerGrid.Columns.Count(c => c.IsVisible);
+            if (col.IsVisible && visibleCount <= 1)
+                return;
+
+            col.IsVisible = !col.IsVisible;
+            item.Icon = col.IsVisible ? new CheckBox { IsChecked = true, IsHitTestVisible = false } : null;
+        };
+
+        _columnsFlyout.Items.Add(menuItem);
     }
 }
