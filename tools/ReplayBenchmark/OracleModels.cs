@@ -34,6 +34,7 @@ public sealed record CanonicalReplaySummary(
     DateTime FileDateUtc,
     string Playlist,
     string DisplayGameMode,
+    string MatchmakingRegion,
     string Placement,
     int? Kills,
     int? BotKills,
@@ -66,6 +67,7 @@ public sealed record CanonicalReplaySummary(
         summary.FileDate.ToUniversalTime(),
         summary.Playlist,
         summary.GameMode,
+        summary.MatchmakingRegion,
         summary.Placement,
         summary.Kills,
         summary.BotKills,
@@ -145,7 +147,7 @@ public sealed record ReplayOracleRun(
     IReadOnlyList<CanonicalReplaySummary> Summaries,
     IReadOnlyList<ReplayRunFailure> Failures)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 }
 
 public sealed record ReplaySummaryDelta(

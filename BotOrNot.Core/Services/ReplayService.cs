@@ -480,6 +480,9 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
         // === Build metadata ===
         var playlist = result.GameData?.CurrentPlaylist ?? "";
         var gameMode = PlaylistHelper.GetDisplayNameWithFallback(playlist);
+        var matchmakingRegion = ReflectionUtils
+            .FirstString(result.GameData, "KeepPlayingTogetherMatchmakingRegion")?
+            .Trim() ?? "";
         var maxPlayers = result.GameData?.MaxPlayers;
         // Info.LengthInMs is the duration of the recorded replay. MatchEndTime is an absolute
         // game-clock value, so it cannot be treated as an elapsed duration without a matching start time.
@@ -499,6 +502,7 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
             EliminationCount = eliminationCount,
             GameMode = gameMode,
             Playlist = playlist,
+            MatchmakingRegion = matchmakingRegion,
             MaxPlayers = maxPlayers,
             RecordingDurationMinutes = recordingDuration,
             WinningTeam = winningTeam,

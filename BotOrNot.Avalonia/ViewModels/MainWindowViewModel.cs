@@ -31,6 +31,7 @@ public class MainWindowViewModel : ReactiveObject
     private string _filterText = "";
     private string _windowTitle = BaseTitle;
     private string? _gameMode;
+    private string? _matchmakingRegionDisplay;
     private string? _placementText;
     private string? _durationText;
     private string? _elimsSummary;
@@ -135,6 +136,12 @@ public class MainWindowViewModel : ReactiveObject
     {
         get => _playlistName;
         set => this.RaiseAndSetIfChanged(ref _playlistName, value);
+    }
+
+    public string? MatchmakingRegionDisplay
+    {
+        get => _matchmakingRegionDisplay;
+        private set => this.RaiseAndSetIfChanged(ref _matchmakingRegionDisplay, value);
     }
 
     public string? PlacementText
@@ -384,6 +391,9 @@ public class MainWindowViewModel : ReactiveObject
             WindowTitle = $"{BaseTitle} - {data.Metadata.FileName}";
             GameMode = data.Metadata.GameMode;
             PlaylistName = data.Metadata.Playlist;
+            MatchmakingRegionDisplay = string.IsNullOrWhiteSpace(data.Metadata.MatchmakingRegion)
+                ? "Region: Unknown"
+                : $"Region: {data.Metadata.MatchmakingRegion.Trim()}";
             PlacementText = !string.IsNullOrEmpty(ownerPlacement) ? $"#{ownerPlacement}" : "?";
             DurationText = $"{data.Metadata.RecordingDurationMinutes:F1}m";
             HasMetadata = true;
@@ -458,6 +468,7 @@ public class MainWindowViewModel : ReactiveObject
         WindowTitle = BaseTitle;
         GameMode = null;
         PlaylistName = null;
+        MatchmakingRegionDisplay = null;
         PlacementText = null;
         DurationText = null;
         ElimsSummary = null;

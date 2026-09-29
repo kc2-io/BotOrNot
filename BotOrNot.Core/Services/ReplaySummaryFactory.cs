@@ -27,6 +27,7 @@ public static class ReplaySummaryFactory
             FileDate = file.LastWriteTimeUtc,
             GameMode = data.Metadata.GameMode,
             Playlist = data.Metadata.Playlist,
+            MatchmakingRegion = data.Metadata.MatchmakingRegion?.Trim() ?? "",
             Placement = ownerPlayer?.Placement ?? "",
             Kills = analysisStatus == ReplayAnalysisStatus.OwnerIdentityUnavailable ||
                     analysisStatus == ReplayAnalysisStatus.OwnerKillsUnavailable

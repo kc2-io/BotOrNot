@@ -37,6 +37,8 @@ public sealed class ReplayMetadata
     public int EliminationCount { get; set; }
     public string GameMode { get; set; } = "";
     public string Playlist { get; set; } = "";
+    /// <summary>The matchmaking region recorded by the replay, when available.</summary>
+    public string MatchmakingRegion { get; set; } = "";
     public int? MaxPlayers { get; set; }
     /// <summary>
     /// Length of the recording in minutes. This is not necessarily the elapsed match duration:

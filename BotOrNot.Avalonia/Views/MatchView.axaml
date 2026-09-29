@@ -81,6 +81,11 @@
                                MaxWidth="300" TextTrimming="CharacterEllipsis" />
                 </Border>
 
+                <!-- Matchmaking region -->
+                <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
+                    <TextBlock Text="{Binding MatchmakingRegionDisplay}" FontSize="12" VerticalAlignment="Center" />
+                </Border>
+
                 <!-- Placement -->
                 <Border Background="{DynamicResource PillBackground}" CornerRadius="4" Padding="8,3" Margin="0,2,6,2">
                     <TextBlock Text="{Binding PlacementText}" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />

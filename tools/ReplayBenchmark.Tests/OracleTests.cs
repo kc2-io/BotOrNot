@@ -154,12 +154,12 @@ public sealed class OracleTests
     }
 
     private static ReplayOracleRun Run(string profile, CanonicalReplaySummary summary) => new(
-        1, profile, DateTime.UtcNow, "manifest", OracleJson.SummaryFingerprint([summary]),
+        ReplayOracleRun.CurrentSchemaVersion, profile, DateTime.UtcNow, "manifest", OracleJson.SummaryFingerprint([summary]),
         new ReplayEnvironment("framework", "runtime", "os", "x64", 1, "core", "core-info", "parser", "parser-info", "hash"),
         new ReplayRunMetrics(0, 0, 0, 0, 1, 1, 0), [summary], []);
 
     private static CanonicalReplaySummary Canonical(string path, int? kills) => new(
-        path, path, DateTime.UnixEpoch, "playlist", "mode", "", kills, null, 0, 0, 0, "",
+        path, path, DateTime.UnixEpoch, "playlist", "mode", "region", "", kills, null, 0, 0, 0, "",
         nameof(ReplayAnalysisStatus.Complete), "Complete", true, kills, false, 0, []);
 
     private static string CreateTemporaryDirectory()

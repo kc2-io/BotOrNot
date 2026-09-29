@@ -30,6 +30,10 @@ public sealed class ReplaySummary
         set => _legacyGameMode = value;
     }
     public string Playlist { get; set; } = "";
+    public string MatchmakingRegion { get; set; } = "";
+    public string MatchmakingRegionDisplay => string.IsNullOrWhiteSpace(MatchmakingRegion)
+        ? "Unknown"
+        : MatchmakingRegion.Trim();
     public string Placement { get; set; } = "";
     /// <summary>
     /// The owner's authoritative kill count. It is null when owner analysis is incomplete,

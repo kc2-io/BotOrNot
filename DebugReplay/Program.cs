@@ -176,6 +176,7 @@ Console.WriteLine($"Total Eliminations: {elimCount}");
 // GameData fields
 Console.WriteLine($"\nGAMEDATA:");
 Console.WriteLine($"  CurrentPlaylist: {result.GameData?.CurrentPlaylist ?? "(null)"}");
+Console.WriteLine($"  MatchmakingRegion: {result.GameData?.KeepPlayingTogetherMatchmakingRegion ?? "(null)"}");
 Console.WriteLine($"  MaxPlayers: {result.GameData?.MaxPlayers?.ToString() ?? "(null)"}");
 Console.WriteLine($"  TeamSize: {result.GameData?.TeamSize?.ToString() ?? "(null)"}");
 Console.WriteLine($"  TotalTeams: {result.GameData?.TotalTeams?.ToString() ?? "(null)"}");
