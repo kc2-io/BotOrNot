@@ -1,0 +1,24 @@
+# CodeRabbit configuration
+# https://docs.coderabbit.ai/reference/configuration
+
+language: "en-US"
+
+reviews:
+  profile: "chill"
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    # CodeRabbit only reviews PRs targeting the default branch by default.
+    # This repo uses stacked/feature branches (e.g. am/NPC), so review all
+    # target branches to keep automatic reviews running everywhere.
+    base_branches:
+      - ".*"
+  path_filters:
+    - "!**/bin/**"
+    - "!**/obj/**"
+    - "!**/*.Designer.cs"
+    - "!BotOrNot.Tests/TestData/**"
