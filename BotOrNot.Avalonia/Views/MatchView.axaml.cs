@@ -242,6 +242,7 @@ public partial class MatchView : UserControl
             "Squad Size" => new(p => p.SquadSize.ToString(), true, false, false),
             "Place" => new(p => p.Placement, true, false, false),
             "Death Cause" => new(p => p.DeathCause, false, false, true),
+            "Killed by You" => new(p => p.KilledByOwner ? "1" : "0", false, false, false),
             "Elim Time" => new(p => p.ElimTime, true, false, false),
             "Storm Phase" => new(p => p.StormPhaseSortValue, true, false, false),
             "Pickaxe" => new(p => p.Pickaxe, false, false, false),
@@ -433,6 +434,7 @@ public partial class MatchView : UserControl
             "Storm Phase" => new(header, p => p.StormPhaseCsvValue),
             "Pickaxe" => new(header, p => p.Pickaxe ?? ""),
             "Glider" => new(header, p => p.Glider ?? ""),
+            "Killed by You" => new(header, p => p.KilledByOwner ? "Yes" : "No"),
             _ => null
         };
     }
