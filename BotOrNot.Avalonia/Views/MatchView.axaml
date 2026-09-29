@@ -15,6 +15,20 @@
         <conv:UnknownToDashConverter x:Key="UnknownToDashConverter" />
     </UserControl.Resources>
 
+    <!--
+        Row layout (index: purpose):
+        0  Top bar + error banner overlay
+        1  Match summary bar (mode, playlist, time, stats)
+        2  Filter text box
+        3  Owner eliminations header
+        4  Owner eliminations grid (2* height)
+        5  Squad section header
+        6  Squad members grid
+        7  Players Seen header
+        8  Players grid (3* height)
+        9  NPCs expander (collapsed when no NPCs)
+        The empty-state spans rows 2-9; the drag-over overlay spans rows 0-9.
+    -->
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,2*,Auto,Auto,Auto,3*,Auto"
           DragDrop.AllowDrop="True"
           Background="Transparent">
