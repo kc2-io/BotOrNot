@@ -10,6 +10,7 @@ using BotOrNot.Avalonia.ViewModels;
 using BotOrNot.Avalonia.Views;
 using BotOrNot.Core.Models;
 using BotOrNot.Core.Services;
+using BotOrNot.UITests.Helpers;
 
 namespace BotOrNot.UITests.Tests;
 
@@ -46,6 +47,22 @@ public sealed class MatchNpcSectionTests
                     Name = "Wolf",
                     Bot = "true",
                     DeathCause = "Rifle"
+                },
+                new PlayerRow
+                {
+                    Id = "Boss",
+                    Name = "Boss",
+                    Bot = "true",
+                    DeathCause = "Mythic"
+                }
+            ],
+            OwnerEliminations =
+            [
+                new PlayerRow
+                {
+                    Id = "Boss",
+                    Name = "Boss",
+                    Bot = "true"
                 }
             ]
         };
@@ -69,11 +86,13 @@ public sealed class MatchNpcSectionTests
             {
                 Assert.That(expander.IsVisible, Is.True);
                 Assert.That(expander.IsExpanded, Is.False);
-                Assert.That((expander.Header as TextBlock)?.Text, Is.EqualTo("NPCs Seen (1)"));
+                Assert.That((expander.Header as TextBlock)?.Text, Is.EqualTo("NPCs Seen (2)"));
                 Assert.That(npcsGrid.ItemsSource!.Cast<PlayerRow>().Select(player => player.Name),
-                    Is.EqualTo(new[] { "Wolf" }));
+                    Is.EqualTo(new[] { "Boss", "Wolf" }));
+                Assert.That(npcsGrid.ItemsSource!.Cast<PlayerRow>().Select(player => player.KilledByOwner),
+                    Is.EqualTo(new[] { true, false }));
                 Assert.That(npcsGrid.Columns.Select(column => column.Header),
-                    Is.EqualTo(new[] { "Id", "Name", "Death Cause" }));
+                    Is.EqualTo(new[] { "Id", "Name", "Death Cause", "Killed by You" }));
                 Assert.That(npcsGrid.Columns.Single(column => Equals(column.Header, "Id")).IsVisible, Is.False);
             });
 
@@ -84,10 +103,19 @@ public sealed class MatchNpcSectionTests
                 Is.GreaterThan(playersGrid.TranslatePoint(default, window)!.Value.Y));
 
             var columns = MatchView.GetVisibleCsvColumns(npcsGrid);
-            Assert.That(columns.Select(column => column.Header), Is.EqualTo(new[] { "Name", "Death Cause" }));
+            Assert.That(columns.Select(column => column.Header),
+                Is.EqualTo(new[] { "Name", "Death Cause", "Killed by You" }));
             Assert.That(
                 CsvExportService.GenerateCsv(viewModel.Npcs, columns),
-                Is.EqualTo($"Name,Death Cause{Environment.NewLine}Wolf,Rifle{Environment.NewLine}"));
+                Is.EqualTo(
+                    $"Name,Death Cause,Killed by You{Environment.NewLine}" +
+                    $"Boss,Mythic,Yes{Environment.NewLine}" +
+                    $"Wolf,Rifle,No{Environment.NewLine}"));
+
+            DataGridTestHelper.ClickColumnHeader(window, npcsGrid, "Killed by You");
+            Assert.That(
+                DataGridTestHelper.GetDisplayedValues(npcsGrid, player => player.Name),
+                Is.EqualTo(new[] { "Wolf", "Boss" }));
         }
         finally
         {
@@ -146,6 +174,7 @@ public sealed class MatchNpcSectionTests
                 Assert.That(FindColumn(playersGrid, "Name").IsVisible, Is.True);
             });
 
+            Click(FindColumnItem(flyout, npcsGrid, "Killed by You"));
             Click(FindColumnItem(flyout, npcsGrid, "Death Cause"));
             Assert.That(
                 FindColumn(npcsGrid, "Death Cause").IsVisible,

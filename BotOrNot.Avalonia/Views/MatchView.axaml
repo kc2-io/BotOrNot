@@ -430,6 +430,7 @@
                     <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="364" IsVisible="False" />
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="195" />
                     <DataGridTextColumn Header="Death Cause" Binding="{Binding DeathCause}" Width="156" />
+                    <DataGridCheckBoxColumn Header="Killed by You" Binding="{Binding KilledByOwner}" Width="110" />
                 </DataGrid.Columns>
             </DataGrid>
         </Expander>

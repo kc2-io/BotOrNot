@@ -335,6 +335,12 @@ public class MainWindowViewModel : ReactiveObject
             var allNpcs = partitionedPlayers[true].OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase).ToList();
             var allOwnerEliminations = OrderByElimTime(data.OwnerEliminations.Where(p => !p.IsNpc)).ToList();
 
+            var ownerKilledNpcIds = new HashSet<string>(
+                data.OwnerEliminations.Where(p => p.IsNpc).Select(p => p.Id),
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var npc in allNpcs)
+                npc.KilledByOwner = ownerKilledNpcIds.Contains(npc.Id);
+
             var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Owner";
             // Event joins can be incomplete, so a missing authoritative owner count must remain unknown.
             var botKills = allOwnerEliminations.Count(p => p.IsBot);
