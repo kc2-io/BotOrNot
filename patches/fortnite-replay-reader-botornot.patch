@@ -91,11 +91,13 @@ index ac80328..3d609e3 100644
          return replay;
      }
  
-@@ -119,6 +161,7 @@ public class FortniteReplayBuilder
+@@ -119,6 +161,9 @@ public class FortniteReplayBuilder
          GameData.MaxPlayers ??= state.TeamCount;
          GameData.TeamSize ??= state.TeamSize;
          GameData.TeamSize ??= state.ActiveTeamNums?.Length;
 +        GameData.RecordedTeamSize ??= state.TeamSize;
++        if (!string.IsNullOrWhiteSpace(state.KeepPlayingTogetherMatchmakingRegion))
++            GameData.KeepPlayingTogetherMatchmakingRegion ??= state.KeepPlayingTogetherMatchmakingRegion;
          GameData.TotalBots = state.PlayerBotsLeft > GameData.TotalBots ? state.PlayerBotsLeft : GameData.TotalBots;
  
          GameData.TotalPlayerStructures ??= state.TotalPlayerStructures;
@@ -326,10 +328,11 @@ diff --git a/src/FortniteReplayReader/Models/GameData.cs b/src/FortniteReplayRea
 index d9b828d..052e852 100644
 --- a/src/FortniteReplayReader/Models/GameData.cs
 +++ b/src/FortniteReplayReader/Models/GameData.cs
-@@ -22,6 +22,7 @@ public class GameData
+@@ -22,6 +22,8 @@ public class GameData
      public int? TotalTeams { get; set; }
      public int? TotalBots { get; set; }
      public int? TeamSize { get; set; }
++    public string KeepPlayingTogetherMatchmakingRegion { get; set; }
 +    public int? RecordedTeamSize { get; set; }
      public int? TotalPlayerStructures { get; set; }
  
@@ -366,9 +369,12 @@ index f2362f4..5f6e41d 100644
  using Unreal.Core.Contracts;
  using Unreal.Core.Models;
  using Unreal.Core.Models.Enums;
-@@ -391,3 +391,13 @@ public class GameState : INetFieldExportGroup
+@@ -391,3 +391,16 @@ public class GameState : INetFieldExportGroup
      public double RealMatchStartTime { get; set; }
  
++    [NetFieldExport("KeepPlayingTogetherMatchmakingRegion", RepLayoutCmdType.PropertyString)]
++    public string KeepPlayingTogetherMatchmakingRegion { get; set; }
++
  }
 +
 +[NetFieldExportClassNetCache("Playspace_GameState_C_ClassNetCache", minimalParseMode: ParseMode.Minimal)]

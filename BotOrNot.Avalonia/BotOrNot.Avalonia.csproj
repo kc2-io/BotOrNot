@@ -12,6 +12,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="BotOrNot.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.2.2" />
         <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />

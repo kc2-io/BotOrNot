@@ -492,6 +492,33 @@ public sealed class ReplayCacheServiceTests
     }
 
     [Test]
+    public void Summary_PreservesRecordedMatchmakingRegion()
+    {
+        var replayPath = CreateReplay("region.replay");
+        var replay = CompleteData(kills: 0, durationMinutes: 5);
+        replay.Metadata.MatchmakingRegion = "  NAW  ";
+
+        var summary = ReplaySummaryFactory.Create(replay, new FileInfo(replayPath));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(summary.MatchmakingRegion, Is.EqualTo("NAW"));
+            Assert.That(summary.MatchmakingRegionDisplay, Is.EqualTo("NAW"));
+        });
+    }
+
+    [Test]
+    public void Summary_MissingMatchmakingRegionDisplaysUnknown()
+    {
+        var replayPath = CreateReplay("unknown-region.replay");
+        var replay = CompleteData(kills: 0, durationMinutes: 5);
+
+        var summary = ReplaySummaryFactory.Create(replay, new FileInfo(replayPath));
+
+        Assert.That(summary.MatchmakingRegionDisplay, Is.EqualTo("Unknown"));
+    }
+
+    [Test]
     public void Summary_UncertainAttributionKeepsScalarKillsButNotDerivedBotKills()
     {
         var replayPath = CreateReplay("uncertain-attribution.replay");

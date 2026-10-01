@@ -186,6 +186,20 @@ public sealed class FortniteReplayBuilderTests
         Assert.That(explicitBuilder.Build(new FortniteReplay()).GameData.RecordedTeamSize, Is.EqualTo(4));
     }
 
+    [Test]
+    public void MatchmakingRegion_IsProjectedFromGameState()
+    {
+        var builder = new FortniteReplayBuilder();
+        builder.UpdateGameState(new GameState
+        {
+            KeepPlayingTogetherMatchmakingRegion = "NAW"
+        });
+
+        var replay = builder.Build(new FortniteReplay());
+
+        Assert.That(replay.GameData.KeepPlayingTogetherMatchmakingRegion, Is.EqualTo("NAW"));
+    }
+
     private static GameState GameStateWithRecorder(uint actorId) => new()
     {
         RecorderPlayerState = new ActorGuid { Value = actorId }

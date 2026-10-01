@@ -313,7 +313,7 @@ internal sealed class NativeBenchmarkRun : ILibraryScanObserver
 
         var projection = new NativeSummaryProjection(
             library.Replays.Select(replay => new NativeReplayProjection(replay.FilePath, replay.FileDate.ToUniversalTime(), replay.Playlist,
-                replay.GameMode, replay.Placement, replay.Kills, replay.PlayerKills, replay.BotKills, replay.PlayerCount, replay.BotCount,
+                replay.GameMode, replay.MatchmakingRegion, replay.Placement, replay.Kills, replay.PlayerKills, replay.BotKills, replay.PlayerCount, replay.BotCount,
                 replay.DurationMinutes, replay.IsWin, replay.BotPercent, replay.AnalysisStatus.ToString(), replay.OpponentAnalysisComplete)).ToArray(),
             library.TotalMatches, library.TotalWins, library.WinRate, library.AvgKills, library.AvgBotPercent,
             library.IncompleteOpponentMatchCount,
@@ -659,7 +659,7 @@ internal sealed record NativeProcessMetrics(long AllocatedBytesDelta, double Cpu
 
 internal sealed record NativeSummaryProjection(IReadOnlyList<NativeReplayProjection> Replays, int TotalMatches, int TotalWins,
     double WinRate, double? AvgKills, double AvgBotPercent, int IncompleteOpponentMatches, IReadOnlyList<NativeOpponentProjection> FrequentOpponents);
-internal sealed record NativeReplayProjection(string FilePath, DateTime FileDateUtc, string Playlist, string GameMode, string Placement,
+internal sealed record NativeReplayProjection(string FilePath, DateTime FileDateUtc, string Playlist, string GameMode, string MatchmakingRegion, string Placement,
     int? Kills, int? PlayerKills, int? BotKills, int PlayerCount, int BotCount, double DurationMinutes, bool IsWin, double BotPercent,
     string AnalysisStatus, bool OpponentAnalysisComplete);
 internal sealed record NativeOpponentProjection(string StableId, string Name, int Appearances);

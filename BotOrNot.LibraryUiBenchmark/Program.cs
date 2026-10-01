@@ -693,8 +693,8 @@ internal sealed class SyntheticReplayCacheService : IReplayCacheService
 {
     private static readonly IReadOnlyList<ReplaySummary> Summaries = new[]
     {
-        new ReplaySummary { FileName = "sample-one.replay", FilePath = "sample-one.replay", FileDate = new DateTime(2026, 9, 12, 12, 0, 0, DateTimeKind.Utc), Playlist = "Playlist_DefaultSolo", GameMode = "BR Build Solo", Placement = "1", Kills = 5, BotKills = 2, PlayerCount = 100, BotCount = 60, DurationMinutes = 21.2 },
-        new ReplaySummary { FileName = "sample-two.replay", FilePath = "sample-two.replay", FileDate = new DateTime(2026, 9, 12, 11, 0, 0, DateTimeKind.Utc), Playlist = "Playlist_DefaultSquad", GameMode = "BR Build Squads", Placement = "12", Kills = 2, BotKills = 1, PlayerCount = 100, BotCount = 55, DurationMinutes = 20.4 }
+        new ReplaySummary { FileName = "sample-one.replay", FilePath = "sample-one.replay", FileDate = new DateTime(2026, 9, 12, 12, 0, 0, DateTimeKind.Utc), Playlist = "Playlist_DefaultSolo", GameMode = "BR Build Solo", MatchmakingRegion = "NAW", Placement = "1", Kills = 5, BotKills = 2, PlayerCount = 100, BotCount = 60, DurationMinutes = 21.2 },
+        new ReplaySummary { FileName = "sample-two.replay", FilePath = "sample-two.replay", FileDate = new DateTime(2026, 9, 12, 11, 0, 0, DateTimeKind.Utc), Playlist = "Playlist_DefaultSquad", GameMode = "BR Build Squads", MatchmakingRegion = "EU", Placement = "12", Kills = 2, BotKills = 1, PlayerCount = 100, BotCount = 55, DurationMinutes = 20.4 }
     };
 
     public Task<IReadOnlyList<ReplaySummary>> GetSummariesAsync(string directory, IProgress<int>? progress = null, CancellationToken cancellationToken = default)

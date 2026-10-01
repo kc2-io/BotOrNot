@@ -159,6 +159,7 @@
                                     Width="140" />
                 <DataGridTextColumn Header="Mode" Binding="{Binding GameMode}" Width="140" />
                 <DataGridTextColumn Header="Playlist" Binding="{Binding Playlist}" Width="120" />
+                <DataGridTextColumn Header="Region" Binding="{Binding MatchmakingRegionDisplay}" Width="90" />
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="60" />
                 <DataGridTextColumn Header="Recorded" Binding="{Binding DurationMinutes, StringFormat={}{0:F1}m}" Width="80" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="60" />

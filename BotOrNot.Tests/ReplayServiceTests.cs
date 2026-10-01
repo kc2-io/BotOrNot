@@ -327,6 +327,7 @@ public class ReplayServiceTests
         Assert.That(metadata.Version, Is.Empty);
         Assert.That(metadata.Changelist, Is.Zero);
         Assert.That(metadata.GameNetProtocol, Is.Zero);
+        Assert.That(metadata.MatchmakingRegion, Is.Empty);
         Assert.That(metadata.RecordingDurationMinutes, Is.Zero);
     }
 
@@ -353,4 +354,3 @@ public class ReplayServiceTests
             $"but got {elimCount} (OwnerKills={result.OwnerKills})");
     }
 }
-

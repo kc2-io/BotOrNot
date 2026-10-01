@@ -277,6 +277,7 @@ public static class ReplayComparisonService
         if (expected.FileDateUtc != actual.FileDateUtc) names.Add(nameof(expected.FileDateUtc));
         if (expected.Playlist != actual.Playlist) names.Add(nameof(expected.Playlist));
         if (expected.DisplayGameMode != actual.DisplayGameMode) names.Add(nameof(expected.DisplayGameMode));
+        if (expected.MatchmakingRegion != actual.MatchmakingRegion) names.Add(nameof(expected.MatchmakingRegion));
         if (expected.Placement != actual.Placement) names.Add(nameof(expected.Placement));
         if (expected.Kills != actual.Kills) names.Add(nameof(expected.Kills));
         if (expected.BotKills != actual.BotKills) names.Add(nameof(expected.BotKills));

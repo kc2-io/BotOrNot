@@ -12,6 +12,38 @@ namespace BotOrNot.UITests.Tests;
 [TestFixture]
 public sealed class LibraryViewBindingTests
 {
+    [AvaloniaTest]
+    public void RegionColumn_RendersRecordedRegion()
+    {
+        var summary = new ReplaySummary
+        {
+            FileName = "replay.replay",
+            FilePath = Path.Combine(Path.GetTempPath(), "replay.replay"),
+            MatchmakingRegion = "NAW"
+        };
+        using var viewModel = new LibraryViewModel(
+            _ => { }, settingsService: new SettingsService(NewSettingsPath()));
+        viewModel.Replays.Add(summary);
+
+        var view = new LibraryView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 1400, Height = 700 };
+        try
+        {
+            window.Show();
+            Render(window);
+
+            var grid = view.FindControl<DataGrid>("ReplayGrid");
+            Assert.That(grid, Is.Not.Null);
+            Assert.That(grid!.Columns.Any(column => Equals(column.Header, "Region")), Is.True);
+            Assert.That(grid.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text),
+                Does.Contain("NAW"));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [TestCase(true, TestName = "DateColumn_PreservesPreciseUtcValue_ForRowsPresentAtInitialBinding")]
     [TestCase(false, TestName = "DateColumn_PreservesPreciseUtcValue_ForRowsAddedAfterInitialRender")]
     [AvaloniaTest]

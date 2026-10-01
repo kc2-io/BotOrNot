@@ -34,6 +34,8 @@ public sealed class PlayerRow
     public string? Pickaxe { get; set; }
     public string? Glider { get; set; }
     public int SquadSize { get; set; }
+    /// <summary>True when the replay recorder is credited with eliminating this row.</summary>
+    public bool KilledByOwner { get; set; }
 
     public int? CircleNumber { get; set; }
     public StormCircleStatus CircleStatus { get; set; }
@@ -77,9 +79,12 @@ public sealed class PlayerRow
     public bool IsWinner => Placement == "1";
 
     /// <summary>
-    /// NPCs have their parser-provided stable ID equal to their Player Name.
-    /// A display ID derived from the name is only a fallback and is not NPC evidence.
+    /// NPCs either expose their name as a stable ID or have no stable account ID while the
+    /// parser identifies them as bots. A name-derived display ID alone is not NPC evidence.
     /// </summary>
-    public bool IsNpc => !string.IsNullOrEmpty(StableId) && !string.IsNullOrEmpty(Name) &&
-                         StableId.Equals(Name, StringComparison.OrdinalIgnoreCase);
+    public bool IsNpc => !string.IsNullOrEmpty(Name) &&
+                         ((!string.IsNullOrEmpty(StableId) &&
+                           StableId.Equals(Name, StringComparison.OrdinalIgnoreCase)) ||
+                          (string.IsNullOrEmpty(StableId) && IsBot &&
+                           Id.Equals(Name, StringComparison.OrdinalIgnoreCase)));
 }

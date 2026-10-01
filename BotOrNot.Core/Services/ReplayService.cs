@@ -223,15 +223,15 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
             : null;
         var ownerTeamIndex = replayOwner?.TeamIndexValue;
 
-        // === Compute squad sizes from TeamIndex grouping ===
+        // === Compute squad sizes from TeamIndex grouping (excluding NPCs) ===
         var squadSizeByTeamIndex = new Dictionary<int, int>();
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (row.TeamIndexValue.HasValue)
                 squadSizeByTeamIndex[row.TeamIndexValue.Value] =
                     squadSizeByTeamIndex.GetValueOrDefault(row.TeamIndexValue.Value) + 1;
         }
-        foreach (var row in playersById.Values)
+        foreach (var row in playersById.Values.Where(p => !p.IsNpc))
         {
             if (row.TeamIndexValue.HasValue && squadSizeByTeamIndex.TryGetValue(row.TeamIndexValue.Value, out var sz))
                 row.SquadSize = sz;
@@ -480,6 +480,9 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
         // === Build metadata ===
         var playlist = result.GameData?.CurrentPlaylist ?? "";
         var gameMode = PlaylistHelper.GetDisplayNameWithFallback(playlist);
+        var matchmakingRegion = ReflectionUtils
+            .FirstString(result.GameData, "KeepPlayingTogetherMatchmakingRegion")?
+            .Trim() ?? "";
         var maxPlayers = result.GameData?.MaxPlayers;
         // Info.LengthInMs is the duration of the recorded replay. MatchEndTime is an absolute
         // game-clock value, so it cannot be treated as an elapsed duration without a matching start time.
@@ -499,6 +502,7 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
             EliminationCount = eliminationCount,
             GameMode = gameMode,
             Playlist = playlist,
+            MatchmakingRegion = matchmakingRegion,
             MaxPlayers = maxPlayers,
             RecordingDurationMinutes = recordingDuration,
             WinningTeam = winningTeam,
