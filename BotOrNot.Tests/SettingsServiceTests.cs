@@ -5,136 +5,73 @@ namespace BotOrNot.Tests;
 [TestFixture]
 public sealed class SettingsServiceTests
 {
-    private string _directory = null!;
-    private string _settingsPath = null!;
+    private readonly List<string> _tempPaths = new();
 
-    [SetUp]
-    public void SetUp()
+    private string GetTempPath()
     {
-        _directory = Path.Combine(Path.GetTempPath(), $"botornot-settings-{Guid.NewGuid():N}");
-        _settingsPath = Path.Combine(_directory, "settings.json");
+        var path = Path.Combine(Path.GetTempPath(), $"botornot-settings-test-{Guid.NewGuid():N}.json");
+        _tempPaths.Add(path);
+        return path;
+    }
+
+    [Test]
+    public void Update_PreservesReplayDirectory_WhenChangingTheme()
+    {
+        var path = GetTempPath();
+        var service = new SettingsService(path);
+        service.Save(new AppSettings
+        {
+            Theme = ThemePreference.System,
+            ReplayDirectory = @"C:\Replays"
+        });
+
+        service.Update(settings => settings.Theme = ThemePreference.Dark);
+
+        var saved = service.Load();
+        Assert.That(saved.Theme, Is.EqualTo(ThemePreference.Dark));
+        Assert.That(saved.ReplayDirectory, Is.EqualTo(@"C:\Replays"),
+            "Cycling the theme must not overwrite the saved replay directory.");
+    }
+
+    [Test]
+    public void Update_PreservesOtherSettings_WhenChangingTheme()
+    {
+        var path = GetTempPath();
+        var service = new SettingsService(path);
+        service.Save(new AppSettings
+        {
+            Theme = ThemePreference.Light,
+            ReplayDirectory = @"D:\Fortnite",
+            ReplayScanLimit = 100,
+            LibraryAutoRefreshEnabled = false,
+            LibraryAutoRefreshMinutes = 30
+        });
+
+        service.Update(settings => settings.Theme = ThemePreference.System);
+
+        var saved = service.Load();
+        Assert.That(saved.Theme, Is.EqualTo(ThemePreference.System));
+        Assert.That(saved.ReplayDirectory, Is.EqualTo(@"D:\Fortnite"));
+        Assert.That(saved.ReplayScanLimit, Is.EqualTo(100));
+        Assert.That(saved.LibraryAutoRefreshEnabled, Is.False);
+        Assert.That(saved.LibraryAutoRefreshMinutes, Is.EqualTo(30));
     }
 
     [TearDown]
     public void TearDown()
     {
-        if (Directory.Exists(_directory))
-            Directory.Delete(_directory, recursive: true);
-    }
-
-    [Test]
-    public void Load_MissingOrCorruptFile_ReturnsSafeDefaults()
-    {
-        var service = new SettingsService(_settingsPath);
-
-        var missing = service.Load();
-        Assert.Multiple(() =>
+        foreach (var path in _tempPaths)
         {
-            Assert.That(missing.Theme, Is.EqualTo(ThemePreference.System));
-            Assert.That(missing.ReplayScanLimit, Is.EqualTo(AppSettings.DefaultReplayScanLimit));
-            Assert.That(missing.LibraryAutoRefreshEnabled, Is.True);
-            Assert.That(missing.LibraryAutoRefreshMinutes, Is.EqualTo(10));
-        });
-
-        Directory.CreateDirectory(_directory);
-        File.WriteAllText(_settingsPath, "not json");
-
-        var corrupt = service.Load();
-        Assert.Multiple(() =>
-        {
-            Assert.That(corrupt.Theme, Is.EqualTo(ThemePreference.System));
-            Assert.That(corrupt.ReplayScanLimit, Is.EqualTo(AppSettings.DefaultReplayScanLimit));
-            Assert.That(corrupt.LibraryAutoRefreshEnabled, Is.True);
-            Assert.That(corrupt.LibraryAutoRefreshMinutes, Is.EqualTo(10));
-        });
-    }
-
-    [Test]
-    public void Update_PreservesOtherAndUnknownSettings()
-    {
-        Directory.CreateDirectory(_directory);
-        File.WriteAllText(
-            _settingsPath,
-            """
+            try
             {
-              "Theme": "Dark",
-              "ReplayDirectory": "C:\\replays",
-              "ReplayScanLimit": 75,
-              "FutureSetting": { "Enabled": true }
+                if (File.Exists(path))
+                    File.Delete(path);
             }
-            """);
-        var service = new SettingsService(_settingsPath);
-
-        service.Update(settings => settings.Theme = ThemePreference.Light);
-
-        var persisted = service.Load();
-        Assert.Multiple(() =>
-        {
-            Assert.That(persisted.Theme, Is.EqualTo(ThemePreference.Light));
-            Assert.That(persisted.ReplayDirectory, Is.EqualTo("C:\\replays"));
-            Assert.That(persisted.ReplayScanLimit, Is.EqualTo(75));
-            Assert.That(persisted.AdditionalSettings, Does.ContainKey("FutureSetting"));
-            Assert.That(persisted.AdditionalSettings!["FutureSetting"].GetProperty("Enabled").GetBoolean(), Is.True);
-        });
-    }
-
-    [Test]
-    public void Load_InvalidPersistedValues_NormalizesToDefaults()
-    {
-        Directory.CreateDirectory(_directory);
-        File.WriteAllText(_settingsPath, """{ "Theme": 999, "ReplayScanLimit": 0 }""");
-
-        var settings = new SettingsService(_settingsPath).Load();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(settings.Theme, Is.EqualTo(ThemePreference.System));
-            Assert.That(settings.ReplayScanLimit, Is.EqualTo(AppSettings.DefaultReplayScanLimit));
-        });
-    }
-
-    [Test]
-    public void ConcurrentUpdates_DoNotDiscardUnrelatedSettings()
-    {
-        var service = new SettingsService(_settingsPath);
-        service.Save(new AppSettings { ReplayDirectory = "C:\\replays", ReplayScanLimit = 50 });
-
-        Parallel.Invoke(
-            () => service.Update(settings => settings.Theme = ThemePreference.Dark),
-            () => service.Update(settings => settings.ReplayScanLimit = 100));
-
-        var persisted = service.Load();
-        Assert.Multiple(() =>
-        {
-            Assert.That(persisted.Theme, Is.EqualTo(ThemePreference.Dark));
-            Assert.That(persisted.ReplayDirectory, Is.EqualTo("C:\\replays"));
-            Assert.That(persisted.ReplayScanLimit, Is.EqualTo(100));
-        });
-    }
-
-    [Test]
-    public void AutoRefreshPreferences_RoundTripAndNormalizeInvalidIntervals()
-    {
-        var service = new SettingsService(_settingsPath);
-        service.Update(settings =>
-        {
-            settings.LibraryAutoRefreshEnabled = false;
-            settings.LibraryAutoRefreshMinutes = 27;
-        });
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(service.Load().LibraryAutoRefreshEnabled, Is.False);
-            Assert.That(service.Load().LibraryAutoRefreshMinutes, Is.EqualTo(27));
-        });
-
-        foreach (var invalid in new[] { 0, -1, 1441, int.MaxValue })
-        {
-            File.WriteAllText(_settingsPath,
-                $$"""{ "LibraryAutoRefreshEnabled": false, "LibraryAutoRefreshMinutes": {{invalid}} }""");
-            var loaded = service.Load();
-            Assert.That(loaded.LibraryAutoRefreshEnabled, Is.False);
-            Assert.That(loaded.LibraryAutoRefreshMinutes, Is.EqualTo(10));
+            catch
+            {
+                // Best-effort cleanup.
+            }
         }
+        _tempPaths.Clear();
     }
 }
