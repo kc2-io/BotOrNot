@@ -70,6 +70,36 @@ public class OwnerEliminationResolverTests
     }
 
     [Test]
+    public void ParticipantResolver_CreditsRequestedTeammateKnockInsteadOfFinisher()
+    {
+        var result = ParticipantEliminationResolver.Resolve("teammate", new[]
+        {
+            Knock(1, 10, "victim", "teammate", observedDbno: true),
+            Finish(2, 20, "victim", Owner)
+        });
+
+        AssertDecision(result.Single(), OwnerCreditStatus.Credited, OwnerCreditSource.OwnerKnock);
+    }
+
+    [Test]
+    public void ParticipantResolver_UnrelatedAmbiguityDoesNotTaintTeammateCoverage()
+    {
+        var decisions = ParticipantEliminationResolver.Resolve("teammate", new[]
+        {
+            Knock(1, 20, "victim", "other-a", observedDbno: true),
+            Knock(2, 20, "victim", "other-b", observedDbno: true),
+            Finish(3, 30, "victim", "other-b")
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(decisions.Single().Status, Is.EqualTo(OwnerCreditStatus.Uncertain));
+            Assert.That(ParticipantEliminationResolver.HasRelevantUncertainty("teammate", decisions), Is.False);
+            Assert.That(ParticipantEliminationResolver.HasRelevantUncertainty("other-a", decisions), Is.True);
+        });
+    }
+
+    [Test]
     public void Resolve_InitialRebootCounterIsBaselineAndLaterIncreaseResetsLife()
     {
         var firstLife = Resolve(
@@ -105,6 +135,7 @@ public class OwnerEliminationResolverTests
             new CombatLifecycleEvent(2, null, CombatLifecycleEventKind.Finish, "victim", "other"));
 
         AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+        Assert.That(ParticipantEliminationResolver.HasRelevantUncertainty(Owner, result), Is.True);
     }
 
     [TestCase(double.NaN)]
@@ -127,6 +158,7 @@ public class OwnerEliminationResolverTests
             Finish(3, 20, "victim", "other"));
 
         AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+        Assert.That(ParticipantEliminationResolver.HasRelevantUncertainty(Owner, result), Is.True);
     }
 
     [Test]
@@ -137,6 +169,7 @@ public class OwnerEliminationResolverTests
             Finish(2, 20, "victim", "other"));
 
         AssertDecision(result.Single(), OwnerCreditStatus.Uncertain, OwnerCreditSource.AmbiguousLifecycle);
+        Assert.That(ParticipantEliminationResolver.HasRelevantUncertainty(Owner, result), Is.True);
     }
 
     [Test]

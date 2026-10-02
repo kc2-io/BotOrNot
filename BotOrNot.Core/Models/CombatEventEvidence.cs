@@ -58,4 +58,5 @@ public sealed record OwnerEliminationDecision(
     string VictimId,
     OwnerCreditStatus Status,
     OwnerCreditSource Source,
-    DeathCauseInfo DeathCause);
+    DeathCauseInfo DeathCause,
+    IReadOnlyList<string>? CandidateParticipantIds = null);

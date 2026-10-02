@@ -21,6 +21,14 @@ public sealed class SquadMemberSummary
     public int? Placement { get; init; }
     public int? ObservedSquadSize { get; init; }
     public bool? IsBot { get; init; }
+    public string? DeathCause { get; init; }
+    public DeathCauseInfo? DeathCauseInfo { get; init; }
+    public int? ObservedPlayerKills { get; init; }
+    public int? ObservedBotKills { get; init; }
+    public int? ObservedUnknownKills { get; init; }
+    public bool HasEliminationDetails { get; init; }
+    public string? EliminationCoverageText { get; init; }
+    public List<PlayerRow> Eliminations { get; init; } = new();
     public bool CanOpenFortniteTracker => IsBot is not true && !string.IsNullOrWhiteSpace(Name);
 }
 
@@ -102,7 +110,7 @@ public sealed class SquadProjection
             : observedTeamSize;
 
         var teammates = teammateGroups
-            .Select(group => CreateMember(group, memberObservedTeamSize))
+            .Select(group => CreateMember(group, memberObservedTeamSize, replay))
             .OrderBy(member => member.Name ?? "", StringComparer.OrdinalIgnoreCase)
             .ThenBy(member => member.Name ?? "", StringComparer.Ordinal)
             .ThenBy(member => member.StableId, StringComparer.OrdinalIgnoreCase)
@@ -163,19 +171,107 @@ public sealed class SquadProjection
 
     private static SquadMemberSummary CreateMember(
         IGrouping<string, PlayerRow> group,
-        int? observedTeamSize)
+        int? observedTeamSize,
+        ReplayData replay)
     {
+        var kills = SelectUniqueInt(group.Select(player => player.Kills));
+        var deathCause = SelectDeathCause(group);
+        var hasEliminationDetails = replay.ParticipantEliminations.TryGetValue(group.Key, out var result);
+        var eliminations = result?.Eliminations.Where(player => !player.IsNpc).ToList() ?? new();
+        var observedPlayerKills = eliminations.Count(player =>
+            bool.TryParse(player.Bot, out var isBot) && !isBot);
+        var observedBotKills = eliminations.Count(player =>
+            bool.TryParse(player.Bot, out var isBot) && isBot);
+        var observedUnknownKills = eliminations.Count - observedPlayerKills - observedBotKills;
         return new SquadMemberSummary
         {
             StableId = group.Key,
             Name = SelectDisplayName(group.Select(player => player.Name)),
-            Kills = SelectUniqueInt(group.Select(player => player.Kills)),
+            Kills = kills,
             Level = SelectUniqueInt(group.Select(player => player.Level)),
             Platform = SelectUniqueText(group.Select(player => player.Platform)),
             Placement = SelectUniqueInt(group.Select(player => player.Placement)),
             ObservedSquadSize = observedTeamSize,
-            IsBot = SelectUniqueBool(group.Select(player => player.Bot))
+            IsBot = SelectUniqueBool(group.Select(player => player.Bot)),
+            DeathCause = deathCause.DisplayName,
+            DeathCauseInfo = deathCause.Info,
+            ObservedPlayerKills = hasEliminationDetails ? observedPlayerKills : null,
+            ObservedBotKills = hasEliminationDetails ? observedBotKills : null,
+            ObservedUnknownKills = hasEliminationDetails ? observedUnknownKills : null,
+            HasEliminationDetails = hasEliminationDetails,
+            EliminationCoverageText = BuildEliminationCoverageText(
+                hasEliminationDetails ? result : null,
+                kills,
+                eliminations.Count,
+                observedUnknownKills),
+            Eliminations = eliminations
         };
+    }
+
+    private static (string? DisplayName, DeathCauseInfo? Info) SelectDeathCause(
+        IEnumerable<PlayerRow> players)
+    {
+        var observed = players
+            .Where(player => !string.IsNullOrWhiteSpace(player.DeathCause) &&
+                             !string.Equals(player.DeathCause, "unknown", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(
+                player => (player.DeathCause!, player.DeathCauseInfo?.EvidenceSummary ?? ""),
+                DeathCauseKeyComparer.Instance)
+            .Select(group => group.First())
+            .Take(2)
+            .ToList();
+
+        return observed.Count switch
+        {
+            0 => (null, null),
+            1 => (observed[0].DeathCause, observed[0].DeathCauseInfo),
+            _ => ("Conflicting", new DeathCauseInfo
+            {
+                DisplayName = "Conflicting",
+                ResolutionStatus = DeathCauseResolutionStatus.Conflicting,
+                Confidence = EvidenceConfidence.None
+            })
+        };
+    }
+
+    private static string? BuildEliminationCoverageText(
+        ParticipantEliminationResult? result,
+        int? authoritativeKills,
+        int observedKills,
+        int observedUnknownKills)
+    {
+        if (result == null)
+            return "Detailed elimination attribution is unavailable for this replay.";
+
+        var reasons = new List<string>();
+        if (result.HasUncertainAttribution)
+            reasons.Add("Some finish attribution is uncertain.");
+        if (result.HasMissingVictimDetails)
+            reasons.Add("Some credited victim details are missing.");
+        if (!authoritativeKills.HasValue)
+            reasons.Add($"Observed {observedKills} credited eliminations; the authoritative total is unavailable.");
+        else if (observedKills != authoritativeKills.Value)
+            reasons.Add($"Observed {observedKills} of {authoritativeKills.Value} recorded eliminations.");
+        if (observedUnknownKills > 0)
+            reasons.Add($"{observedUnknownKills} observed victims have unknown player/bot classification.");
+
+        return reasons.Count == 0 ? null : string.Join(" ", reasons);
+    }
+
+    private sealed class DeathCauseKeyComparer : IEqualityComparer<(string DisplayName, string Evidence)>
+    {
+        public static DeathCauseKeyComparer Instance { get; } = new();
+
+        public bool Equals(
+            (string DisplayName, string Evidence) left,
+            (string DisplayName, string Evidence) right) =>
+            StringComparer.OrdinalIgnoreCase.Equals(left.DisplayName, right.DisplayName) &&
+            StringComparer.Ordinal.Equals(left.Evidence, right.Evidence);
+
+        public int GetHashCode((string DisplayName, string Evidence) value) =>
+            HashCode.Combine(
+                StringComparer.OrdinalIgnoreCase.GetHashCode(value.DisplayName),
+                StringComparer.Ordinal.GetHashCode(value.Evidence));
     }
 
     private static string? SelectDisplayName(IEnumerable<string?> values)
