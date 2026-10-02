@@ -41,6 +41,69 @@ public sealed class SquadProjectionTests
     }
 
     [Test]
+    public void FromReplay_ProjectsObservedVictimBreakdownAndCoverageWithoutCountingNpcs()
+    {
+        var replay = Replay(
+            "Playlist_DefaultDuo",
+            Player("owner-id", "Recorder", 3, isOwner: true, kills: "0", squadSize: 2),
+            Player("mate-id", "Teammate", 3, kills: "3", squadSize: 2));
+        replay.ParticipantEliminations["MATE-ID"] = new ParticipantEliminationResult
+        {
+            ParticipantId = "mate-id",
+            Eliminations =
+            [
+                Player("account-human", "Human", 4, bot: "false"),
+                Player("account-bot", "Bot", 4, bot: "true"),
+                Player("account-unknown", "Unknown", 4, bot: "unknown"),
+                new PlayerRow { Id = "Wolf", Name = "Wolf", Bot = "true" }
+            ]
+        };
+
+        var teammate = SquadProjection.FromReplay(replay).Teammates.Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(teammate.HasEliminationDetails, Is.True);
+            Assert.That(teammate.Eliminations.Select(player => player.Name),
+                Is.EqualTo(new[] { "Human", "Bot", "Unknown" }));
+            Assert.That(teammate.ObservedPlayerKills, Is.EqualTo(1));
+            Assert.That(teammate.ObservedBotKills, Is.EqualTo(1));
+            Assert.That(teammate.ObservedUnknownKills, Is.EqualTo(1));
+            Assert.That(teammate.EliminationCoverageText, Does.Contain("unknown player/bot classification"));
+        });
+    }
+
+    [Test]
+    public void FromReplay_DistinguishesCompleteEmptyAndUnavailableEliminationDetails()
+    {
+        var complete = Replay(
+            "Playlist_DefaultDuo",
+            Player("owner-id", "Recorder", 3, isOwner: true),
+            Player("mate-id", "Teammate", 3, kills: "0"));
+        complete.ParticipantEliminations["mate-id"] = new ParticipantEliminationResult
+        {
+            ParticipantId = "mate-id"
+        };
+        var unavailable = Replay(
+            "Playlist_DefaultDuo",
+            Player("owner-id", "Recorder", 3, isOwner: true),
+            Player("mate-id", "Teammate", 3, kills: "0"));
+
+        var completeMember = SquadProjection.FromReplay(complete).Teammates.Single();
+        var unavailableMember = SquadProjection.FromReplay(unavailable).Teammates.Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(completeMember.HasEliminationDetails, Is.True);
+            Assert.That(completeMember.Eliminations, Is.Empty);
+            Assert.That(completeMember.EliminationCoverageText, Is.Null);
+            Assert.That(unavailableMember.HasEliminationDetails, Is.False);
+            Assert.That(unavailableMember.ObservedPlayerKills, Is.Null);
+            Assert.That(unavailableMember.EliminationCoverageText, Does.Contain("unavailable"));
+        });
+    }
+
+    [Test]
     public void FromReplay_ConfirmedSoloRequiresCatalogFormatWithoutObservedTeammate()
     {
         var confirmedSolo = Replay(
@@ -296,12 +359,13 @@ public sealed class SquadProjectionTests
         Assert.That(projection.ExpectedTeamSize, Is.EqualTo(1));
     }
 
-    [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 4, 3)]
-    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 2, 1)]
+    [TestCase("Blitz_ForbiddenFruit_CalmSambucusBRSquad_Owner_Elim_1_Team_Elim_3_Place_3.replay", 4, 3, 2)]
+    [TestCase("Reload_PunchBerryDuo_Owner_Elim_5_Team_Elim_1_Place_1.replay", 2, 1, 1)]
     public async Task FromReplay_RealTeamFixturesMatchExpectedMembership(
         string replayFileName,
         int expectedTeamSize,
-        int expectedTeammates)
+        int expectedTeammates,
+        int expectedTeammateKills)
     {
         var replayPath = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", replayFileName);
         var replay = await new ReplayService().LoadReplayAsync(replayPath);
@@ -316,6 +380,26 @@ public sealed class SquadProjectionTests
             Assert.That(projection.Teammates, Has.Count.EqualTo(expectedTeammates));
             Assert.That(projection.Teammates.Any(teammate =>
                 teammate.StableId.Equals(replay.OwnerId, StringComparison.OrdinalIgnoreCase)), Is.False);
+            Assert.That(projection.Teammates.All(teammate => teammate.HasEliminationDetails), Is.True);
+            Assert.That(projection.Teammates.All(teammate =>
+                replay.ParticipantEliminations.ContainsKey(teammate.StableId)), Is.True);
+            Assert.That(projection.Teammates.Sum(teammate => teammate.Kills),
+                Is.EqualTo(expectedTeammateKills));
+            Assert.That(projection.Teammates.Sum(teammate => teammate.Eliminations.Count),
+                Is.EqualTo(expectedTeammateKills));
+            Assert.That(projection.Teammates.Where(teammate => teammate.Kills.HasValue).All(teammate =>
+                    teammate.Eliminations.Count == teammate.Kills.GetValueOrDefault() &&
+                    teammate.EliminationCoverageText == null),
+                Is.True,
+                string.Join("; ", projection.Teammates.Select(teammate =>
+                    $"{teammate.Name}: authoritative={teammate.Kills}, observed={teammate.Eliminations.Count}, " +
+                    $"coverage={teammate.EliminationCoverageText ?? "complete"}")));
+            Assert.That(projection.Teammates.Where(teammate => !teammate.Kills.HasValue).All(teammate =>
+                teammate.EliminationCoverageText?.Contains(
+                    "authoritative total is unavailable",
+                    StringComparison.Ordinal) == true), Is.True);
+            Assert.That(projection.Teammates.SelectMany(teammate => teammate.Eliminations),
+                Is.All.Matches<PlayerRow>(victim => !victim.IsNpc));
         });
     }
 

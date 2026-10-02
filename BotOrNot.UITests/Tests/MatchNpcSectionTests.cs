@@ -80,7 +80,8 @@ public sealed class MatchNpcSectionTests
 
             var playersGrid = view.FindControl<DataGrid>("PlayersGrid")!;
             var npcsGrid = view.FindControl<DataGrid>("NpcsGrid")!;
-            var expander = view.GetVisualDescendants().OfType<Expander>().Single();
+            var expander = view.GetVisualDescendants().OfType<Expander>().Single(candidate =>
+                (candidate.Header as TextBlock)?.Text?.StartsWith("NPCs Seen", StringComparison.Ordinal) == true);
 
             Assert.Multiple(() =>
             {

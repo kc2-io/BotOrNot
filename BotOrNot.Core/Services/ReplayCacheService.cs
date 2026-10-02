@@ -81,7 +81,7 @@ public sealed class ReplayCacheService : IReplayCacheService
     /// Bump when a parser or summary interpretation changes. It is deliberately part of the
     /// key so prior cache entries cannot masquerade as current analysis.
     /// </summary>
-    public const string AnalysisRevision = "2026-09-29.1";
+    public const string AnalysisRevision = "2026-10-02.1";
 
     private static readonly string DefaultCacheDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BotOrNot");

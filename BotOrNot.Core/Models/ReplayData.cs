@@ -6,6 +6,12 @@ public sealed class ReplayData
     [Obsolete("Use Metadata.EliminationCount instead. This list is no longer populated.")]
     public List<string> Eliminations { get; set; } = new();
     public List<PlayerRow> OwnerEliminations { get; set; } = new();
+    /// <summary>
+    /// Event-level competitive eliminations attributed to participants by stable account ID.
+    /// An absent key means detailed attribution was not calculated for that participant.
+    /// </summary>
+    public Dictionary<string, ParticipantEliminationResult> ParticipantEliminations { get; set; } =
+        new(StringComparer.OrdinalIgnoreCase);
     /// <summary>The recorder's parser-provided stable account ID, when available.</summary>
     public string? OwnerId { get; set; }
     /// <summary>The recorder's validated positive team index, when available.</summary>
@@ -22,6 +28,14 @@ public sealed class ReplayData
     public bool HasUncertainEliminationAttribution { get; set; }
     public string? OwnerEliminatedBy { get; set; }
     public ReplayMetadata Metadata { get; set; } = new();
+}
+
+public sealed class ParticipantEliminationResult
+{
+    public string ParticipantId { get; init; } = "";
+    public List<PlayerRow> Eliminations { get; init; } = new();
+    public bool HasUncertainAttribution { get; init; }
+    public bool HasMissingVictimDetails { get; init; }
 }
 
 public sealed class ReplayMetadata
