@@ -137,4 +137,24 @@ public sealed class SettingsServiceTests
             Assert.That(loaded.LibraryAutoRefreshMinutes, Is.EqualTo(10));
         }
     }
+
+    [Test]
+    public void StreamerOverlayPreferences_DefaultOff_RoundTripAndNormalizePorts()
+    {
+        var service = new SettingsService(_settingsPath);
+        Assert.That(service.Load().StreamerOverlayEnabled, Is.False);
+        Assert.That(service.Load().StreamerOverlayPort, Is.EqualTo(17843));
+        service.Update(settings =>
+        {
+            settings.StreamerOverlayEnabled = true;
+            settings.StreamerOverlayPort = 19000;
+        });
+        Assert.That(service.Load().StreamerOverlayEnabled, Is.True);
+        Assert.That(service.Load().StreamerOverlayPort, Is.EqualTo(19000));
+        foreach (var invalid in new[] { -1, 0, 1023, 65536 })
+        {
+            File.WriteAllText(_settingsPath, $$"""{ "StreamerOverlayPort": {{invalid}} }""");
+            Assert.That(service.Load().StreamerOverlayPort, Is.EqualTo(17843));
+        }
+    }
 }

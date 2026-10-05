@@ -73,4 +73,40 @@ public partial class LibraryView : UserControl
             sender is ToggleButton { DataContext: FrequentOpponent opponent })
             viewModel.ToggleOpponentFilter(opponent);
     }
+
+    private void StreamerOverlayPort_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || DataContext is not LibraryViewModel vm) return;
+        e.Handled = true;
+        vm.StreamerOverlay.ApplyPortCommand.Execute().Subscribe(_ => { }, _ => { });
+    }
+
+    private async void CopyStreamerOverlayUrl_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not LibraryViewModel vm || !vm.StreamerOverlay.CanUseUrl) return;
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null)
+                vm.StreamerOverlay.ReportMessage("Clipboard unavailable. Copy the displayed URL manually.");
+            else
+            {
+                await clipboard.SetTextAsync(vm.StreamerOverlay.Url);
+                vm.StreamerOverlay.ReportMessage("Overlay URL copied. Paste it into a browser source in your streaming software.");
+            }
+        }
+        catch { vm.StreamerOverlay.ReportMessage("Could not copy the URL. Copy the displayed URL manually."); }
+    }
+
+    private async void PreviewStreamerOverlay_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not LibraryViewModel vm || !vm.StreamerOverlay.CanUseUrl) return;
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher;
+            if (launcher is null || !await launcher.LaunchUriAsync(new Uri(vm.StreamerOverlay.Url)))
+                vm.StreamerOverlay.ReportMessage("Could not open a browser. Open the displayed URL manually.");
+        }
+        catch { vm.StreamerOverlay.ReportMessage("Could not open a browser. Open the displayed URL manually."); }
+    }
 }
