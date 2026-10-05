@@ -139,6 +139,96 @@
       "_source": "source-derived"
     },
     {
+      "playlist_name": "Playlist_BlendHeadedDuo",
+      "display_name": "Reload Build Duos",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 2,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_BlendHeadedNoBuildDuo",
+      "display_name": "Reload Zero Build Duos",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_BlendHeadedNoBuildSolo",
+      "display_name": "Reload Zero Build Solo",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_BlendHeadedNoBuildSquad",
+      "display_name": "Reload Zero Build Squads",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 4,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_BlendHeadedSolo",
+      "display_name": "Reload Build Solo",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_BlendHeadedSquad",
+      "display_name": "Reload Build Squads",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 4,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
       "playlist_name": "Playlist_Blitz_Duos",
       "display_name": "Blitz - Duos",
       "_source": "manual"
@@ -770,6 +860,21 @@
       "_source": "manual"
     },
     {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSolo_FastLanding",
+      "display_name": "Reload Zero Build Solo",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
       "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSquad",
       "display_name": "Blitz Asteria Awakened - Squads",
       "_source": "manual"
@@ -896,6 +1001,51 @@
         "fortnite-api.com/v1/playlists"
       ],
       "observedDate": "2026-09-13",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_BlendHeaded_Duos",
+      "display_name": "Reload Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_BlendHeaded_Solo",
+      "display_name": "Reload Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_BlendHeaded_Squads",
+      "display_name": "Reload Build Squads Ranked",
+      "family": "Reload",
+      "buildMode": "Build",
+      "teamSize": 4,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
       "confidence": "source-derived",
       "_source": "source-derived"
     },
@@ -1031,6 +1181,51 @@
         "fortnite-api.com/v1/playlists"
       ],
       "observedDate": "2026-09-13",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_BlendHeaded_Duos",
+      "display_name": "Reload Zero Build Duos Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 2,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_BlendHeaded_Solo",
+      "display_name": "Reload Zero Build Solo Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_Habanero_NoBuild_BlendHeaded_Squads",
+      "display_name": "Reload Zero Build Squads Ranked",
+      "family": "Reload",
+      "buildMode": "Zero Build",
+      "teamSize": 4,
+      "rankedState": "ranked",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
       "confidence": "source-derived",
       "_source": "source-derived"
     },
@@ -2207,6 +2402,21 @@
       ],
       "observedDate": "2026-09-11",
       "confidence": "source-derived"
+    },
+    {
+      "playlist_name": "Playlist_NoBuildBR_FastLanding",
+      "display_name": "BR Zero Build Solo",
+      "family": "BR",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "unknown",
+      "variant": null,
+      "sources": [
+        "fortnite-api.com/v1/playlists"
+      ],
+      "observedDate": "2026-10-05",
+      "confidence": "source-derived",
+      "_source": "source-derived"
     },
     {
       "playlist_name": "Playlist_NoBuildBR_Habanero_Duo",

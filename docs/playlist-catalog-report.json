@@ -1,29 +1,21 @@
 {
   "schemaVersion": 1,
-  "observedDate": "2026-09-28",
+  "observedDate": "2026-10-05",
   "added": [
-    "Playlist_Showdown_BlastBerryNoBuildDuos_CTS",
-    "Playlist_Showdown_DashBerryNoBuildDuos_CTS",
-    "Playlist_Showdown_PiperBootNoBuildDuos_CTS",
-    "Playlist_Showdown_RE_BlastBerryNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_BlastBerrySolo_CTS",
-    "Playlist_Showdown_RE_DashBerryNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_DashBerrySolo_CTS",
-    "Playlist_Showdown_RE_MatchMistNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_MatchMistSolo_CTS",
-    "Playlist_Showdown_RE_PiperBootNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_PiperBootSolo_CTS",
-    "Playlist_Showdown_RE_PunchBerryNoBuildDuo_CTS",
-    "Playlist_Showdown_RE_PunchBerryNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_PunchBerrySolo_CTS",
-    "Playlist_Showdown_RE_RopeSmileNoBuildDuo_CTS",
-    "Playlist_Showdown_RE_RopeSmileNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_SourSpawnNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_SourSpawnSolo_CTS",
-    "Playlist_Showdown_RE_TimberStakeNoBuildSolo_CTS",
-    "Playlist_Showdown_RE_TimberStakeSolo_CTS",
-    "Playlist_Showdown_SourSpawnNoBuildDuos_CTS",
-    "Playlist_Showdown_TimberStakeNoBuildDuo_CTS"
+    "Playlist_BlendHeadedDuo",
+    "Playlist_BlendHeadedNoBuildDuo",
+    "Playlist_BlendHeadedNoBuildSolo",
+    "Playlist_BlendHeadedNoBuildSquad",
+    "Playlist_BlendHeadedSolo",
+    "Playlist_BlendHeadedSquad",
+    "Playlist_ForbiddenFruitNoBuildBRSolo_FastLanding",
+    "Playlist_Habanero_BlendHeaded_Duos",
+    "Playlist_Habanero_BlendHeaded_Solo",
+    "Playlist_Habanero_BlendHeaded_Squads",
+    "Playlist_Habanero_NoBuild_BlendHeaded_Duos",
+    "Playlist_Habanero_NoBuild_BlendHeaded_Solo",
+    "Playlist_Habanero_NoBuild_BlendHeaded_Squads",
+    "Playlist_NoBuildBR_FastLanding"
   ],
   "changed": [],
   "preserved": [
@@ -964,6 +956,10 @@
       "reason": "unsupported-or-insufficient-evidence"
     },
     {
+      "playlist_name": "Playlist_Mash_Squads_Legacy",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
       "playlist_name": "Playlist_Melt",
       "reason": "unsupported-or-insufficient-evidence"
     },
@@ -1504,6 +1500,10 @@
       "reason": "unsupported-or-insufficient-evidence"
     },
     {
+      "playlist_name": "Playlist_ShowdownTournament_Mash_Squads",
+      "reason": "unsupported-or-insufficient-evidence"
+    },
+    {
       "playlist_name": "Playlist_ShowdownTournament_Melt_Solo_A",
       "reason": "unsupported-or-insufficient-evidence"
     },
@@ -1946,7 +1946,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -1963,7 +1963,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -1980,7 +1980,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2069,7 +2069,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2086,7 +2086,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2103,7 +2103,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2138,7 +2138,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2689,7 +2689,7 @@
         "sources": [
           "fortnite-api.com/v1/playlists"
         ],
-        "observedDate": "2026-09-28",
+        "observedDate": "2026-10-05",
         "confidence": "source-derived"
       },
       "official_display_name": null,
@@ -2894,10 +2894,40 @@
       "preserved_display_name": "Reload Build Squads"
     },
     {
+      "playlist_name": "Playlist_Showdown_BlastBerryNoBuildDuos_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_DashBerryNoBuildDuos_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_PiperBootNoBuildDuos_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_BlastBerry_Duos",
       "community_name": "Reload - Duo",
       "official_display_name": null,
       "preserved_display_name": "Reload Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_BlastBerryNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_BlastBerrySolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
     },
     {
       "playlist_name": "Playlist_Showdown_RE_CTS_DashBerry_Duos",
@@ -2954,6 +2984,18 @@
       "preserved_display_name": "Reload Build Duos Ranked"
     },
     {
+      "playlist_name": "Playlist_Showdown_RE_DashBerryNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_DashBerrySolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_ForbiddenFruitNoBuildSolo",
       "community_name": "Blitz Royale - Solo Showdown NoBuild",
       "official_display_name": null,
@@ -2984,10 +3026,100 @@
       "preserved_display_name": "Reload Build Solo Ranked"
     },
     {
+      "playlist_name": "Playlist_Showdown_RE_MatchMistNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_MatchMistSolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PiperBootNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PiperBootSolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerryNoBuildDuo_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerryNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_PunchBerrySolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_RopeSmileNoBuildDuo_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_RopeSmileNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
       "playlist_name": "Playlist_Showdown_RE_RopeSmileSolo_CTS",
       "community_name": "Reload - Solo",
       "official_display_name": null,
       "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_SourSpawnNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_SourSpawnSolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_TimberStakeNoBuildSolo_CTS",
+      "community_name": "Reload - Zero Build Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_RE_TimberStakeSolo_CTS",
+      "community_name": "Reload - Solo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Build Solo Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_SourSpawnNoBuildDuos_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
+    },
+    {
+      "playlist_name": "Playlist_Showdown_TimberStakeNoBuildDuo_CTS",
+      "community_name": "Reload - Zero Build Duo",
+      "official_display_name": null,
+      "preserved_display_name": "Reload Zero Build Duos Ranked"
     },
     {
       "playlist_name": "Playlist_ShowdownTournament_BlastBerryDuo_CR",
@@ -4558,7 +4690,12 @@
       "Playlist_RusticPepperNoBuildSquad",
       "Playlist_RusticPepperSolo",
       "Playlist_RusticPepperSquad",
+      "Playlist_Showdown_BlastBerryNoBuildDuos_CTS",
+      "Playlist_Showdown_DashBerryNoBuildDuos_CTS",
+      "Playlist_Showdown_PiperBootNoBuildDuos_CTS",
       "Playlist_Showdown_RE_BlastBerry_Duos",
+      "Playlist_Showdown_RE_BlastBerryNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_BlastBerrySolo_CTS",
       "Playlist_Showdown_RE_CTS_DashBerry_Duos",
       "Playlist_Showdown_RE_CTS_DashBerryNoBuildSolo_MES",
       "Playlist_Showdown_RE_CTS_MatchMist_Duos",
@@ -4568,12 +4705,29 @@
       "Playlist_Showdown_RE_CTS_SourSpawn_Duos",
       "Playlist_Showdown_RE_CTS_SunflowerDuos",
       "Playlist_Showdown_RE_CTS_TimberStake_Duos",
+      "Playlist_Showdown_RE_DashBerryNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_DashBerrySolo_CTS",
       "Playlist_Showdown_RE_ForbiddenFruitNoBuildSolo",
       "Playlist_Showdown_RE_JumpBearDuos_CTS",
       "Playlist_Showdown_RE_JumpBearNoBuildDuos_CTS",
       "Playlist_Showdown_RE_JumpBearNoBuildSolo_CTS",
       "Playlist_Showdown_RE_JumpBearSolo_CTS",
+      "Playlist_Showdown_RE_MatchMistNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_MatchMistSolo_CTS",
+      "Playlist_Showdown_RE_PiperBootNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_PiperBootSolo_CTS",
+      "Playlist_Showdown_RE_PunchBerryNoBuildDuo_CTS",
+      "Playlist_Showdown_RE_PunchBerryNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_PunchBerrySolo_CTS",
+      "Playlist_Showdown_RE_RopeSmileNoBuildDuo_CTS",
+      "Playlist_Showdown_RE_RopeSmileNoBuildSolo_CTS",
       "Playlist_Showdown_RE_RopeSmileSolo_CTS",
+      "Playlist_Showdown_RE_SourSpawnNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_SourSpawnSolo_CTS",
+      "Playlist_Showdown_RE_TimberStakeNoBuildSolo_CTS",
+      "Playlist_Showdown_RE_TimberStakeSolo_CTS",
+      "Playlist_Showdown_SourSpawnNoBuildDuos_CTS",
+      "Playlist_Showdown_TimberStakeNoBuildDuo_CTS",
       "Playlist_ShowdownTournament_BlastBerryDuo_CR",
       "Playlist_ShowdownTournament_BlastBerryDuo_Fill",
       "Playlist_ShowdownTournament_BlastBerryDuo_NoFill",
