@@ -7,8 +7,8 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
         <!-- Toolbar -->
-        <Grid Grid.Row="0" Margin="8" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*">
-            <Image Grid.RowSpan="3"
+        <Grid Grid.Row="0" Margin="8" RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+            <Image Grid.RowSpan="4"
                    Source="avares://BotOrNot/Assets/logo.png"
                    Width="32" Height="32" Margin="0,0,8,0"
                    VerticalAlignment="Top" />
@@ -55,7 +55,7 @@
             </WrapPanel>
             <WrapPanel Grid.Column="1" Grid.Row="2" Margin="0,4,0,0">
                 <CheckBox x:Name="AutoRefreshEnabledCheckBox" Content="Auto refresh library"
-                          ToolTip.Tip="Refreshes while the Library is open."
+                          ToolTip.Tip="Refreshes while the Library is open or the browser overlay is enabled."
                           IsChecked="{Binding AutoRefreshEnabled, Mode=TwoWay}"
                           VerticalAlignment="Center" Margin="0,0,12,4" />
                 <Label Content="Every (minutes)"
@@ -73,6 +73,27 @@
                 <Button x:Name="ApplyAutoRefreshMinutesButton" Content="Apply interval" Command="{Binding ApplyAutoRefreshMinutesCommand}"
                         Margin="0,0,8,4" />
             </WrapPanel>
+            <StackPanel Grid.Column="1" Grid.Row="3" Margin="0,4,0,0"
+                        DataContext="{Binding StreamerOverlay}" x:DataType="vm:StreamerOverlayViewModel">
+                <WrapPanel>
+                    <Button x:Name="ToggleStreamerOverlayButton" Content="{Binding ToggleText}"
+                            Command="{Binding ToggleCommand}" Margin="0,0,8,4" />
+                    <Label Content="Port" Target="{Binding #StreamerOverlayPortInput}"
+                           VerticalAlignment="Center" Margin="0,0,4,4" />
+                    <TextBox x:Name="StreamerOverlayPortInput" Text="{Binding PortText}"
+                             IsEnabled="{Binding CanEditPort}" Width="76" Margin="0,0,4,4"
+                             VerticalContentAlignment="Center" KeyDown="StreamerOverlayPort_KeyDown" />
+                    <Button Content="Apply port" Command="{Binding ApplyPortCommand}" Margin="0,0,8,4" />
+                    <Button x:Name="CopyStreamerOverlayUrlButton" Content="Copy overlay URL"
+                            IsEnabled="{Binding CanUseUrl}" Click="CopyStreamerOverlayUrl_Click" Margin="0,0,8,4" />
+                    <Button x:Name="PreviewStreamerOverlayButton" Content="Open preview"
+                            IsEnabled="{Binding CanUseUrl}" Click="PreviewStreamerOverlay_Click" Margin="0,0,8,4" />
+                </WrapPanel>
+                <TextBlock Text="{Binding Url}" IsVisible="{Binding IsEnabled}" FontSize="12"
+                           Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,0,4" />
+                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="12"
+                           IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
         </Grid>
 
         <!-- Error Banner -->

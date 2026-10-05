@@ -19,6 +19,8 @@ public class AppSettings
     public int ReplayScanLimit { get; set; } = DefaultReplayScanLimit;
     public bool LibraryAutoRefreshEnabled { get; set; } = true;
     public int LibraryAutoRefreshMinutes { get; set; } = DefaultLibraryAutoRefreshMinutes;
+    public bool StreamerOverlayEnabled { get; set; }
+    public int StreamerOverlayPort { get; set; } = DefaultStreamerOverlayPort;
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? AdditionalSettings { get; set; }
@@ -26,6 +28,7 @@ public class AppSettings
     public const int DefaultReplayScanLimit = 50;
     public const int DefaultLibraryAutoRefreshMinutes = 10;
     public const int MaxLibraryAutoRefreshMinutes = 1440;
+    public const int DefaultStreamerOverlayPort = 17843;
 }
 
 public interface ISettingsService
@@ -124,6 +127,9 @@ public sealed class SettingsService : ISettingsService
 
         if (settings.LibraryAutoRefreshMinutes is < 1 or > AppSettings.MaxLibraryAutoRefreshMinutes)
             settings.LibraryAutoRefreshMinutes = AppSettings.DefaultLibraryAutoRefreshMinutes;
+
+        if (settings.StreamerOverlayPort is < 1024 or > 65535)
+            settings.StreamerOverlayPort = AppSettings.DefaultStreamerOverlayPort;
 
         return settings;
     }

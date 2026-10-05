@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BotOrNot · Streamer overlay</title>
+  <link rel="stylesheet" href="/overlay.css">
+  <script src="/overlay.js" defer></script>
+</head>
+<body>
+  <main class="overlay">
+    <header>
+      <div class="brand"><span class="brand-mark">B/N</span><div><h1>Bot or Not<span>?</span></h1><p>LIBRARY OVERVIEW</p></div></div>
+      <div class="scope"><span class="scope-dot"></span><span id="scope">REPLAY LIBRARY</span></div>
+    </header>
+    <section id="stats" class="stats" aria-label="Library statistics" hidden>
+      <div><span>MATCHES</span><strong id="matches">—</strong></div>
+      <div><span>WINS</span><strong id="wins">—</strong></div>
+      <div><span>WIN RATE</span><strong id="win-rate">—</strong></div>
+      <div><span>AVG KILLS</span><strong id="avg-kills">—</strong></div>
+      <div><span>AVG LOBBY BOTS</span><strong id="avg-bots" class="accent">—</strong></div>
+    </section>
+    <section id="recent-section" hidden>
+      <div class="section-heading"><h2>Recent matches</h2><span>NEWEST FIRST</span></div>
+      <div class="match-heading"><span>MODE / REGION</span><span>PLACE</span><span>KILLS</span><span>HUMAN / BOT KILLS</span><span>LOBBY BOTS</span></div>
+      <div id="recent" aria-label="Recent matches"></div>
+    </section>
+    <div id="empty" class="empty">Loading library…</div>
+    <footer><span id="status" role="status">Connecting to BotOrNot…</span><span id="updated"></span></footer>
+  </main>
+</body>
+</html>

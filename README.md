@@ -10,6 +10,7 @@ A cross-platform desktop application that analyzes Fortnite replay files to iden
 - **Your Eliminations**: See a breakdown of who you eliminated - how many were bots vs real players
 - **Match Metadata**: View game mode, matchmaking region, match duration, and player counts
 - **Platform Breakdown**: See distribution of players across PC, PlayStation, Xbox, Switch, and mobile
+- **Streamer Overlay**: Show library totals and recent matches in a local browser source with automatic refresh. See the [setup guide](docs/streamer-overlay.md).
 
 ## Screenshot
 
