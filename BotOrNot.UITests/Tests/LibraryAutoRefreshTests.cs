@@ -91,6 +91,30 @@ public sealed class LibraryAutoRefreshTests
     }
 
     [AvaloniaTest]
+    public async Task OverlayEnabled_KeepsOneRefreshTimerThroughMatchNavigation_AndStopsWhenDisabled()
+    {
+        var clock = new ManualTimeProvider();
+        var cache = new RecordingCache();
+        using var app = new AppViewModel(Settings(), cacheService: cache, timeProvider: clock,
+            overlayServer: new StreamerOverlayTests.RecordingOverlayServer());
+        app.LibraryPage.DirectoryPath = Path.GetTempPath();
+        await app.LibraryPage.StreamerOverlay.ToggleCommand.Execute().FirstAsync();
+        clock.Advance(TimeSpan.FromMinutes(4));
+        app.LibraryPage.OpenReplayCommand.Execute(Summary("missing.replay")).Subscribe();
+        Assert.That(clock.NextDue, Is.EqualTo(TimeSpan.FromMinutes(10)));
+        clock.Advance(TimeSpan.FromMinutes(6));
+        await WaitForAsync(() => cache.ScanCount == 1 && !app.LibraryPage.IsScanning);
+        Assert.That(app.LibraryPage.OverlayState.Current.Snapshot, Is.Not.Null);
+        await app.LibraryPage.StreamerOverlay.ToggleCommand.Execute().FirstAsync();
+        Assert.That(clock.NextDue, Is.Null);
+        clock.Advance(TimeSpan.FromMinutes(10));
+        await DrainAsync();
+        Assert.That(cache.ScanCount, Is.EqualTo(1));
+        ((MainWindowViewModel)app.CurrentPage).BackCommand.Execute().Subscribe();
+        Assert.That(clock.NextDue, Is.EqualTo(TimeSpan.FromMinutes(30)));
+    }
+
+    [AvaloniaTest]
     public async Task DefaultDueScan_UsesCurrentDirectoryAndLimit()
     {
         var clock = new ManualTimeProvider();

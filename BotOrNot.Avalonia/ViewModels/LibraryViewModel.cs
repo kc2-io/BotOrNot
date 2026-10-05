@@ -51,6 +51,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     private long _scanGeneration;
     private bool _disposed;
     private bool _isActive = true;
+    private bool _overlayRefreshActive;
     private bool _preserveRowsUntilRefreshResult;
     private ITimer? _refreshTimer;
     private long _refreshScheduleGeneration;
@@ -86,7 +87,8 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         ISettingsService? settingsService = null,
         Func<ReplayScanOptions>? scanOptionsFactory = null,
         ILibraryScanObserver? scanObserver = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IStreamerOverlayServer? overlayServer = null)
     {
         _onOpenReplay = onOpenReplay;
         _cacheService = cacheService ?? new ReplayCacheService();
@@ -127,12 +129,18 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             _settingsService.Update(current => current.ReplayDirectory = path);
         });
 
+        ConfigureOverlayState();
+        StreamerOverlay = new StreamerOverlayViewModel(_settingsService, OverlayState,
+            SetOverlayRefreshActive, overlayServer);
+
         if (!string.IsNullOrWhiteSpace(_directoryPath))
             StartScanInBackground();
         ResetRefreshSchedule();
     }
 
     public ObservableCollection<ReplaySummary> Replays { get; }
+    public StreamerOverlayState OverlayState { get; } = new();
+    public StreamerOverlayViewModel StreamerOverlay { get; }
     public ObservableCollection<ReplaySummary> VisibleReplays { get; }
     public IReadOnlyList<FrequentOpponent> FrequentOpponents { get; private set; }
 
@@ -185,6 +193,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             this.RaiseAndSetIfChanged(ref _directoryPath, value);
             var generation = CancelActiveScan();
             ClearDisplayedResultsOnUi(generation);
+            ConfigureOverlayState();
             ResetRefreshSchedule();
         }
     }
@@ -230,6 +239,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                 return;
             this.RaiseAndSetIfChanged(ref _autoRefreshEnabled, value);
             _settingsService.Update(settings => settings.LibraryAutoRefreshEnabled = value);
+            ConfigureOverlayState();
             ResetRefreshSchedule();
         }
     }
@@ -442,6 +452,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
         AutoRefreshMinutes = minutes;
         _settingsService.Update(settings => settings.LibraryAutoRefreshMinutes = minutes);
+        ConfigureOverlayState();
         ResetRefreshSchedule();
     }
 
@@ -449,16 +460,30 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     {
         if (_disposed || _isActive == active)
             return;
+        var wasActive = IsRefreshActive;
         _isActive = active;
-        ResetRefreshSchedule();
+        if (wasActive != IsRefreshActive) ResetRefreshSchedule();
     }
+
+    private bool IsRefreshActive => _isActive || _overlayRefreshActive;
+
+    private void SetOverlayRefreshActive(bool active)
+    {
+        if (_disposed || _overlayRefreshActive == active) return;
+        var wasActive = IsRefreshActive;
+        _overlayRefreshActive = active;
+        if (wasActive != IsRefreshActive) ResetRefreshSchedule();
+    }
+
+    private void ConfigureOverlayState() => OverlayState.Configure(
+        !string.IsNullOrWhiteSpace(DirectoryPath), AutoRefreshEnabled, AutoRefreshMinutes);
 
     private void ResetRefreshSchedule()
     {
         var generation = Interlocked.Increment(ref _refreshScheduleGeneration);
         _refreshTimer?.Dispose();
         _refreshTimer = null;
-        if (_disposed || !_isActive || !AutoRefreshEnabled || string.IsNullOrWhiteSpace(DirectoryPath))
+        if (_disposed || !IsRefreshActive || !AutoRefreshEnabled || string.IsNullOrWhiteSpace(DirectoryPath))
             return;
 
         _refreshTimer = _timeProvider.CreateTimer(_ =>
@@ -511,6 +536,8 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         var batchStopwatch = Stopwatch.StartNew();
         var firstReplayPublished = false;
         var completedUpdateSeen = false;
+        var scanFailed = false;
+        var scanLimit = ReplayScanLimit;
         IAsyncEnumerator<ReplayScanUpdate>? enumerator = null;
 
         try
@@ -518,7 +545,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             await OnUiThreadAsync(() => BeginDisplayedScan(generation, automatic));
             var scanOptions = (_scanOptionsFactory?.Invoke() ?? new ReplayScanOptions()) with
             {
-                Limit = ReplayScanLimit
+                Limit = scanLimit
             };
             enumerator = _cacheService.ScanAsync(directory, scanOptions, cancellation.Token)
                 .GetAsyncEnumerator(cancellation.Token);
@@ -577,10 +604,14 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         catch (Exception exception)
         {
+            scanFailed = true;
             await OnUiThreadAsync(() =>
             {
                 if (generation == Volatile.Read(ref _scanGeneration))
+                {
                     ErrorMessage = $"Scan failed: {exception.Message}";
+                    OverlayState.FailScan();
+                }
             });
         }
         finally
@@ -594,6 +625,16 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                         await enumerator.DisposeAsync();
                     }
                     catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+                    catch (Exception exception)
+                    {
+                        scanFailed = true;
+                        await OnUiThreadAsync(() =>
+                        {
+                            if (generation != Volatile.Read(ref _scanGeneration) || _disposed) return;
+                            ErrorMessage = $"Scan failed: {exception.Message}";
+                            OverlayState.FailScan();
+                        });
+                    }
                 }
 
                 await OnUiThreadAsync(() =>
@@ -613,8 +654,22 @@ public class LibraryViewModel : ReactiveObject, IDisposable
                 cancellation.Dispose();
             }
 
-            if (completedUpdateSeen && generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+            if (completedUpdateSeen && !scanFailed && generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+            {
+                await OnUiThreadAsync(() =>
+                {
+                    if (generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+                        OverlayState.CompleteScan(Replays, scanLimit, AvailableReplayCount,
+                            SelectedReplayCount, FailedReplayCount, _timeProvider.GetUtcNow());
+                });
                 MarkScanMilestone(LibraryScanMilestone.ScanDrained);
+            }
+            else if (generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+                await OnUiThreadAsync(() =>
+                {
+                    if (generation == Volatile.Read(ref _scanGeneration) && !_disposed)
+                        OverlayState.FailScan();
+                });
         }
     }
 
@@ -634,7 +689,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
     {
         lock (_scanLock)
         {
-            if (_disposed || !_isActive || !_autoRefreshEnabled || _inFlightScans != 0)
+            if (_disposed || !IsRefreshActive || !_autoRefreshEnabled || _inFlightScans != 0)
                 return null;
             var cancellation = new CancellationTokenSource();
             _activeScanCancellation = cancellation;
@@ -689,11 +744,13 @@ public class LibraryViewModel : ReactiveObject, IDisposable
         }
         ErrorMessage = null;
         IsScanning = true;
+        OverlayState.BeginScan();
     }
 
     private void ClearDisplayedResults()
     {
         _preserveRowsUntilRefreshResult = false;
+        OverlayState.Reset();
         Replays.Clear();
         _displayedReplayPaths.Clear();
         UpdateStats();
@@ -830,19 +887,19 @@ public class LibraryViewModel : ReactiveObject, IDisposable
 
     private void UpdateStats()
     {
-        TotalMatches = VisibleReplays.Count;
+        var statistics = LibraryStatistics.From(VisibleReplays);
+        TotalMatches = statistics.Matches;
         HasReplays = Replays.Count > 0;
         HasVisibleReplays = VisibleReplays.Count > 0;
         this.RaisePropertyChanged(nameof(FilterSummaryText));
-        TotalWins = VisibleReplays.Count(replay => replay.IsWin);
+        TotalWins = statistics.Wins;
         IncompleteOpponentMatchCount = VisibleReplays.Count(replay => !replay.OpponentAnalysisComplete);
         this.RaisePropertyChanged(nameof(HasIncompleteOpponentData));
         this.RaisePropertyChanged(nameof(OpponentDataIncompleteText));
-        WinRate = TotalMatches > 0 ? (double)TotalWins / TotalMatches * 100 : 0;
-        var knownKillCounts = VisibleReplays.Select(replay => replay.Kills).OfType<int>().ToList();
-        AvgKills = knownKillCounts.Count > 0 ? knownKillCounts.Average() : null;
+        WinRate = statistics.WinRate;
+        AvgKills = statistics.AverageKills;
         this.RaisePropertyChanged(nameof(AvgKillsDisplay));
-        AvgBotPercent = TotalMatches > 0 ? VisibleReplays.Average(replay => replay.BotPercent) : 0;
+        AvgBotPercent = statistics.AverageBotPercent;
 
         FrequentOpponents = Replays
             .SelectMany((replay, matchIndex) => replay.Opponents
@@ -899,6 +956,7 @@ public class LibraryViewModel : ReactiveObject, IDisposable
             return;
 
         _disposed = true;
+        StreamerOverlay.Dispose();
         Replays.CollectionChanged -= OnReplaysCollectionChanged;
         ResetRefreshSchedule();
         CancelActiveScan();
