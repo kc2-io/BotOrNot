@@ -861,8 +861,8 @@
     },
     {
       "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSolo_FastLanding",
-      "display_name": "Reload Zero Build Solo",
-      "family": "Reload",
+      "display_name": "Blitz Royale - Solo",
+      "family": "Blitz",
       "buildMode": "Zero Build",
       "teamSize": 1,
       "rankedState": "unknown",
@@ -871,8 +871,8 @@
         "fortnite-api.com/v1/playlists"
       ],
       "observedDate": "2026-10-12",
-      "confidence": "source-derived",
-      "_source": "source-derived"
+      "confidence": "curated-override",
+      "_source": "curated-override"
     },
     {
       "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSquad",

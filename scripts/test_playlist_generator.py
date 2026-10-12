@@ -37,6 +37,9 @@ class PlaylistGeneratorTests(unittest.TestCase):
                    ["Athena.Playlist.NoBuildingMaterials"], rating="fun"),
             source("Playlist_Reload", "EFortGameType::BlastBerry", 3, rating="blastberry_build"),
             source("Playlist_Blitz", team=4, tags=["Athena.Playlist.Blitz"]),
+            source("Playlist_BlitzWithReloadTag", "EFortGameType::ForbiddenFruit", 1,
+                   ["Athena.Playlist.ForbiddenFruit.BlastBerry", "Athena.Playlist.NoBuildingMaterials"],
+                   rating="nobuild", name="Blitz Royale - Solo"),
             source("Playlist_Six", team=6),
             source("Playlist_Ranked", team=2, rating="ranked-br-combined_build"),
             source("Playlist_UnknownBuild", team=1, rating="fun"),
@@ -58,6 +61,8 @@ class PlaylistGeneratorTests(unittest.TestCase):
         self.assertEqual(values["Playlist_ZB"]["display_name"], "BR Zero Build Duos")
         self.assertEqual(values["Playlist_Reload"]["family"], "Reload")
         self.assertEqual(values["Playlist_Blitz"]["teamSize"], 4)
+        self.assertEqual(values["Playlist_BlitzWithReloadTag"]["family"], "Blitz")
+        self.assertEqual(values["Playlist_BlitzWithReloadTag"]["buildMode"], "Zero Build")
         self.assertEqual(values["Playlist_Six"]["teamSize"], 6)
         self.assertEqual(values["Playlist_Ranked"]["rankedState"], "ranked")
         self.assertNotIn("Playlist_VK_Play", values)
