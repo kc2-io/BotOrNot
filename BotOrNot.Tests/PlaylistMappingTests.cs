@@ -36,6 +36,7 @@ public class PlaylistMappingTests
     [TestCase("Playlist_Habanero_JumpBear_Duos", "Ranked Reload Build - Duos")]
     [TestCase("Playlist_HabaneroDuo", "Ranked BR Build - Duos")]
     [TestCase("Playlist_ForbiddenFruitOldNoBuildBRSolo", "Blitz Zero Build - Solo")]
+    [TestCase("Playlist_ForbiddenFruitNoBuildBRSolo_FastLanding", "Blitz Royale - Solo")]
     [TestCase("Playlist_MatchMistSolo", "Reload Build - Solo")]
     [TestCase("Playlist_MatchMistDuo", "Reload Build - Duos")]
     [TestCase("Playlist_MatchMistSquad", "Reload Build - Squads")]

@@ -106,10 +106,12 @@ def infer_descriptor(item: dict[str, Any], observed_date: str) -> dict[str, Any]
         return None
 
     family = None
-    if "blastberry" in game_type or "blastberry" in " ".join(item_tags):
-        family = "Reload"
-    elif "forbiddenfruit" in game_type or "forbiddenfruit" in path or "blitz" in " ".join(item_tags):
+    # ForbiddenFruit playlists can also carry a BlastBerry gameplay tag. The more specific
+    # game type/path identifies Blitz; checking the shared tag first misclassifies them as Reload.
+    if "forbiddenfruit" in game_type or "forbiddenfruit" in path or "blitz" in " ".join(item_tags):
         family = "Blitz"
+    elif "blastberry" in game_type or "blastberry" in " ".join(item_tags):
+        family = "Reload"
     elif game_type.endswith("::br"):
         family = "BR"
     elif "zerobuild" in game_type:

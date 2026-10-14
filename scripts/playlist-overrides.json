@@ -1,6 +1,17 @@
 {
   "overrides": [
     {
+      "playlist_name": "Playlist_ForbiddenFruitNoBuildBRSolo_FastLanding",
+      "display_name": "Blitz Royale - Solo",
+      "family": "Blitz",
+      "buildMode": "Zero Build",
+      "teamSize": 1,
+      "rankedState": "unknown",
+      "sources": ["fortnite-api.com/v1/playlists"],
+      "observedDate": "2026-10-12",
+      "confidence": "curated-override"
+    },
+    {
       "playlist_name": "Playlist_FigmentSquad",
       "display_name": "OG Build - Squads",
       "family": "BR",
