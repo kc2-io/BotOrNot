@@ -135,4 +135,69 @@ public class CsvExportServiceTests
 
         Assert.That(lines, Is.EqualTo(new[] { "Death Cause", "Arc Gun", "Unknown (222)", "SMG (5)" }));
     }
+
+    [Test]
+    public void GenerateTeammateEliminationsCsv_PreservesIdentityRepeatedVictimsAndUnknownBotState()
+    {
+        var teammate = new SquadMemberSummary
+        {
+            StableId = "mate-id",
+            Name = "Mate, One",
+            Kills = 2,
+            HasEliminationDetails = true,
+            Eliminations =
+            [
+                new PlayerRow
+                {
+                    Id = "victim-id",
+                    Name = "Victim",
+                    Bot = "false",
+                    Platform = "WIN",
+                    DeathCause = "Rifle",
+                    ElimTime = "01:00",
+                    CircleStatus = StormCircleStatus.RecordedPhase,
+                    CircleNumber = 2
+                },
+                new PlayerRow
+                {
+                    Id = "victim-id",
+                    Name = "Victim",
+                    Bot = "unknown",
+                    DeathCause = "Storm",
+                    ElimTime = "09:00",
+                    CircleStatus = StormCircleStatus.Unknown
+                }
+            ]
+        };
+
+        var lines = CsvExportService.GenerateTeammateEliminationsCsv([teammate])
+            .TrimEnd()
+            .Split(Environment.NewLine);
+
+        Assert.That(lines, Is.EqualTo(new[]
+        {
+            "Teammate Id,Teammate Name,Teammate Kills,Observed,Coverage,Victim Id,Victim Name,Bot,Platform,Death Cause,Elim Time,Storm Phase",
+            "mate-id,\"Mate, One\",2,2,Complete,victim-id,Victim,No,PC,Rifle,01:00,Phase 2",
+            "mate-id,\"Mate, One\",2,2,Complete,victim-id,Victim,Unknown,-,Storm,09:00,Unknown"
+        }));
+    }
+
+    [Test]
+    public void GenerateTeammateEliminationsCsv_EmitsCoverageRowWhenNoVictimsAreObserved()
+    {
+        var teammate = new SquadMemberSummary
+        {
+            StableId = "mate-id",
+            Name = "Mate",
+            Kills = 4,
+            EliminationCoverageText = "Observed 0 of 4 recorded eliminations."
+        };
+
+        var lines = CsvExportService.GenerateTeammateEliminationsCsv([teammate])
+            .TrimEnd()
+            .Split(Environment.NewLine);
+
+        Assert.That(lines[1], Is.EqualTo(
+            "mate-id,Mate,4,,Observed 0 of 4 recorded eliminations.,,,,,,,"));
+    }
 }

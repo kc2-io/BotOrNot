@@ -2,8 +2,8 @@ using BotOrNot.Core.Models;
 
 namespace BotOrNot.Core.Services;
 
-/// <summary>Attributes finishes from an explicit DBNO/reboot lifecycle without a time expiry.</summary>
-public static class OwnerEliminationResolver
+/// <summary>Attributes finishes to one stable participant from an explicit DBNO/reboot lifecycle.</summary>
+public static class ParticipantEliminationResolver
 {
     private sealed class VictimState
     {
@@ -11,13 +11,14 @@ public static class OwnerEliminationResolver
         public bool DbnoTrueObserved { get; set; }
         public int? LastRebootCounter { get; set; }
         public bool IsAmbiguous { get; set; }
+        public HashSet<string> CandidateActorIds { get; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     public static IReadOnlyList<OwnerEliminationDecision> Resolve(
-        string? ownerId,
+        string? participantId,
         IEnumerable<CombatLifecycleEvent> source)
     {
-        if (string.IsNullOrWhiteSpace(ownerId)) return Array.Empty<OwnerEliminationDecision>();
+        if (string.IsNullOrWhiteSpace(participantId)) return Array.Empty<OwnerEliminationDecision>();
 
         var states = new Dictionary<string, VictimState>(StringComparer.OrdinalIgnoreCase);
         var decisions = new List<OwnerEliminationDecision>();
@@ -37,7 +38,7 @@ public static class OwnerEliminationResolver
                     end++;
             }
 
-            ProcessGroup(ownerId, ordered.AsSpan(index, end - index), states, decisions);
+            ProcessGroup(participantId, ordered.AsSpan(index, end - index), states, decisions);
             index = end;
         }
 
@@ -45,10 +46,21 @@ public static class OwnerEliminationResolver
         // owner finish remains direct evidence; attribution through any knock is uncertain.
         foreach (var item in allEvents.Where(item => !IsValidTime(item.ReplayTimeSeconds) &&
                                                      item.Kind == CombatLifecycleEventKind.Finish))
-            decisions.Add(ResolveUnorderedFinish(ownerId, item));
+            decisions.Add(ResolveUnorderedFinish(participantId, item));
 
         return decisions.OrderBy(decision => decision.EventSequence).ToArray();
     }
+
+    public static bool HasRelevantUncertainty(
+        string? participantId,
+        IEnumerable<OwnerEliminationDecision> decisions) =>
+        !string.IsNullOrWhiteSpace(participantId) && decisions.Any(decision =>
+            decision.Status == OwnerCreditStatus.Uncertain &&
+            !decision.VictimId.Equals(participantId, StringComparison.OrdinalIgnoreCase) &&
+            (decision.CandidateParticipantIds == null ||
+             decision.CandidateParticipantIds.Contains(
+                 participantId,
+                 StringComparer.OrdinalIgnoreCase)));
 
     private static void ProcessGroup(
         string ownerId,
@@ -69,6 +81,21 @@ public static class OwnerEliminationResolver
             .Where(group => group.Select(item => item.ActorId).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
             .Select(group => group.Key)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var candidatesAtGroupStart = states.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.CandidateActorIds.ToArray(),
+            StringComparer.OrdinalIgnoreCase);
+        var groupCandidateActors = groupEvents
+            .GroupBy(item => item.VictimId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(item => item.ActorId)
+                    .Concat(candidatesAtGroupStart.GetValueOrDefault(group.Key) ?? Array.Empty<string>())
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .Select(item => item!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                StringComparer.OrdinalIgnoreCase);
         foreach (var finish in events)
         {
             if (finish.Kind != CombatLifecycleEventKind.Finish)
@@ -104,6 +131,10 @@ public static class OwnerEliminationResolver
             switch (item.Kind)
             {
                 case CombatLifecycleEventKind.Knock:
+                    if (!ambiguousKnockVictims.Contains(item.VictimId))
+                        state.CandidateActorIds.Clear();
+                    if (!string.IsNullOrWhiteSpace(item.ActorId))
+                        state.CandidateActorIds.Add(item.ActorId);
                     state.KnockerId = item.ActorId;
                     state.DbnoTrueObserved = item.DbnoTrueObserved;
                     state.IsAmbiguous = ambiguousKnockVictims.Contains(item.VictimId);
@@ -115,10 +146,12 @@ public static class OwnerEliminationResolver
 
                 case CombatLifecycleEventKind.Finish:
                     decisions.Add(ResolveFinish(ownerId, item, state,
-                        ambiguousVictims.Contains(item.VictimId) || state.IsAmbiguous));
+                        ambiguousVictims.Contains(item.VictimId) || state.IsAmbiguous,
+                        groupCandidateActors.GetValueOrDefault(item.VictimId)));
                     state.KnockerId = null;
                     state.DbnoTrueObserved = false;
                     state.IsAmbiguous = false;
+                    state.CandidateActorIds.Clear();
                     break;
             }
         }
@@ -132,6 +165,11 @@ public static class OwnerEliminationResolver
             state.KnockerId = null;
             state.DbnoTrueObserved = false;
             state.IsAmbiguous = true;
+            if (groupCandidateActors.TryGetValue(victimId, out var candidateActors))
+            {
+                foreach (var candidateActor in candidateActors)
+                    state.CandidateActorIds.Add(candidateActor);
+            }
         }
     }
 
@@ -155,12 +193,25 @@ public static class OwnerEliminationResolver
         string ownerId,
         CombatLifecycleEvent item,
         VictimState state,
-        bool ambiguousLifecycle)
+        bool ambiguousLifecycle,
+        IReadOnlyList<string>? groupCandidateActors)
     {
         var cause = item.DeathCause ?? DeathCauseInfo.Unknown;
         if (ambiguousLifecycle)
+        {
+            var candidateIds = state.CandidateActorIds
+                .Concat(groupCandidateActors ?? Array.Empty<string>())
+                .Append(item.ActorId)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
             return new(item.Sequence, item.VictimId, OwnerCreditStatus.Uncertain,
-                OwnerCreditSource.AmbiguousLifecycle, cause);
+                OwnerCreditSource.AmbiguousLifecycle, cause,
+                candidateIds.Length == 0 || candidateIds.Contains("unknown", StringComparer.OrdinalIgnoreCase)
+                    ? null
+                    : candidateIds);
+        }
 
         if (item.VictimId.Equals(ownerId, StringComparison.OrdinalIgnoreCase) ||
             item.VictimId.Equals(item.ActorId, StringComparison.OrdinalIgnoreCase))
@@ -204,6 +255,7 @@ public static class OwnerEliminationResolver
             state.KnockerId = null;
             state.DbnoTrueObserved = false;
             state.IsAmbiguous = false;
+            state.CandidateActorIds.Clear();
         }
     }
 
@@ -217,4 +269,13 @@ public static class OwnerEliminationResolver
 
     private static bool IsValidTime(double? time) =>
         time.HasValue && double.IsFinite(time.Value) && time.Value >= 0;
+}
+
+/// <summary>Compatibility entry point for existing owner-attribution callers.</summary>
+public static class OwnerEliminationResolver
+{
+    public static IReadOnlyList<OwnerEliminationDecision> Resolve(
+        string? ownerId,
+        IEnumerable<CombatLifecycleEvent> source) =>
+        ParticipantEliminationResolver.Resolve(ownerId, source);
 }

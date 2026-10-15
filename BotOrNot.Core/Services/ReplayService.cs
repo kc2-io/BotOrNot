@@ -312,7 +312,6 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
         }
 
         // === PASS 4: Correlate event-chunk eliminations with player-state evidence ===
-        var ownerEliminations = new List<PlayerRow>();
         string? ownerEliminatedBy = null;
 
         var eliminationRecords = (result.Eliminations ?? Enumerable.Empty<object>())
@@ -443,39 +442,68 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
                     : evidence.ActorId;
         }
 
-        var decisions = OwnerEliminationResolver.Resolve(ownerId, lifecycle);
-        foreach (var decision in decisions.Where(item => item.Status == OwnerCreditStatus.Credited))
-        {
-            var record = eliminationRecords.Single(item => item.Evidence.Sequence == decision.EventSequence);
-            if (!playersById.TryGetValue(decision.VictimId, out var victim)) continue;
-            var eventTime = record.Evidence.ReplayTimeSeconds.HasValue
-                ? TimeSpan.FromSeconds(record.Evidence.ReplayTimeSeconds.Value)
-                : ParseElimTime(record.RawTime);
-            var circle = stormCircleResolver.Resolve(record.Evidence.ReplayTimeSeconds);
+        var eliminationRecordsBySequence = eliminationRecords.ToDictionary(record => record.Evidence.Sequence);
 
-            ownerEliminations.Add(new PlayerRow
+        ParticipantEliminationResult ResolveParticipantEliminations(
+            string? participantId,
+            bool includeNpcs)
+        {
+            var participantDecisions = ParticipantEliminationResolver.Resolve(participantId, lifecycle);
+            var participantEliminations = new List<PlayerRow>();
+            var hasMissingVictimDetails = false;
+
+            foreach (var decision in participantDecisions.Where(item => item.Status == OwnerCreditStatus.Credited))
             {
-                StableId = victim.StableId,
-                Id = victim.Id,
-                Name = victim.Name,
-                Level = victim.Level,
-                Bot = victim.Bot,
-                Platform = victim.Platform,
-                Kills = victim.Kills,
-                TeamIndex = victim.TeamIndex,
-                TeamIndexValue = victim.TeamIndexValue,
-                HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
-                DeathCauseInfo = decision.DeathCause,
-                DeathCause = decision.DeathCause.DisplayName,
-                Placement = victim.Placement,
-                ElimTime = FormatElimTime(eventTime, record.RawTime),
-                Pickaxe = victim.Pickaxe,
-                Glider = victim.Glider,
-                SquadSize = victim.SquadSize,
-                CircleNumber = circle.CircleNumber,
-                CircleStatus = circle.Status,
-            });
+                if (!eliminationRecordsBySequence.TryGetValue(decision.EventSequence, out var record) ||
+                    !playersById.TryGetValue(decision.VictimId, out var victim))
+                {
+                    hasMissingVictimDetails = true;
+                    continue;
+                }
+                if (!includeNpcs && victim.IsNpc)
+                    continue;
+
+                var eventTime = record.Evidence.ReplayTimeSeconds.HasValue
+                    ? TimeSpan.FromSeconds(record.Evidence.ReplayTimeSeconds.Value)
+                    : ParseElimTime(record.RawTime);
+                var circle = stormCircleResolver.Resolve(record.Evidence.ReplayTimeSeconds);
+
+                participantEliminations.Add(new PlayerRow
+                {
+                    StableId = victim.StableId,
+                    Id = victim.Id,
+                    Name = victim.Name,
+                    Level = victim.Level,
+                    Bot = victim.Bot,
+                    Platform = victim.Platform,
+                    Kills = victim.Kills,
+                    TeamIndex = victim.TeamIndex,
+                    TeamIndexValue = victim.TeamIndexValue,
+                    HasConflictingTeamIndex = victim.HasConflictingTeamIndex,
+                    DeathCauseInfo = decision.DeathCause,
+                    DeathCause = decision.DeathCause.DisplayName,
+                    Placement = victim.Placement,
+                    ElimTime = FormatElimTime(eventTime, record.RawTime),
+                    Pickaxe = victim.Pickaxe,
+                    Glider = victim.Glider,
+                    SquadSize = victim.SquadSize,
+                    CircleNumber = circle.CircleNumber,
+                    CircleStatus = circle.Status,
+                });
+            }
+
+            return new ParticipantEliminationResult
+            {
+                ParticipantId = participantId ?? "",
+                Eliminations = participantEliminations,
+                HasUncertainAttribution = ParticipantEliminationResolver.HasRelevantUncertainty(
+                    participantId,
+                    participantDecisions),
+                HasMissingVictimDetails = hasMissingVictimDetails
+            };
         }
+
+        var ownerEliminationResult = ResolveParticipantEliminations(ownerId, includeNpcs: true);
 
         // === Build metadata ===
         var playlist = result.GameData?.CurrentPlaylist ?? "";
@@ -510,18 +538,28 @@ public sealed class ReplayService : IReplayService, IReplaySummaryService
             WinningPlayerNames = winningPlayerNames
         };
 
-        return new ReplayData
+        var replayData = new ReplayData
         {
             Players = playersById.Values.OrderBy(v => v.Name ?? v.Id).ToList(),
-            OwnerEliminations = ownerEliminations,
+            OwnerEliminations = ownerEliminationResult.Eliminations,
             OwnerId = ownerId,
             OwnerTeamIndex = ownerTeamIndex,
             OwnerName = ownerName,
             OwnerKills = ownerKills,
-            HasUncertainEliminationAttribution = decisions.Any(item => item.Status == OwnerCreditStatus.Uncertain),
+            HasUncertainEliminationAttribution = ownerEliminationResult.HasUncertainAttribution,
             OwnerEliminatedBy = ownerEliminatedBy,
             Metadata = metadata
         };
+
+        if (!summaryOnly)
+        {
+            var squad = SquadProjection.FromReplay(replayData);
+            foreach (var teammate in squad.Teammates)
+                replayData.ParticipantEliminations[teammate.StableId] =
+                    ResolveParticipantEliminations(teammate.StableId, includeNpcs: false);
+        }
+
+        return replayData;
     }
 
     private static double? GetEventReplayTimeSeconds(object elimination)

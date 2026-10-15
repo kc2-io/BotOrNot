@@ -31,11 +31,14 @@ public sealed class SquadSectionTests
         var viewModel = CreateViewModel(TeamReplay(), SoloReplay());
         await viewModel.LoadReplayCommand.Execute("team").FirstAsync();
         var view = new MatchView { DataContext = viewModel };
-        var window = new Window { Content = view };
+        var window = new Window { Content = view, Width = 1000, Height = 800 };
         window.Show();
+        Render(window);
 
         var ownerGrid = view.FindControl<DataGrid>("OwnerEliminationsGrid");
         var squadGrid = view.FindControl<DataGrid>("SquadGrid");
+        var teammateGrid = view.FindControl<DataGrid>("TeammateEliminationsGrid");
+        var playersGrid = view.FindControl<DataGrid>("PlayersGrid");
         Assert.That(ownerGrid, Is.Not.Null);
         Assert.That(squadGrid, Is.Not.Null);
         Assert.Multiple(() =>
@@ -43,12 +46,27 @@ public sealed class SquadSectionTests
             Assert.That(viewModel.HasSquadSection, Is.True);
             Assert.That(viewModel.Teammates.Select(member => member.Name), Is.EqualTo(new[] { "Teammate" }));
             Assert.That(squadGrid!.IsVisible, Is.True);
-            Assert.That(squadGrid.Bounds.Y, Is.GreaterThan(ownerGrid!.Bounds.Y));
+            Assert.That(squadGrid.TranslatePoint(default, window)!.Value.Y,
+                Is.GreaterThan(ownerGrid!.TranslatePoint(default, window)!.Value.Y));
+            Assert.That(ownerGrid.Bounds.Height, Is.GreaterThanOrEqualTo(80));
+            Assert.That(playersGrid!.Bounds.Height, Is.GreaterThanOrEqualTo(80));
             Assert.That(viewModel.SquadStatusText, Does.Contain("team eliminations 3"));
+            Assert.That(viewModel.SelectedTeammate?.Name, Is.EqualTo("Teammate"));
+            Assert.That(viewModel.SelectedTeammate?.ObservedPlayerKills, Is.EqualTo(1));
+            Assert.That(viewModel.SelectedTeammate?.ObservedBotKills, Is.EqualTo(1));
+            Assert.That(viewModel.SelectedTeammate?.ObservedUnknownKills, Is.EqualTo(1));
+            Assert.That(viewModel.TeammateEliminations, Has.Count.EqualTo(3));
+            Assert.That(teammateGrid, Is.Not.Null);
+            Assert.That(teammateGrid!.Columns.Select(column => column.Header),
+                Is.EqualTo(new[] { "Name", "Bot", "Platform", "Death Cause", "Elim Time", "Storm Phase" }));
+            Assert.That(viewModel.TeammateEliminations.Select(row => row.DeathCause),
+                Is.EqualTo(new[] { "Rifle", "Shotgun", "Storm" }));
         });
 
         viewModel.FilterText = "does-not-match";
         Assert.That(viewModel.Teammates, Has.Count.EqualTo(1), "Opponent filters must not hide squad members.");
+        Assert.That(viewModel.TeammateEliminations, Has.Count.EqualTo(3),
+            "Opponent filters must not hide teammate elimination details.");
         window.Close();
     }
 
@@ -63,14 +81,17 @@ public sealed class SquadSectionTests
         await viewModel.LoadReplayCommand.Execute("solo").FirstAsync();
         window.UpdateLayout();
         var squadGrid = view.FindControl<DataGrid>("SquadGrid")!;
-        var layout = (Grid)squadGrid.Parent!;
+        var squadPanel = (StackPanel)squadGrid.Parent!;
+        var layout = (Grid)squadPanel.Parent!;
 
         Assert.Multiple(() =>
         {
             Assert.That(viewModel.HasSquadSection, Is.False);
             Assert.That(viewModel.Teammates, Is.Empty);
+            Assert.That(viewModel.SelectedTeammate, Is.Null);
+            Assert.That(viewModel.TeammateEliminations, Is.Empty);
             Assert.That(viewModel.SquadStatusText, Is.Null);
-            Assert.That(layout.RowDefinitions[Grid.GetRow(squadGrid)].ActualHeight, Is.Zero,
+            Assert.That(layout.RowDefinitions[Grid.GetRow(squadPanel)].ActualHeight, Is.Zero,
                 "A hidden squad must not leave an empty star-sized region in solo replays.");
         });
         window.Close();
@@ -94,6 +115,8 @@ public sealed class SquadSectionTests
         Assert.That(viewModel.ErrorMessage, Does.Contain("sample failure"));
         Assert.That(viewModel.HasSquadSection, Is.False);
         Assert.That(viewModel.Teammates, Is.Empty);
+        Assert.That(viewModel.SelectedTeammate, Is.Null);
+        Assert.That(viewModel.TeammateEliminations, Is.Empty);
         Assert.That(viewModel.SquadStatusText, Is.Null);
     }
 
@@ -115,8 +138,74 @@ public sealed class SquadSectionTests
 
         Assert.That(
             grid!.CollectionView!.Cast<SquadMemberSummary>().Select(member => member.Kills),
-            Is.EqualTo(new int?[] { 0, 2, 10, null }));
+            Is.EqualTo(new int?[] { 2, 3, 10, null }));
         window.Close();
+    }
+
+    [AvaloniaTest]
+    public async Task SelectingTeammate_SwitchesObservedEliminationDetails()
+    {
+        var replay = TeamReplay();
+        replay.Metadata.Playlist = "Playlist_DefaultTrio";
+        replay.Players.Add(Player("second-id", "Second teammate", kills: "1", teamKills: "3"));
+        replay.ParticipantEliminations["second-id"] = new ParticipantEliminationResult
+        {
+            ParticipantId = "second-id",
+            Eliminations =
+            [
+                new PlayerRow
+                {
+                    StableId = "victim-account",
+                    Id = "victim-account",
+                    Name = "Second victim",
+                    Bot = "false",
+                    DeathCause = "Fall"
+                }
+            ]
+        };
+        var viewModel = CreateViewModel(replay);
+        await viewModel.LoadReplayCommand.Execute("team").FirstAsync();
+        var view = new MatchView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 1000, Height = 800 };
+        try
+        {
+            window.Show();
+            Render(window);
+            var squadGrid = view.FindControl<DataGrid>("SquadGrid")!;
+            squadGrid.SelectedItem = viewModel.Teammates.Single(member => member.Name == "Teammate");
+            Render(window);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(viewModel.SelectedTeammate?.Name, Is.EqualTo("Teammate"));
+                Assert.That(viewModel.TeammateEliminations, Has.Count.EqualTo(3));
+                Assert.That(viewModel.TeammateEliminationsHeader, Does.StartWith("Teammate's Observed Eliminations (3)"));
+            });
+
+            squadGrid.SelectedItem = viewModel.Teammates.Single(member => member.Name == "Second teammate");
+            Render(window);
+            Assert.Multiple(() =>
+            {
+                Assert.That(viewModel.SelectedTeammate?.Name, Is.EqualTo("Second teammate"));
+                Assert.That(viewModel.TeammateEliminations.Select(row => row.Name),
+                    Is.EqualTo(new[] { "Second victim" }));
+                Assert.That(viewModel.TeammateEliminationsHeader,
+                    Does.StartWith("Second teammate's Observed Eliminations (1)"));
+            });
+
+            viewModel.CycleThemeCommand.Execute().Subscribe();
+            Render(window);
+            Assert.Multiple(() =>
+            {
+                Assert.That(squadGrid.SelectedItem, Is.SameAs(viewModel.SelectedTeammate));
+                Assert.That(viewModel.SelectedTeammate?.Name, Is.EqualTo("Second teammate"));
+                Assert.That(viewModel.TeammateEliminations, Has.Count.EqualTo(1));
+            });
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [TestCase(1000)]
@@ -192,19 +281,33 @@ public sealed class SquadSectionTests
         replayService: new SequenceReplayService(replays),
         themeService: new ThemeService(new SettingsService(_settingsPath)));
 
-    private static ReplayData TeamReplay() => new()
+    private static ReplayData TeamReplay()
     {
-        OwnerId = "owner-id",
-        OwnerTeamIndex = 1,
-        OwnerName = "Owner",
-        OwnerKills = 0,
-        Metadata = new ReplayMetadata { FileName = "team.replay", Playlist = "Playlist_DefaultDuo" },
-        Players =
-        [
-            Player("owner-id", "Owner", owner: true, teamKills: "3"),
-            Player("teammate-id", "Teammate", teamKills: "3")
-        ]
-    };
+        var replay = new ReplayData
+        {
+            OwnerId = "owner-id",
+            OwnerTeamIndex = 1,
+            OwnerName = "Owner",
+            OwnerKills = 0,
+            Metadata = new ReplayMetadata { FileName = "team.replay", Playlist = "Playlist_DefaultDuo" },
+            Players =
+            [
+                Player("owner-id", "Owner", owner: true, teamKills: "3"),
+                Player("teammate-id", "Teammate", kills: "3", teamKills: "3")
+            ]
+        };
+        replay.ParticipantEliminations["teammate-id"] = new ParticipantEliminationResult
+        {
+            ParticipantId = "teammate-id",
+            Eliminations =
+            [
+                new PlayerRow { Id = "human", Name = "Human victim", Bot = "false", DeathCause = "Rifle" },
+                new PlayerRow { Id = "bot", Name = "Bot victim", Bot = "true", DeathCause = "Shotgun" },
+                new PlayerRow { Id = "unknown", Name = "Unknown victim", Bot = "unknown", DeathCause = "Storm" }
+            ]
+        };
+        return replay;
+    }
 
     private static ReplayData SoloReplay() => new()
     {
@@ -216,7 +319,12 @@ public sealed class SquadSectionTests
         Players = [Player("solo-id", "Solo", owner: true, teamKills: "0")]
     };
 
-    private static PlayerRow Player(string id, string name, bool owner = false, string? teamKills = null) => new()
+    private static PlayerRow Player(
+        string id,
+        string name,
+        bool owner = false,
+        string? kills = "0",
+        string? teamKills = null) => new()
     {
         StableId = id,
         Id = id,
@@ -225,7 +333,7 @@ public sealed class SquadSectionTests
         TeamIndexValue = 1,
         TeamIndex = "1",
         TeamKills = teamKills,
-        Kills = "0"
+        Kills = kills
     };
 
     private sealed class SequenceReplayService(params ReplayData[] replays) : IReplayService

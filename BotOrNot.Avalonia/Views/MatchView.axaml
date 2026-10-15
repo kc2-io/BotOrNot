@@ -23,7 +23,7 @@
         3  Owner eliminations header
         4  Owner eliminations grid (2* height)
         5  Squad section header
-        6  Squad members grid
+        6  Squad members grid + selected teammate elimination details
         7  Players Seen header
         8  Players grid (3* height)
         9  NPCs expander (collapsed when no NPCs)
@@ -258,18 +258,20 @@
                        TextWrapping="Wrap" />
         </StackPanel>
 
-        <DataGrid Grid.Row="6"
-                  x:Name="SquadGrid"
+        <StackPanel Grid.Row="6"
+                    IsVisible="{Binding HasSquadMembers}">
+        <DataGrid x:Name="SquadGrid"
                   MaxHeight="200"
                   ItemsSource="{Binding Teammates}"
+                  SelectedItem="{Binding SelectedTeammate, Mode=OneWay}"
+                  SelectionMode="Single"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserReorderColumns="True"
                   CanUserResizeColumns="True"
                   CanUserSortColumns="True"
                   GridLinesVisibility="Horizontal"
-                  Margin="8,0,8,8"
-                  IsVisible="{Binding HasSquadMembers}">
+                  Margin="8,0,8,8">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Binding="{Binding StableId}" Width="220" IsVisible="False" />
                 <DataGridTemplateColumn Header="Name" Width="195" CanUserSort="True">
@@ -305,10 +307,92 @@
                 <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="80" />
                 <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="120" />
                 <DataGridTextColumn Header="Kills" Binding="{Binding Kills}" Width="75" />
+                <DataGridTextColumn Header="Players Observed" Binding="{Binding ObservedPlayerKills}" Width="125" />
+                <DataGridTextColumn Header="Bots Observed" Binding="{Binding ObservedBotKills}" Width="110" />
+                <DataGridTextColumn Header="Unknown Observed" Binding="{Binding ObservedUnknownKills}" Width="130" />
+                <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="services:SquadMemberSummary">
+                            <TextBlock Text="{Binding DeathCause, Converter={StaticResource UnknownToDashConverter}}"
+                                       Margin="12,0,8,0"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding DeathCauseInfo.EvidenceSummary}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Place" Binding="{Binding Placement}" Width="75" />
                 <DataGridTextColumn Header="Observed" Binding="{Binding ObservedSquadSize}" Width="95" />
             </DataGrid.Columns>
         </DataGrid>
+
+        <Expander Margin="8,0,8,8"
+                  IsExpanded="False"
+                  IsVisible="{Binding HasSelectedTeammate}">
+            <Expander.Header>
+                <TextBlock Text="{Binding TeammateEliminationsHeader}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           TextWrapping="Wrap" />
+            </Expander.Header>
+            <StackPanel Spacing="2">
+            <TextBlock Text="{Binding TeammateEliminationCoverageNotice}"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding TeammateEliminationCoverageNotice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <DataGrid x:Name="TeammateEliminationsGrid"
+                      MaxHeight="180"
+                      ItemsSource="{Binding TeammateEliminations}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="Horizontal"
+                      Margin="0,2,0,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="195" />
+                    <DataGridTemplateColumn Header="Bot" Width="78" CanUserSort="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="models:PlayerRow">
+                                <Ellipse Width="14" Height="14"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Fill="{Binding Bot, Converter={StaticResource BotColorConverter}}"
+                                         Stroke="{Binding Bot, Converter={StaticResource BotBorderColorConverter}}"
+                                         StrokeThickness="1.5" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Platform" Binding="{Binding Platform, Converter={StaticResource PlatformNameConverter}}" Width="130" />
+                    <DataGridTemplateColumn Header="Death Cause" Width="156" CanUserSort="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="models:PlayerRow">
+                                <TextBlock Text="{Binding DeathCause}" Margin="12,0,8,0" VerticalAlignment="Center">
+                                    <ToolTip.Tip>
+                                        <ScrollViewer MaxWidth="560" MaxHeight="400">
+                                            <TextBlock Text="{Binding DeathCauseInfo.EvidenceSummary}" TextWrapping="Wrap" />
+                                        </ScrollViewer>
+                                    </ToolTip.Tip>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Elim Time" Binding="{Binding ElimTime}" Width="90" />
+                    <DataGridTemplateColumn Header="Storm Phase" Width="110" CanUserSort="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="models:PlayerRow">
+                                <TextBlock Text="{Binding StormPhaseDisplay}"
+                                           Margin="12,0,8,0"
+                                           VerticalAlignment="Center"
+                                           ToolTip.Tip="{Binding StormPhaseTooltip}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            </StackPanel>
+        </Expander>
+        </StackPanel>
 
         <!-- Players Seen Header -->
         <TextBlock Grid.Row="7"

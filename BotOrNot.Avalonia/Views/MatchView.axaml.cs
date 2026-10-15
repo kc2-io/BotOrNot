@@ -26,6 +26,7 @@ public partial class MatchView : UserControl
     private DataGrid? _playersGrid;
     private DataGrid? _npcsGrid;
     private DataGrid? _squadGrid;
+    private DataGrid? _teammateEliminationsGrid;
     private Button? _columnsButton;
 
     public MatchView()
@@ -37,6 +38,7 @@ public partial class MatchView : UserControl
         _playersGrid = this.FindControl<DataGrid>("PlayersGrid");
         _npcsGrid = this.FindControl<DataGrid>("NpcsGrid");
         _squadGrid = this.FindControl<DataGrid>("SquadGrid");
+        _teammateEliminationsGrid = this.FindControl<DataGrid>("TeammateEliminationsGrid");
         _columnsButton = this.FindControl<Button>("ColumnsButton");
 
         if (_columnsButton != null)
@@ -59,7 +61,19 @@ public partial class MatchView : UserControl
             _npcsGrid.LoadingRow += OnDataGridLoadingRow;
         }
         if (_squadGrid != null)
+        {
             _squadGrid.Sorting += OnDataGridSorting;
+            _squadGrid.SelectionChanged += (_, _) =>
+            {
+                if (_viewModel != null && _squadGrid.SelectedItem is SquadMemberSummary teammate)
+                    _viewModel.SelectedTeammate = teammate;
+            };
+        }
+        if (_teammateEliminationsGrid != null)
+        {
+            _teammateEliminationsGrid.Sorting += OnDataGridSorting;
+            _teammateEliminationsGrid.LoadingRow += OnDataGridLoadingRow;
+        }
 
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
@@ -72,7 +86,7 @@ public partial class MatchView : UserControl
             RefreshDataGridRows(ownerGrid);
             RefreshDataGridRows(_playersGrid);
             RefreshDataGridRows(_npcsGrid);
-            RefreshDataGridRows(_squadGrid);
+            RefreshDataGridRows(_teammateEliminationsGrid);
         };
 
         DataContextChanged += (_, _) => _viewModel = DataContext as MainWindowViewModel;
@@ -131,6 +145,10 @@ public partial class MatchView : UserControl
             "Bot" => member => member.IsBot,
             "Platform" => member => member.Platform,
             "Kills" => member => member.Kills,
+            "Players Observed" => member => member.ObservedPlayerKills,
+            "Bots Observed" => member => member.ObservedBotKills,
+            "Unknown Observed" => member => member.ObservedUnknownKills,
+            "Death Cause" => member => member.DeathCause,
             "Place" => member => member.Placement,
             "Observed" => member => member.ObservedSquadSize,
             _ => null
@@ -396,6 +414,13 @@ public partial class MatchView : UserControl
                 var npcsCsv = CsvExportService.GenerateCsv(_viewModel.Npcs, npcColumns);
                 var npcsPath = Path.Combine(dirPath, $"{baseName}_npcs.csv");
                 await File.WriteAllTextAsync(npcsPath, npcsCsv, utf8Bom);
+            }
+
+            if (_viewModel.HasSquadMembers)
+            {
+                var teammateCsv = CsvExportService.GenerateTeammateEliminationsCsv(_viewModel.Teammates);
+                var teammatePath = Path.Combine(dirPath, $"{baseName}_teammate_eliminations.csv");
+                await File.WriteAllTextAsync(teammatePath, teammateCsv, utf8Bom);
             }
         }
         catch (Exception ex)

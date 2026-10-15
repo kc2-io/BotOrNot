@@ -22,6 +22,7 @@ public class MainWindowViewModel : ReactiveObject
     private static readonly string BaseTitle = $"Bot or Not? v{AppVersion}";
 
     private readonly ObservableCollection<SquadMemberSummary> _teammates = new();
+    private readonly ObservableCollection<PlayerRow> _teammateEliminations = new();
     private string _ownerKillsHeader = "Your Eliminations";
     private string _playersSeenHeader = "Players Seen";
     private string _npcsSeenHeader = "NPCs Seen";
@@ -55,6 +56,9 @@ public class MainWindowViewModel : ReactiveObject
     private string? _squadStatusText;
     private bool _hasSquadSection;
     private bool _hasSquadMembers;
+    private SquadMemberSummary? _selectedTeammate;
+    private string _teammateEliminationsHeader = "Teammate Eliminations";
+    private string? _teammateEliminationCoverageNotice;
 
     public MainWindowViewModel(
         Action? onBack = null,
@@ -90,6 +94,34 @@ public class MainWindowViewModel : ReactiveObject
 
     /// <summary>Observed teammates, kept separate from the opponent filter and grids.</summary>
     public ObservableCollection<SquadMemberSummary> Teammates => _teammates;
+
+    public ObservableCollection<PlayerRow> TeammateEliminations => _teammateEliminations;
+
+    public SquadMemberSummary? SelectedTeammate
+    {
+        get => _selectedTeammate;
+        set
+        {
+            if (ReferenceEquals(_selectedTeammate, value)) return;
+            this.RaiseAndSetIfChanged(ref _selectedTeammate, value);
+            UpdateSelectedTeammate();
+            this.RaisePropertyChanged(nameof(HasSelectedTeammate));
+        }
+    }
+
+    public bool HasSelectedTeammate => SelectedTeammate != null;
+
+    public string TeammateEliminationsHeader
+    {
+        get => _teammateEliminationsHeader;
+        private set => this.RaiseAndSetIfChanged(ref _teammateEliminationsHeader, value);
+    }
+
+    public string? TeammateEliminationCoverageNotice
+    {
+        get => _teammateEliminationCoverageNotice;
+        private set => this.RaiseAndSetIfChanged(ref _teammateEliminationCoverageNotice, value);
+    }
 
     public string? SquadStatusText
     {
@@ -343,13 +375,17 @@ public class MainWindowViewModel : ReactiveObject
 
             var ownerDisplay = !string.IsNullOrEmpty(data.OwnerName) ? data.OwnerName : "Owner";
             // Event joins can be incomplete, so a missing authoritative owner count must remain unknown.
-            var botKills = allOwnerEliminations.Count(p => p.IsBot);
-            var observedHumanKills = allOwnerEliminations.Count - botKills;
+            var botKills = allOwnerEliminations.Count(player =>
+                bool.TryParse(player.Bot, out var isBot) && isBot);
+            var observedHumanKills = allOwnerEliminations.Count(player =>
+                bool.TryParse(player.Bot, out var isBot) && !isBot);
+            var unknownKills = allOwnerEliminations.Count - botKills - observedHumanKills;
             if (data.OwnerKills.HasValue)
             {
                 var totalKills = data.OwnerKills.Value;
                 var incompleteCoverage = data.HasUncertainEliminationAttribution ||
-                                         allOwnerEliminations.Count != totalKills;
+                                         allOwnerEliminations.Count != totalKills ||
+                                         unknownKills > 0;
                 if (!incompleteCoverage)
                 {
                     OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players, {botKills} Bots";
@@ -359,10 +395,14 @@ public class MainWindowViewModel : ReactiveObject
                 {
                     OwnerKillsHeader = $"{ownerDisplay}'s Eliminations ({totalKills}) - {observedHumanKills} Players observed, {botKills} Bots observed";
                     EliminationCoverageNotice = $"Replay records {totalKills} eliminations; {allOwnerEliminations.Count} credited events observed." +
-                                                (data.HasUncertainEliminationAttribution ? " Some attribution is uncertain." : "");
+                                                (data.HasUncertainEliminationAttribution ? " Some attribution is uncertain." : "") +
+                                                (unknownKills > 0
+                                                    ? $" {unknownKills} victims have unknown player/bot classification."
+                                                    : "");
                 }
                 ElimsSummary = incompleteCoverage
-                    ? $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")} observed)"
+                    ? $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")} observed" +
+                      (unknownKills > 0 ? $", {unknownKills} Unknown" : "") + ")"
                     : $"{totalKills} Elims ({botKills} Bot{(botKills != 1 ? "s" : "")})";
             }
             else
@@ -377,8 +417,11 @@ public class MainWindowViewModel : ReactiveObject
             }
 
             var totalPlayers = allPlayers.Count;
-            var botPlayers = allPlayers.Count(p => p.IsBot);
-            var humanPlayers = totalPlayers - botPlayers;
+            var botPlayers = allPlayers.Count(player =>
+                bool.TryParse(player.Bot, out var isBot) && isBot);
+            var humanPlayers = allPlayers.Count(player =>
+                bool.TryParse(player.Bot, out var isBot) && !isBot);
+            var unknownPlayers = totalPlayers - botPlayers - humanPlayers;
             var platformGroups = allPlayers
                 .Where(p => !string.IsNullOrWhiteSpace(p.Platform))
                 .GroupBy(p => PlatformHelper.GetFriendlyName(p.Platform))
@@ -386,7 +429,10 @@ public class MainWindowViewModel : ReactiveObject
                 .Select(g => $"{g.Count()} {g.Key}")
                 .ToList();
             var platformBreakdown = platformGroups.Count > 0 ? " | " + string.Join(", ", platformGroups) : "";
-            var playersSeenHeader = $"Players Seen ({totalPlayers}) - {humanPlayers} Players, {botPlayers} Bots{platformBreakdown}";
+            var playersSeenHeader =
+                $"Players Seen ({totalPlayers}) - {humanPlayers} Players, {botPlayers} Bots" +
+                (unknownPlayers > 0 ? $", {unknownPlayers} Unknown" : "") +
+                platformBreakdown;
             var npcsSeenHeader = $"NPCs Seen ({allNpcs.Count})";
 
             var ownerPlayer = data.Players.FirstOrDefault(p =>
@@ -447,10 +493,12 @@ public class MainWindowViewModel : ReactiveObject
     private void ApplySquadProjection(SquadProjection projection)
     {
         HasSquadSection = projection.Status != SquadProjectionStatus.ConfirmedSolo;
+        SelectedTeammate = null;
         _teammates.Clear();
         foreach (var teammate in projection.Teammates)
             _teammates.Add(teammate);
         HasSquadMembers = _teammates.Count > 0;
+        SelectedTeammate = _teammates.FirstOrDefault();
 
         SquadStatusText = projection.Status switch
         {
@@ -459,6 +507,38 @@ public class MainWindowViewModel : ReactiveObject
             SquadProjectionStatus.Unavailable => BuildSquadStatus("Squad data unavailable", projection),
             _ => null
         };
+    }
+
+    private void UpdateSelectedTeammate()
+    {
+        _teammateEliminations.Clear();
+        if (SelectedTeammate == null)
+        {
+            TeammateEliminationsHeader = "Teammate Eliminations";
+            TeammateEliminationCoverageNotice = null;
+            return;
+        }
+
+        foreach (var elimination in OrderByElimTime(SelectedTeammate.Eliminations))
+            _teammateEliminations.Add(elimination);
+
+        var displayName = string.IsNullOrWhiteSpace(SelectedTeammate.Name)
+            ? "Selected teammate"
+            : SelectedTeammate.Name;
+        if (SelectedTeammate.HasEliminationDetails)
+        {
+            var unknown = SelectedTeammate.ObservedUnknownKills.GetValueOrDefault();
+            TeammateEliminationsHeader =
+                $"{displayName}'s Observed Eliminations ({_teammateEliminations.Count}) - " +
+                $"{SelectedTeammate.ObservedPlayerKills.GetValueOrDefault()} Players, " +
+                $"{SelectedTeammate.ObservedBotKills.GetValueOrDefault()} Bots" +
+                (unknown > 0 ? $", {unknown} Unknown" : "");
+        }
+        else
+        {
+            TeammateEliminationsHeader = $"{displayName}'s Eliminations";
+        }
+        TeammateEliminationCoverageNotice = SelectedTeammate.EliminationCoverageText;
     }
 
     private static string BuildSquadStatus(string prefix, SquadProjection projection)
@@ -487,6 +567,8 @@ public class MainWindowViewModel : ReactiveObject
         _filteredPlayers.Clear();
         _filteredOwnerEliminations.Clear();
         _filteredNpcs.Clear();
+        SelectedTeammate = null;
+        _teammateEliminations.Clear();
         _teammates.Clear();
         OwnerKillsHeader = "Your Eliminations";
         PlayersSeenHeader = "Players Seen";
